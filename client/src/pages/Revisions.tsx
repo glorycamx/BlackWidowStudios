@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { get, post } from "../api";
 import type { Overview, Revision } from "../types";
 import { Icon } from "../components/Icon";
-import { dueLabel, timeAgo } from "../util";
+import { dueLabel, timeAgo, turnaround } from "../util";
 import { useNotifications } from "../components/Notifications";
 import { Group, Page, Row, Section } from "../components/Page";
 
@@ -33,7 +33,7 @@ export default function Revisions() {
     <Page
       page="edits"
       back={{ to: "/website", label: "Website" }}
-      blurb={o ? `Unlimited changes to your site, done within ${o.plan.revisionTurnaround.toLowerCase()}.` : "Unlimited changes to your site."}
+      blurb={o ? `Unlimited changes to your site, done within ${turnaround(o.plan.revisionTurnaround)}.` : "Unlimited changes to your site."}
     >
       {form ? (
         <form className="form group" style={{ padding: 16 }} onSubmit={submit}>
@@ -64,7 +64,7 @@ export default function Revisions() {
       </Section>
 
       {o?.nextPlan && (
-        <Group><Row to="/plan" title="Need edits faster?" meta={`${o.nextPlan.name} turns them around in ${o.nextPlan.revisionTurnaround.toLowerCase()}`} /></Group>
+        <Group><Row to="/plan" title="Need edits faster?" meta={`${o.nextPlan.name} turns them around within ${turnaround(o.nextPlan.revisionTurnaround)}`} /></Group>
       )}
     </Page>
   );

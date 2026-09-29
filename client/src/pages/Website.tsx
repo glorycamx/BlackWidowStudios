@@ -8,6 +8,7 @@ import { Sparkline, dailyCounts } from "../components/Sparkline";
 import { useNotifications } from "../components/Notifications";
 import { downscale, photoSrc } from "../photos";
 import { CountUp } from "../components/Motion";
+import { pageName } from "../util";
 import { Group, Page, Row, Section } from "../components/Page";
 
 const QUICK = [
@@ -62,11 +63,12 @@ export default function Website() {
       blurb={<span className="row" style={{ gap: 8, flexWrap: "wrap" }}><span className={`sdot ${w.health.up === false ? "red" : w.status === "live" ? "green" : "amber"}`} />{host || "Your site"} · {statusText}</span>}
     >
       <div className="btn-row">
-        {w.siteUrl && <a className="btn grow" href={/^https?:/.test(w.siteUrl) ? w.siteUrl : `https://${w.siteUrl}`} target="_blank" rel="noreferrer"><Icon name="globe" size={16} /> Open my site</a>}
-        {w.siteUrl && <button className="btn grow" onClick={checkNow} disabled={checking}><Icon name="pulse" size={16} /> {checking ? "Checking…" : "Check it's up"}</button>}
+        {w.siteUrl && <a className="btn grow" href={/^https?:/.test(w.siteUrl) ? w.siteUrl : `https://${w.siteUrl}`} target="_blank" rel="noreferrer"><Icon name="globe" size={16} /> Open site</a>}
+        {w.siteUrl && <button className="btn grow" onClick={checkNow} disabled={checking}><Icon name="pulse" size={16} /> {checking ? "Checking…" : "Check site"}</button>}
       </div>
 
       <Section title="Health">
+        {w.health.uptime == null && <p className="small muted">{w.status === "live" ? "We check your site every 15 minutes. The first results show up here shortly." : "Health checks start once your site is live."}</p>}
         <div className="figures cards">
           <div className="figure"><span className="n">{w.health.uptime != null ? `${w.health.uptime}%` : "—"}</span><span className="l">Uptime</span></div>
           <div className="figure"><span className="n">{w.health.responseMs != null ? `${(w.health.responseMs / 1000).toFixed(1)}s` : "—"}</span><span className="l">Load time</span></div>
@@ -84,7 +86,8 @@ export default function Website() {
             </div>
             <div className="group" style={{ padding: "14px 16px 10px" }}>
               <Sparkline values={dailyCounts(w.traffic.dailyViews, 30)} height={48} color="var(--blue)" />
-              <div className="tiny muted" style={{ marginTop: 6 }}>Most visited: {w.traffic.topPages.slice(0, 3).map((p) => (p.path === "/" ? "Home" : p.path)).join(", ")}</div>
+              <div className="chart-axis"><span>30 days ago</span><span>Today</span></div>
+              <div className="tiny muted" style={{ marginTop: 6 }}>Most visited: {w.traffic.topPages.slice(0, 3).map((p) => pageName(p.path)).join(", ")}</div>
             </div>
           </>
         ) : (
@@ -95,7 +98,7 @@ export default function Website() {
         )}
       </Section>
 
-      <Section title="Make a change" action={<Link to="/revisions" className="btn sm">All edits{o?.openRevisions.length ? ` (${o.openRevisions.length})` : ""}</Link>}>
+      <Section title="Make a change" action={<Link to="/revisions" className="btn sm">{o?.openRevisions.length ? `Edits · ${o.openRevisions.length} open` : "All edits"}</Link>}>
         <Group>
           {QUICK.map((q) => <Row key={q.label} title={q.label} onClick={() => nav(`/help?q=${encodeURIComponent(q.q)}`)} />)}
         </Group>

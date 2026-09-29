@@ -43,13 +43,14 @@ export interface NotifyInput {
   buzz?: keyof typeof BUZZ;
 }
 
-async function deliver(userIds: number[], n: NotifyInput) {
-  if (userIds.length === 0) return;
+// Returns how many people it went to
+async function deliver(userIds: number[], n: NotifyInput): Promise<number> {
+  if (userIds.length === 0) return 0;
   const url = n.url || "/";
   await db.insert(schema.notifications).values(
     userIds.map((userId) => ({ userId, kind: n.kind, title: n.title, body: n.body, url })),
   );
-  if (!pushEnabled) return;
+  if (!pushEnabled) return userIds.length;
 
   const subs = await db
     .select()
@@ -81,6 +82,7 @@ async function deliver(userIds: number[], n: NotifyInput) {
       }
     }),
   );
+  return userIds.length;
 }
 
 export async function notifyClient(clientId: number, n: NotifyInput) {
@@ -88,7 +90,7 @@ export async function notifyClient(clientId: number, n: NotifyInput) {
     .select({ id: schema.users.id })
     .from(schema.users)
     .where(eq(schema.users.clientId, clientId));
-  await deliver(users.map((u) => u.id), n);
+  return deliver(users.map((u) => u.id), n);
 }
 
 export async function notifyTeam(n: NotifyInput, opts: { email?: boolean } = {}) {

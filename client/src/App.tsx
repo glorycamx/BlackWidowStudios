@@ -31,9 +31,14 @@ export default function App() {
   const loc = useLocation();
   const reload = () => get<Me>("/me").then(setInfo).catch(() => setInfo({ user: null })).finally(() => setLoading(false));
   useEffect(() => { reload(); }, []);
+  useEffect(() => {
+    const out = () => setInfo((i) => (i?.user ? { user: null } : i));
+    window.addEventListener("bw:signed-out", out);
+    return () => window.removeEventListener("bw:signed-out", out);
+  }, []);
 
   // Share links work for anyone, signed in or not
-  if (loc.pathname.startsWith("/r/")) return <><AmbientWeb /><PageTransition><Routes><Route path="/r/:code" element={<PublicReferral />} /></Routes></PageTransition></>;
+  if (loc.pathname.startsWith("/r/")) return <><AmbientWeb /><PageTransition><Routes><Route path="/r/:code" element={<PublicReferral preview={info?.user?.role === "client"} />} /></Routes></PageTransition></>;
   if (loading) return <div className="login"><div className="empty">Loading…</div></div>;
   const me = info?.user ?? null;
   const setMe = (u: User | null) => (u ? reload() : setInfo({ user: null }));

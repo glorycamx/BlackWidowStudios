@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { get, patch } from "../../api";
 import type { Escalation, Revision, Upgrade } from "../../types";
 import { useNotifications } from "../../components/Notifications";
-import { dueLabel, greeting, timeAgo } from "../../util";
+import { dueLabel, formatPhone, greeting, timeAgo } from "../../util";
 import { useMe } from "../../App";
 import { CountUp } from "../../components/Motion";
 import { Group, Page, Row, Section } from "../../components/Page";
@@ -110,7 +110,7 @@ export default function Inbox() {
                   <Row
                     key={r.id}
                     title={<>{r.name}{r.business ? <span className="muted"> · {r.business}</span> : null}</>}
-                    meta={`from ${r.client.businessName}${r.phone ? ` · ${r.phone}` : ""}`}
+                    meta={`from ${r.client.businessName}${r.phone ? ` · ${formatPhone(r.phone)}` : ""}`}
                     trail={
                       <select style={selectStyle} value={r.status} onChange={(e) => act(`/team/referrals/${r.id}`, e.target.value)} aria-label="Referral status">
                         <option value="new">New</option><option value="contacted">Talking</option><option value="signed">Signed</option><option value="lost">Lost</option>

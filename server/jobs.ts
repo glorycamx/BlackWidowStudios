@@ -5,14 +5,15 @@ import { PLANS, REFERRAL_CREDIT, nextPlan, type Tier } from "../shared/plans.js"
 import { recordSiteCheck } from "./services.js";
 
 // Runs every 15 minutes. Each scheduled alert is keyed in job_log so it fires once.
-async function once(key: string, fn: () => Promise<void>) {
+// fn returns how many people received it; 0 (e.g. the client has no login yet) means try again next run
+async function once(key: string, fn: () => Promise<number | void>) {
   const inserted = await db.insert(schema.jobLog).values({ key }).onConflictDoNothing().returning();
   if (!inserted.length) return;
+  const release = () => db.delete(schema.jobLog).where(eq(schema.jobLog.key, key));
   try {
-    await fn();
+    if ((await fn()) === 0) await release();
   } catch (err) {
-    // Release the key so the next run retries
-    await db.delete(schema.jobLog).where(eq(schema.jobLog.key, key));
+    await release();
     throw err;
   }
 }
@@ -80,7 +81,7 @@ async function monthlyReports() {
         .from(schema.leads)
         .where(and(eq(schema.leads.clientId, c.id), sql`${schema.leads.createdAt} >= date_trunc('month', now() - interval '1 month') and ${schema.leads.createdAt} < date_trunc('month', now())`));
       const up = nextPlan(c.tier as Tier);
-      await notifyClient(c.id, {
+      return notifyClient(c.id, {
         kind: "report",
         title: `Your ${new Date(now.year, now.month - 2, 1).toLocaleString("en-US", { month: "long" })} report`,
         body: `${n} lead${n === 1 ? "" : "s"} came through your site.${up ? ` Want more? ${up.name} gets you ${up.revisionLabel.toLowerCase()} edits and more.` : ""}`,
@@ -138,16 +139,19 @@ async function uptimeMonitor() {
   await db.delete(schema.siteEvents).where(lt(schema.siteEvents.createdAt, new Date(Date.now() - 400 * 86400_000)));
 }
 
-export function startJobs() {
-  const run = async () => {
-    for (const job of [uptimeMonitor, leadNudges, overdueRevisions, monthlyReports, day30ReferralAsk, upgradeTeaser]) {
-      try {
-        await job();
-      } catch (err) {
-        console.error(`[jobs] ${job.name} failed`, err);
-      }
+// Runs every scheduled job once (also used by tests and for manual runs)
+export async function runJobsOnce() {
+  for (const job of [uptimeMonitor, leadNudges, overdueRevisions, monthlyReports, day30ReferralAsk, upgradeTeaser]) {
+    try {
+      await job();
+    } catch (err) {
+      console.error(`[jobs] ${job.name} failed`, err);
     }
-  };
+  }
+}
+
+export function startJobs() {
+  const run = runJobsOnce;
   setTimeout(run, 10_000);
   setInterval(run, 15 * 60_000);
 }

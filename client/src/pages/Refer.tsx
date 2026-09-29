@@ -45,7 +45,8 @@ export function PunchCard({ r }: { r: ReferralSummary }) {
   const onCard = r.stats.signedCount % slots;
   const left = slots - onCard;
   return (
-    <Section title="Punch card" action={<span className="pill gold">{left} to go · +${r.program.cardBonus}</span>}>
+    <Section title="Punch card" action={<span className="pill gold">{left} to go</span>}>
+      <p className="punch-note">Each business that signs punches a hole and takes ${r.program.perSignup} off your bill. The {r.program.cardSlots}th pays ${r.program.perSignup} + a ${r.program.cardBonus} bonus.</p>
       <div className="punch">
         {Array.from({ length: slots }, (_, i) => {
           const punched = i < onCard;

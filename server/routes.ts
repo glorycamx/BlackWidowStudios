@@ -81,6 +81,7 @@ api.get(
       user: publicUser(req.user),
       client: client && { id: client.id, businessName: client.businessName, ownerName: client.ownerName, tier: client.tier, status: client.status },
       botEnabled,
+      appUrl: process.env.APP_URL || null,
     });
   }),
 );

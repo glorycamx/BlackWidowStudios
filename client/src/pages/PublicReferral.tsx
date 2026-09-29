@@ -1,13 +1,13 @@
 import { RevealText } from "../components/Motion";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { api } from "../api";
 import { WebMark } from "../components/Icon";
 
 interface Info { business: string; owner: string; offer: string }
 
 // Public page someone lands on from a client's share link. No login.
-export default function PublicReferral() {
+export default function PublicReferral({ preview = false }: { preview?: boolean }) {
   const { code = "" } = useParams();
   const [info, setInfo] = useState<Info | null>(null);
   const [missing, setMissing] = useState(false);
@@ -37,6 +37,13 @@ export default function PublicReferral() {
   const amount = info?.offer.match(/\$\d[\d,]*/)?.[0];
 
   return (
+    <>
+    {preview && (
+      <div className="preview-bar">
+        <span className="grow">This is what people see when they open your link.</span>
+        <Link to="/refer" className="btn sm">Back to Earn</Link>
+      </div>
+    )}
     <div className="landing">
       <div className="row" style={{ gap: 10 }}>
         <WebMark size={26} />
@@ -57,7 +64,7 @@ export default function PublicReferral() {
           <h1><RevealText text="Get a website that" /> <span className="accent"><RevealText text="actually gets you calls." /></span></h1>
           <div className="offer">
             <span className="amt">{amount || "Offer"}</span>
-            <span className="small muted">off your website build, because {info.owner} sent you</span>
+            <span className="small muted">off your website build</span>
           </div>
           <ul className="checks">
             <li>We build your new site first. You see it before you pay a dime.</li>
@@ -79,5 +86,6 @@ export default function PublicReferral() {
         </>
       )}
     </div>
+    </>
   );
 }

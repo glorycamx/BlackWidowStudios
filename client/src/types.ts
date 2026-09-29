@@ -1,5 +1,5 @@
 export interface User { id: number; email: string; name: string; role: "team" | "client"; clientId: number | null }
-export interface Me { user: User | null; client?: { id: number; businessName: string; ownerName: string; tier: number; status: string } | null; botEnabled?: boolean }
+export interface Me { user: User | null; appUrl?: string | null; client?: { id: number; businessName: string; ownerName: string; tier: number; status: string } | null; botEnabled?: boolean }
 export interface Lead { id: number; clientId: number; name: string | null; phone: string | null; email: string | null; message: string | null; source: string; status: "new" | "contacted" | "won" | "lost"; createdAt: string }
 export interface Revision { id: number; clientId: number; title: string; details: string; page: string | null; status: "open" | "in_progress" | "done"; createdBy: string; dueAt: string; completedAt: string | null; createdAt: string }
 export interface ChatMessage { id: number; clientId: number; sender: "client" | "bot" | "team" | "system"; authorName: string | null; body: string; createdAt: string }

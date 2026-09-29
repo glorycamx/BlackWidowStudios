@@ -4,7 +4,7 @@ import { get, patch } from "../api";
 import type { Lead, Overview } from "../types";
 import { Icon } from "../components/Icon";
 import { Upsell } from "../components/Upsell";
-import { timeAgo } from "../util";
+import { formatPhone, timeAgo } from "../util";
 import { useNotifications } from "../components/Notifications";
 import { celebrate } from "../motion";
 import { Group, Page, Row, Section } from "../components/Page";
@@ -48,7 +48,7 @@ export default function LeadDetail() {
 
       <Section title="Contact">
         <Group>
-          {lead.phone && <Row href={`tel:${tel}`} title={lead.phone} meta="Phone" />}
+          {lead.phone && <Row href={`tel:${tel}`} title={formatPhone(lead.phone)} meta="Phone" />}
           {lead.email && <Row href={`mailto:${lead.email}`} title={lead.email} meta="Email" />}
         </Group>
       </Section>
@@ -71,8 +71,8 @@ export default function LeadDetail() {
       )}
 
       <nav className="pager" aria-label="Other leads">
-        {prev ? <Link className="btn" to={`/leads/${prev.id}`}><Icon name="back" size={16} /> Previous</Link> : <span />}
-        {next ? <Link className="btn" to={`/leads/${next.id}`}>Next <Icon name="forward" size={16} /></Link> : <span />}
+        {prev ? <Link className="btn" to={`/leads/${prev.id}`}><Icon name="back" size={16} /> Previous</Link> : <button className="btn" disabled><Icon name="back" size={16} /> Previous</button>}
+        {next ? <Link className="btn" to={`/leads/${next.id}`}>Next <Icon name="forward" size={16} /></Link> : <button className="btn" disabled>Next <Icon name="forward" size={16} /></button>}
       </nav>
     </Page>
   );

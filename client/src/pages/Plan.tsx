@@ -26,7 +26,7 @@ export default function Plan() {
       page="plan"
       back={{ to: "/more", label: "Account" }}
       heading={`You're on ${o.plan.name}`}
-      blurb={`$${o.plan.monthly}/mo · ${o.plan.revisionTurnaround} edits${o.monthlyStartsOn ? ` · monthly starts ${fmtDate(o.monthlyStartsOn)}` : ""}`}
+      blurb={`$${o.plan.monthly}/mo · ${o.plan.revisionTurnaround} edits · ${o.monthlyStartsOn ? `${new Date(o.monthlyStartsOn) > new Date() ? "Monthly billing starts" : "Billed monthly since"} ${fmtDate(o.monthlyStartsOn)}` : "Monthly billing starts 30 days after your site goes live"}`}
     >
       <Section title="Plans">
         {([1, 2, 3, 4] as Tier[]).filter((t) => t >= o.plan.tier).map((t) => {

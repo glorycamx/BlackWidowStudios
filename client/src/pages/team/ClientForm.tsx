@@ -30,7 +30,7 @@ export function ClientForm({ initial, onSubmit, submitLabel }: { initial?: Parti
         <label>Phone<input {...f("phone")} type="tel" /></label>
       </div>
       <label>Email<input {...f("email")} type="email" /></label>
-      <div className="grid2">
+      <div className="col">
         <label>Plan<select {...f("tier")}>{[1, 2, 3, 4].map((t) => <option key={t} value={t}>{PLANS[t as 1].name} (${PLANS[t as 1].monthly}/mo)</option>)}</select></label>
         <label>Status<select {...f("status")}><option value="build">Building</option><option value="phase1">Phase 1</option><option value="live">Live</option></select></label>
       </div>

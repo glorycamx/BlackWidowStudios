@@ -40,11 +40,15 @@ export function PushBanner() {
   );
 }
 
-interface Tab { to: string; label: string; icon: string; dot: boolean }
+interface Tab { to: string; label: string; icon: string; kinds: string[] }
 
 // Floating tab bar with an indicator that springs to the active tab
 function TabBar({ tabs }: { tabs: Tab[] }) {
   const { pathname } = useLocation();
+  const { kinds, markSeen, items } = useNotifications();
+  const isOn = (t: Tab) => (t.to === "/" || t.to === "/team" ? pathname === t.to : pathname.startsWith(t.to));
+  const current = tabs.find(isOn);
+  useEffect(() => { if (current) markSeen(current.kinds); }, [pathname, items[0]?.id]);
   const idx = Math.max(0, tabs.findIndex((t) => (t.to === "/" || t.to === "/team" ? pathname === t.to : pathname.startsWith(t.to))));
   const active = tabs.some((t) => (t.to === "/" || t.to === "/team" ? pathname === t.to : pathname.startsWith(t.to)));
   return (
@@ -54,7 +58,7 @@ function TabBar({ tabs }: { tabs: Tab[] }) {
         <NavLink key={t.to} to={t.to} end={t.to === "/" || t.to === "/team"} className={({ isActive }) => (isActive ? "active" : "")}>
           <Icon name={t.icon} size={20} />
           {t.label}
-          {t.dot && <span className="dot" />}
+          {t.kinds.some((k) => kinds.has(k)) && !isOn(t) && <span className="dot" />}
         </NavLink>
       ))}
     </nav>
@@ -64,12 +68,12 @@ function TabBar({ tabs }: { tabs: Tab[] }) {
 export function ClientLayout() {
   const { kinds } = useNotifications();
   const { me } = useMe();
-  const tabs = [
-    { to: "/", label: "Home", icon: "home", dot: kinds.has("offer") || kinds.has("site_live") },
-    { to: "/leads", label: "Leads", icon: "leads", dot: kinds.has("lead") },
-    { to: "/help", label: "Assistant", icon: "sparkle", dot: kinds.has("team_reply") },
-    { to: "/website", label: "Website", icon: "globe", dot: kinds.has("revision_done") || kinds.has("revision_update") },
-    { to: "/refer", label: "Earn", icon: "gift", dot: kinds.has("referral") },
+  const tabs: Tab[] = [
+    { to: "/", label: "Home", icon: "home", kinds: ["offer", "site_live", "report"] },
+    { to: "/leads", label: "Leads", icon: "leads", kinds: ["lead"] },
+    { to: "/help", label: "Assistant", icon: "sparkle", kinds: ["team_reply"] },
+    { to: "/website", label: "Website", icon: "globe", kinds: ["revision_done", "revision_update"] },
+    { to: "/refer", label: "Earn", icon: "gift", kinds: ["referral"] },
   ];
   return (
     <div className="app">
@@ -90,9 +94,9 @@ export function TeamLayout() {
       <PageTransition><Outlet /></PageTransition>
       <TabBar
         tabs={[
-          { to: "/team", label: "Inbox", icon: "inbox", dot: kinds.has("escalation") || kinds.has("upgrade_request") },
-          { to: "/team/clients", label: "Clients", icon: "users", dot: false },
-          { to: "/team/new", label: "New client", icon: "plus", dot: false },
+          { to: "/team", label: "Inbox", icon: "inbox", kinds: ["escalation", "upgrade_request", "revision_created", "referral", "lead"] },
+          { to: "/team/clients", label: "Clients", icon: "users", kinds: [] },
+          { to: "/team/new", label: "New client", icon: "plus", kinds: [] },
         ]}
       />
     </div>

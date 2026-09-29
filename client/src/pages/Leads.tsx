@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { get } from "../api";
 import type { Lead, Overview } from "../types";
 import { Upsell } from "../components/Upsell";
-import { timeAgo } from "../util";
+import { formatPhone, timeAgo } from "../util";
 import { useNotifications } from "../components/Notifications";
 import { Group, Page, Row } from "../components/Page";
 
@@ -34,14 +34,18 @@ export default function Leads() {
       </div>
 
       {inRange.length === 0 ? (
-        <div className="empty">No leads in this range.</div>
+        <div className="empty">
+          {leads.length === 0
+            ? "No leads yet. When someone fills out the form on your website, they show up here and your phone buzzes."
+            : "No leads in this range. Try a longer range above."}
+        </div>
       ) : (
         <Group>
           {inRange.map((l) => (
             <Row
               key={l.id}
               to={`/leads/${l.id}`}
-              title={l.name || l.phone || l.email}
+              title={l.name || formatPhone(l.phone) || l.email}
               meta={`${timeAgo(l.createdAt)}${l.message ? ` · ${l.message}` : ""}`}
               trail={<span className={`pill ${LEAD_STATUS[l.status][1]}`}>{LEAD_STATUS[l.status][0]}</span>}
             />

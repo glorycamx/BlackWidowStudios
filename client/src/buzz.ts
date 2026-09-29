@@ -45,8 +45,10 @@ function chime(kind: string) {
 }
 
 export function buzz(kind: string) {
+  // Browsers only allow vibration after the person has tapped the page at least once
+  const active = (navigator as any).userActivation?.hasBeenActive ?? true;
   try {
-    navigator.vibrate?.(PATTERNS[kind] || PATTERNS.default);
+    if (active) navigator.vibrate?.(PATTERNS[kind] || PATTERNS.default);
   } catch {}
   chime(kind);
 }

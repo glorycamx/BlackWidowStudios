@@ -14,6 +14,7 @@ interface Ctx {
   refresh: () => void;
   toast: (title: string, body?: string, kind?: string) => void;
   kinds: Set<string>;
+  markSeen: (kinds: string[]) => void;
 }
 const NotificationsCtx = createContext<Ctx>(null!);
 export const useNotifications = () => useContext(NotificationsCtx);
@@ -56,6 +57,20 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     } catch {}
   }, [pushToast]);
 
+  // Failed requests get a visible message instead of a silent stall (at most one every few seconds)
+  useEffect(() => {
+    let last = 0;
+    const onErr = (e: Event) => {
+      if (Date.now() - last < 5000) return;
+      last = Date.now();
+      const id = Math.random();
+      setToasts((ts) => [{ id, title: "Couldn't finish that", body: (e as CustomEvent).detail, kind: "error" }, ...ts].slice(0, 3));
+      setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)), 6000);
+    };
+    window.addEventListener("bw:api-error", onErr);
+    return () => window.removeEventListener("bw:api-error", onErr);
+  }, []);
+
   useEffect(() => {
     refresh();
     const t = setInterval(refresh, 8000);
@@ -77,10 +92,23 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     if (url) nav(url);
   };
 
-  const kinds = new Set(items.filter((n) => !n.read).map((n) => n.kind));
+  // A tab's dot clears once that tab has been opened, even before the bell is opened
+  const [seen, setSeen] = useState<Record<string, number>>({});
+  const markSeen = useCallback((ks: string[]) => {
+    setSeen((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      for (const k of ks) {
+        const top = Math.max(0, ...items.filter((n) => n.kind === k).map((n) => n.id));
+        if ((next[k] || 0) < top) { next[k] = top; changed = true; }
+      }
+      return changed ? next : prev;
+    });
+  }, [items]);
+  const kinds = new Set(items.filter((n) => !n.read && n.id > (seen[n.kind] || 0)).map((n) => n.kind));
 
   return (
-    <NotificationsCtx.Provider value={{ unread, items, open: openDrawer, refresh, toast: (title, body, kind = "default") => pushToast({ title, body, kind }), kinds }}>
+    <NotificationsCtx.Provider value={{ unread, items, open: openDrawer, refresh, toast: (title, body, kind = "default") => pushToast({ title, body, kind }), kinds, markSeen }}>
       {children}
       <div className="toasts">
         {toasts.map((t) => (

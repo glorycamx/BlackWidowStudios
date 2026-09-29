@@ -6,7 +6,7 @@ import { Icon } from "../components/Icon";
 import { Upsell } from "../components/Upsell";
 import { PushBanner } from "../components/Layout";
 import { EarningsTicket } from "./Refer";
-import { greeting, timeAgo } from "../util";
+import { formatPhone, greeting, timeAgo } from "../util";
 import { CountUp } from "../components/Motion";
 import { Group, Page, PageBadge, Row, Section } from "../components/Page";
 
@@ -53,7 +53,7 @@ export default function Home() {
               <Row
                 key={l.id}
                 to={`/leads/${l.id}`}
-                title={l.name || l.phone || l.email}
+                title={l.name || formatPhone(l.phone) || l.email}
                 meta={`${timeAgo(l.createdAt)}${l.message ? ` · ${l.message}` : ""}`}
                 lead={<span className="call-btn"><Icon name="phone" size={16} /></span>}
               />

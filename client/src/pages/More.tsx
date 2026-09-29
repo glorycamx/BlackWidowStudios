@@ -5,6 +5,7 @@ import { PushBanner } from "../components/Layout";
 import { useNotifications } from "../components/Notifications";
 import { Group, Page, PageBadge, Row, Section } from "../components/Page";
 import { ChangePassword } from "../components/ChangePassword";
+import { Icon } from "../components/Icon";
 
 export default function More() {
   const { info, setMe } = useMe();
@@ -22,7 +23,7 @@ export default function More() {
       <Section title="Help">
         <Group>
           <Row to="/help" lead={<PageBadge page="assistant" size={34} />} title="Assistant" meta="Answers in seconds, any time" />
-          <Row href="mailto:hello@blackwidow.studio" title="Email Cam & Trae" meta="hello@blackwidow.studio · until 7:30 PM" />
+          <Row href="mailto:hello@blackwidow.studio" lead={<span className="row-lead-icon"><Icon name="mail" size={17} /></span>} title="Email Cam & Trae" meta="hello@blackwidow.studio · they reply until 7:30 PM ET" />
         </Group>
       </Section>
       <Section title="Notifications">

@@ -338,7 +338,8 @@ export async function websiteStats(clientId: number) {
       checkedAt: checks[0]?.createdAt || null,
       up: checks[0]?.ok ?? null,
       responseMs: checks[0]?.responseMs ?? null,
-      uptime: checks.length ? Math.round((checks.filter((x) => x.ok).length / checks.length) * 1000) / 10 : null,
+      // Only report a percentage once there's about an hour of checks, so one bad first check doesn't read as 0%
+      uptime: checks.length >= 4 ? Math.round((checks.filter((x) => x.ok).length / checks.length) * 1000) / 10 : null,
       https: c.siteUrl ? !/^http:\/\//.test(c.siteUrl) : null,
     },
     photos,
