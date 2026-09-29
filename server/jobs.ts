@@ -34,7 +34,7 @@ async function leadNudges() {
     await db.update(schema.leads).set({ nudgedAt: new Date() }).where(eq(schema.leads.id, lead.id));
     await notifyClient(lead.clientId, {
       kind: "lead",
-      title: `⏰ ${lead.name || "A lead"} is still waiting`,
+      title: `${lead.name || "A lead"} is still waiting`,
       body: "Leads called back in the first hour book way more often. Tap to call.",
       url: `/leads/${lead.id}`,
       buzz: "urgent",
@@ -50,7 +50,7 @@ async function overdueRevisions() {
     .where(and(ne(schema.revisions.status, "done"), lt(schema.revisions.dueAt, new Date())));
   for (const { r, name } of overdue) {
     await once(`overdue-rev-${r.id}`, () =>
-      notifyTeam({ kind: "revision_created", title: `🔥 Overdue: ${name}`, body: r.title, url: `/team/clients/${r.clientId}`, buzz: "urgent" }),
+      notifyTeam({ kind: "revision_created", title: `Overdue: ${name}`, body: r.title, url: `/team/clients/${r.clientId}`, buzz: "urgent" }),
     );
   }
 }
@@ -69,7 +69,7 @@ async function monthlyReports() {
       const up = nextPlan(c.tier as Tier);
       await notifyClient(c.id, {
         kind: "report",
-        title: `📈 Your ${new Date(now.year, now.month - 2, 1).toLocaleString("en-US", { month: "long" })} report`,
+        title: `Your ${new Date(now.year, now.month - 2, 1).toLocaleString("en-US", { month: "long" })} report`,
         body: `${n} lead${n === 1 ? "" : "s"} came through your site.${up ? ` Want more? ${up.name} gets you ${up.revisionLabel.toLowerCase()} edits and more.` : ""}`,
         url: "/leads",
         buzz: "money",
@@ -88,7 +88,7 @@ async function day30ReferralAsk() {
     await once(`referral-day30-${c.id}`, () =>
       notifyClient(c.id, {
         kind: "offer",
-        title: "🕷️ One month live!",
+        title: "One month live!",
         body: `How are the leads looking? Send us a business owner you know and get $${REFERRAL_CREDIT} off when they sign.`,
         url: "/refer",
         buzz: "normal",
@@ -108,7 +108,7 @@ async function upgradeTeaser() {
     await once(`upgrade-teaser-${c.id}-t${c.tier}`, () =>
       notifyClient(c.id, {
         kind: "offer",
-        title: `Ready for ${up.name}? 🚀`,
+        title: `Ready for ${up.name}?`,
         body: `${up.features[1] || up.features[0]}, plus ${up.revisionLabel.toLowerCase()} edits. Tap to see what changes.`,
         url: "/plan",
         buzz: "normal",

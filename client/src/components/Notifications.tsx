@@ -4,7 +4,7 @@ import { get, post } from "../api";
 import { buzz } from "../buzz";
 import type { Notification } from "../types";
 import { Icon } from "./Icon";
-import { NOTIF_EMOJI, timeAgo } from "../util";
+import { timeAgo } from "../util";
 
 interface Ctx {
   unread: number;
@@ -80,12 +80,10 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       <div className="toasts">
         {toasts.map((t) => (
           <div key={t.id} className="toast" onClick={() => { setToasts((ts) => ts.filter((x) => x.id !== t.id)); go(t.url); }}>
-            <div className="t-icon" style={{ fontSize: 18 }}>{NOTIF_EMOJI[t.kind] || "🕷️"}</div>
             <div className="grow">
               <div className="t-title">{t.title}</div>
-              {t.body && <div className="small muted" style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{t.body}</div>}
+              {t.body && <div className="t-body">{t.body}</div>}
             </div>
-            <span className="tiny muted">now</span>
           </div>
         ))}
       </div>
@@ -94,16 +92,15 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
           <div className="drawer-bg" onClick={() => setDrawer(false)} />
           <aside className="drawer" role="dialog" aria-label="Notifications">
             <div className="drawer-head">
-              <h2 className="grow">Notifications</h2>
+              <h1 className="grow" style={{ fontSize: 24 }}>Notifications</h1>
               <button className="icon-btn" onClick={() => setDrawer(false)} aria-label="Close"><Icon name="close" /></button>
             </div>
             <div className="drawer-body">
-              {items.length === 0 && <div className="empty">Nothing yet. We'll buzz you when something happens.</div>}
+              {items.length === 0 && <div className="empty">Nothing yet.</div>}
               {items.map((n) => (
-                <button key={n.id} className={`notif ${n.read ? "" : "unread"}`} style={{ width: "100%", background: "none", border: 0, borderBottom: "1px solid var(--line)", textAlign: "left" }} onClick={() => go(n.url)}>
-                  <div className="n-ic">{NOTIF_EMOJI[n.kind] || "🕷️"}</div>
+                <button key={n.id} className={`notif ${n.read ? "" : "unread"}`} onClick={() => go(n.url)}>
                   <div className="grow">
-                    <div className="n-title" style={{ fontWeight: 600 }}>{n.title}</div>
+                    <div className="n-title">{n.title}</div>
                     <div className="small muted">{n.body}</div>
                     <div className="tiny muted" style={{ marginTop: 3 }}>{timeAgo(n.createdAt)}</div>
                   </div>

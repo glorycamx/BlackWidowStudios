@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { get, post } from "../api";
 import type { ChatMessage } from "../types";
-import { Icon, WebMark } from "../components/Icon";
+import { Icon } from "../components/Icon";
 import { useMe } from "../App";
 import { buzz } from "../buzz";
 
@@ -63,37 +63,29 @@ export default function Help() {
   const fresh = msgs.filter((m) => m.sender === "client").length === 0;
 
   return (
-    <main className="main" style={{ paddingBottom: 190 }}>
+    <main className="main" style={{ paddingBottom: 170, gap: 16 }}>
       {fresh ? (
         <div className="assistant-hero">
-          <span className="spark-pill" style={{ marginBottom: 18 }}><Icon name="sparkle" size={15} /> Black Widow Assistant</span>
-          <h1 style={{ marginTop: 16 }}>Hi, {me?.name}.<br />How can I help you <span className="accent">today?</span></h1>
-          <p className="muted small" style={{ marginTop: 10 }}>I can make edits to your site, check that it's up, pull your numbers, and get Cam and Trae on anything I can't handle.</p>
+          <h1>Hi {me?.name}. How can I help?</h1>
+          <p className="muted small" style={{ marginTop: 8 }}>Edits, site checks, your numbers. Cam and Trae step in when needed.</p>
           <div className="suggest">
-            <div className="sub">Suggested</div>
             {SUGGESTED.map((s) => (
-              <button key={s} onClick={() => send(s)}><Icon name="arrow" size={16} /> {s}</button>
+              <button key={s} onClick={() => send(s)}>{s} <Icon name="arrow" size={15} /></button>
             ))}
           </div>
         </div>
       ) : (
-        <div className="row" style={{ padding: "8px 0 4px" }}>
-          <div className="avatar" style={{ background: "var(--text)", color: "var(--bg)" }}><WebMark size={24} /></div>
-          <div className="grow">
-            <div style={{ fontWeight: 700 }}>Black Widow Assistant</div>
-            <div className="tiny muted">Edits · site checks · Cam & Trae on standby</div>
-          </div>
-        </div>
+        <div className="page-head"><h1>Assistant</h1></div>
       )}
 
       {!fresh && (
         <div className="chat">
           {msgs.map((m) =>
             m.sender === "system" ? (
-              <div key={m.id} className="sys">🕷️ {m.body}</div>
+              <div key={m.id} className="sys">{m.body}</div>
             ) : (
               <div key={m.id} className={`bubble ${m.sender === "client" ? "me" : m.sender === "team" ? "team" : "them"}`}>
-                {m.sender !== "client" && <div className="who">{m.sender === "team" ? `★ ${m.authorName} · Black Widow team` : "Assistant"}</div>}
+                {m.sender !== "client" && <div className="who">{m.sender === "team" ? `${m.authorName} · Black Widow` : "Assistant"}</div>}
                 {m.body}
               </div>
             ),
@@ -104,16 +96,9 @@ export default function Help() {
       )}
 
       <div className="composer">
-        {!fresh && (
-          <div className="chips" style={{ maxWidth: 680, margin: "0 auto 8px" }}>
-            {["Make an edit", "Is my site up?", "Talk to Cam", "How do I get more leads?"].map((c) => (
-              <button key={c} className="chip" onClick={() => send(c)}>{c}</button>
-            ))}
-          </div>
-        )}
         <form onSubmit={(e) => { e.preventDefault(); send(text); }}>
           <textarea
-            placeholder="Ask the assistant anything…"
+            placeholder="Message"
             ref={inputRef}
             value={text}
             rows={text.length > 40 ? 2 : 1}

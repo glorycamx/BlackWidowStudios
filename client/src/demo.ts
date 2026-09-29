@@ -102,14 +102,14 @@ function websiteStats(clientId: number) {
 
 const notifs: Record<number, any[]> = {
   3: [
-    { id: 14, kind: "lead", title: "💸 New lead: Karen Whitfield", body: "Need a spring startup and two zones aren't coming on.", url: "/leads/1", read: false, createdAt: ago(0.6) },
-    { id: 13, kind: "revision_update", title: "We're on it 🛠️", body: "Started: Add fall winterization special", url: "/revisions", read: false, createdAt: ago(5) },
-    { id: 12, kind: "team_reply", title: "💬 Cam from Black Widow", body: "New photo is up, looks great Dan 🔥", url: "/help", read: true, createdAt: ago(50) },
-    { id: 11, kind: "report", title: "📈 Your August report", body: "11 leads came through your site. Want more? Get Booked gets you 24-hour edits and more.", url: "/leads", read: true, createdAt: ago(24 * 28) },
+    { id: 14, kind: "lead", title: "New lead: Karen Whitfield", body: "Need a spring startup and two zones aren't coming on.", url: "/leads/1", read: false, createdAt: ago(0.6) },
+    { id: 13, kind: "revision_update", title: "We're on it", body: "Started: Add fall winterization special", url: "/revisions", read: false, createdAt: ago(5) },
+    { id: 12, kind: "team_reply", title: "Cam from Black Widow", body: "New photo is up, looks great Dan", url: "/help", read: true, createdAt: ago(50) },
+    { id: 11, kind: "report", title: "Your August report", body: "11 leads came through your site. Want more? Get Booked gets you 24-hour edits and more.", url: "/leads", read: true, createdAt: ago(24 * 28) },
   ],
   1: [
-    { id: 22, kind: "escalation", title: "🚨 URGENT: G. Skin Therapy", body: "Booking form on the preview isn't sending.", url: "/team/clients/2", read: false, createdAt: ago(0.4) },
-    { id: 21, kind: "upgrade_request", title: "💰 Upsell: Kerry Lapierre Septic", body: "Upgrade to Get Booked ($297/mo). Call them while it's hot.", url: "/team/clients/4", read: false, createdAt: ago(5) },
+    { id: 22, kind: "escalation", title: "URGENT: G. Skin Therapy", body: "Booking form on the preview isn't sending.", url: "/team/clients/2", read: false, createdAt: ago(0.4) },
+    { id: 21, kind: "upgrade_request", title: "Upsell: Kerry Lapierre Septic", body: "Upgrade to Get Booked ($297/mo). Call them while it's hot.", url: "/team/clients/4", read: false, createdAt: ago(5) },
   ],
 };
 
@@ -148,7 +148,7 @@ function fakeBot(text: string) {
   const escalate = (category: string, urgency: string, summary: string) => {
     escalations.push({ id: nid(), clientId: 1, category, urgency, summary, status: "open", createdAt: now() });
     chat.push({ id: nid(), clientId: 1, sender: "system", authorName: null, body: urgency === "urgent" ? "Flagged as urgent for Cam and Trae. You'll get a notification the moment they reply." : "Sent to Cam and Trae. You'll get a notification when they reply here.", createdAt: now() });
-    notify(1, { kind: "escalation", title: `${urgency === "urgent" ? "🚨 URGENT" : "🕷️ Needs you"}: ${c.businessName}`, body: summary, url: "/team/clients/1" });
+    notify(1, { kind: "escalation", title: `${urgency === "urgent" ? "Urgent" : "Needs you"}: ${c.businessName}`, body: summary, url: "/team/clients/1" });
   };
   if (/down|not loading|broken|form|not working/.test(t)) {
     say("I just loaded granitestateirrigation.com. It's up and responded in 412 ms. If a form isn't sending, that still needs eyes, so I'm getting Cam and Trae on it now.");
@@ -161,12 +161,12 @@ function fakeBot(text: string) {
     escalate("human_requested", "normal", `Dan asked for a person: "${text}"`);
   } else if (/upgrade|more leads|ads|reviews|yes/.test(t) && !/hour/.test(t)) {
     upgrades.unshift({ id: nid(), clientId: 1, item: "tier-3", note: text, source: "chatbot", status: "new", createdAt: now() });
-    notify(1, { kind: "upgrade_request", title: `💰 Upsell: ${c.businessName}`, body: `Upgrade to Get Booked: "${text}"`, url: "/team/clients/1" });
+    notify(1, { kind: "upgrade_request", title: `Upsell: ${c.businessName}`, body: `Upgrade to Get Booked: "${text}"`, url: "/team/clients/1" });
     say("Love it. I've let Cam know you're interested in Get Booked: 24-hour edits, a managed Google profile posting twice a week, and a monthly review blast. He'll reach out today.");
   } else if (/hour|change|update|add|swap|photo|text|price|page|fix/.test(t)) {
     const due = inH(plan.revisionHours);
     revisions.unshift({ id: nid(), clientId: 1, title: text.length > 60 ? text.slice(0, 57) + "…" : text, details: text, page: null, status: "open", createdBy: "bot", dueAt: due, completedAt: null, createdAt: now() });
-    say(`Got it, logged for the team ✅ You're on ${plan.name}, so it'll be live within ${plan.revisionHours} hours and your phone will buzz when it's done.\n\nWant it faster next time? Get Booked turns edits around in 24 hours.`);
+    say(`Got it, logged for the team. You're on ${plan.name}, so it'll be live within ${plan.revisionHours} hours and your phone will buzz when it's done.\n\nWant it faster next time? Get Booked turns edits around in 24 hours.`);
   } else if (/lead/.test(t)) {
     const o = overview(1);
     say(`${o.leads.last30} leads came in over the last 30 days, and ${o.leads.newCount} are still waiting on a call back. Tap Leads to call them.`);
@@ -194,14 +194,14 @@ function route(method: string, path: string, body: any): any {
     if (method === "GET") return { business: c.businessName, owner: c.ownerName, offer: REFERRAL.friendOffer };
     if (!body?.name || (!body.phone && !body.email)) throw Object.assign(new Error("Add your name and a phone number or email so we can reach you"), { status: 400 });
     referrals.unshift({ id: nid(), clientId: c.id, name: body.name, business: body.business || null, phone: body.phone || null, email: body.email || null, source: "link", status: "new", signedAt: null, creditAmount: 0, creditStatus: "none", createdAt: now() });
-    notify(3, { kind: "referral", title: `🔥 ${body.name} just used your link!`, body: `${body.business || "They"} asked about a website. You'll earn $${REFERRAL.perSignup} if they sign.`, url: "/refer" });
-    notify(1, { kind: "referral", title: `🤝 Referral via ${c.businessName}'s link`, body: `${body.name}. Warm lead, call now.`, url: `/team/clients/${c.id}` });
+    notify(3, { kind: "referral", title: `${body.name} just used your link!`, body: `${body.business || "They"} asked about a website. You'll earn $${REFERRAL.perSignup} if they sign.`, url: "/refer" });
+    notify(1, { kind: "referral", title: `Referral via ${c.businessName}'s link`, body: `${body.name}. Warm lead, call now.`, url: `/team/clients/${c.id}` });
     return { ok: true };
   }
   if (!me) throw Object.assign(new Error("Please sign in"), { status: 401 });
 
   if (p === "/push/key") return { key: "" };
-  if (p === "/push/test") { notify(me.id, { kind: "offer", title: "🕷️ Buzz check", body: "Notifications are on. This is what a new lead feels like.", url: "/" }); return { ok: true }; }
+  if (p === "/push/test") { notify(me.id, { kind: "offer", title: "Buzz check", body: "Notifications are on. This is what a new lead feels like.", url: "/" }); return { ok: true }; }
   if (p === "/notifications") {
     const after = Number(q.get("after")) || 0;
     const list = notifs[me.id] || [];
@@ -229,16 +229,16 @@ function route(method: string, path: string, body: any): any {
     if (!camJoined) {
       camJoined = true;
       setTimeout(() => {
-        const text = "Hey Dan, Cam here 👋 Saw this come through. We're on it, holler if you need anything else.";
+        const text = "Hey Dan, Cam here. Saw this come through. We're on it, holler if you need anything else.";
         chat.push({ id: nid(), clientId: 1, sender: "team", authorName: "Cam", body: text, createdAt: now() });
-        notify(3, { kind: "team_reply", title: "💬 Cam from Black Widow", body: text, url: "/help" });
+        notify(3, { kind: "team_reply", title: "Cam from Black Widow", body: text, url: "/help" });
       }, 9000);
     }
     return { message: msg };
   }
   if (p === "/client/upgrades") {
     upgrades.unshift({ id: nid(), clientId: 1, item: body.item, note: body.note || null, source: "app", status: "new", createdAt: now() });
-    notify(1, { kind: "upgrade_request", title: "💰 Upsell: Granite State Irrigation", body: `${describe(body.item)}. Call them while it's hot.`, url: "/team/clients/1" });
+    notify(1, { kind: "upgrade_request", title: "Upsell: Granite State Irrigation", body: `${describe(body.item)}. Call them while it's hot.`, url: "/team/clients/1" });
     return { ok: true, message: `${describe(body.item)}: Cam will reach out shortly.` };
   }
   if (p === "/client/referrals" && method === "GET") return referralSummary(1);
@@ -284,7 +284,7 @@ function route(method: string, path: string, body: any): any {
   if ((m = p.match(/^\/team\/clients\/(\d+)\/chat$/))) {
     const msg = { id: nid(), clientId: +m[1], sender: "team", authorName: "Cam", body: body.body, createdAt: now() };
     chat.push(msg);
-    if (+m[1] === 1) notify(3, { kind: "team_reply", title: "💬 Cam from Black Widow", body: body.body, url: "/help" });
+    if (+m[1] === 1) notify(3, { kind: "team_reply", title: "Cam from Black Widow", body: body.body, url: "/help" });
     return { message: msg };
   }
   if ((m = p.match(/^\/team\/clients\/(\d+)\/nudge$/))) { if (+m[1] === 1) notify(3, { kind: "offer", ...body }); return { ok: true }; }
@@ -294,14 +294,14 @@ function route(method: string, path: string, body: any): any {
     const r = revisions.find((x) => x.id === +m![1]);
     r.status = body.status;
     r.completedAt = body.status === "done" ? now() : null;
-    if (r.clientId === 1 && body.status === "done") notify(3, { kind: "revision_done", title: "Your edit is live ✅", body: r.title, url: "/revisions" });
+    if (r.clientId === 1 && body.status === "done") notify(3, { kind: "revision_done", title: "Your edit is live", body: r.title, url: "/revisions" });
     return { revision: r };
   }
   if ((m = p.match(/^\/team\/escalations\/(\d+)$/))) { const e = escalations.find((x) => x.id === +m![1]); e.status = body.status; return { escalation: e }; }
   if ((m = p.match(/^\/team\/upgrades\/(\d+)$/))) { const u = upgrades.find((x) => x.id === +m![1]); u.status = body.status; return { upgrade: u }; }
   if ((m = p.match(/^\/team\/referrals\/(\d+)\/credit$/))) {
     const r = referrals.find((x) => x.id === +m![1]);
-    if (r.creditStatus === "pending") { r.creditStatus = "applied"; if (r.clientId === 1) notify(3, { kind: "referral", title: `💵 $${r.creditAmount} credit applied`, body: `Thanks to ${r.name}, your bill just got smaller. Who's next?`, url: "/refer" }); }
+    if (r.creditStatus === "pending") { r.creditStatus = "applied"; if (r.clientId === 1) notify(3, { kind: "referral", title: `$${r.creditAmount} credit applied`, body: `Thanks to ${r.name}, your bill just got smaller. Who's next?`, url: "/refer" }); }
     return { referral: r };
   }
   if ((m = p.match(/^\/team\/referrals\/(\d+)$/))) {
@@ -309,7 +309,7 @@ function route(method: string, path: string, body: any): any {
     if (body.status === "signed" && r.status !== "signed") {
       const nth = referrals.filter((x) => x.clientId === r.clientId && x.status === "signed").length + 1;
       Object.assign(r, { status: "signed", signedAt: now(), creditAmount: creditForSignup(nth), creditStatus: "pending" });
-      if (r.clientId === 1) notify(3, { kind: "referral", title: `🤑 You just earned $${r.creditAmount}`, body: `${r.name} signed with Black Widow. ${REFERRAL.cardSlots - (nth % REFERRAL.cardSlots)} more to fill your card!`, url: "/refer" });
+      if (r.clientId === 1) notify(3, { kind: "referral", title: `You just earned $${r.creditAmount}`, body: `${r.name} signed with Black Widow. ${REFERRAL.cardSlots - (nth % REFERRAL.cardSlots)} more to fill your card!`, url: "/refer" });
     } else if (r.status !== "signed") r.status = body.status;
     return { referral: r };
   }
@@ -326,7 +326,7 @@ function scheduleDemoLead() {
   setTimeout(() => {
     const l = { id: nid(), clientId: 1, name: "Jess Carrier", phone: "603-555-0147", email: null, message: "Can someone blow out my system this week? Hudson NH.", source: "Website form", status: "new", createdAt: now() };
     leads.unshift(l);
-    notify(3, { kind: "lead", title: "💸 New lead: Jess Carrier", body: l.message, url: `/leads/${l.id}` });
+    notify(3, { kind: "lead", title: "New lead: Jess Carrier", body: l.message, url: `/leads/${l.id}` });
   }, 20_000);
 }
 

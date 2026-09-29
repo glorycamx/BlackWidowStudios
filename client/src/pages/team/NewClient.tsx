@@ -6,11 +6,11 @@ export default function NewClient() {
   const nav = useNavigate();
   return (
     <main className="main">
-      <div style={{ padding: "10px 2px 0" }}>
+      <div className="page-head">
         <h1>New client</h1>
         <p className="small muted" style={{ marginTop: 4 }}>After saving, create their login and paste the lead form snippet into their site.</p>
       </div>
-      <div className="card">
+      <div>
         <ClientForm submitLabel="Create client" onSubmit={async (v) => { const r = await post("/team/clients", v); nav(`/team/clients/${r.client.id}`); }} />
       </div>
     </main>

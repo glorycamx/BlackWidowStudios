@@ -87,7 +87,7 @@ export async function setRevisionStatus(revisionId: number, status: "open" | "in
   if (status === "done") {
     await notifyClient(rev.clientId, {
       kind: "revision_done",
-      title: "Your edit is live ✅",
+      title: "Your edit is live",
       body: rev.title,
       url: "/revisions",
       buzz: "money",
@@ -95,7 +95,7 @@ export async function setRevisionStatus(revisionId: number, status: "open" | "in
   } else if (status === "in_progress") {
     await notifyClient(rev.clientId, {
       kind: "revision_update",
-      title: "We're on it 🛠️",
+      title: "We're on it",
       body: `Started: ${rev.title}`,
       url: "/revisions",
     });
@@ -120,7 +120,7 @@ export async function createEscalation(
   await notifyTeam(
     {
       kind: "escalation",
-      title: `${input.urgency === "urgent" ? "🚨 URGENT" : "🕷️ Needs you"}: ${c.businessName}`,
+      title: `${input.urgency === "urgent" ? "Urgent" : "Needs you"}: ${c.businessName}`,
       body: input.summary,
       url: `/team/clients/${clientId}`,
       buzz: input.urgency === "urgent" ? "urgent" : "normal",
@@ -144,7 +144,7 @@ export async function createUpgradeRequest(clientId: number, item: string, note:
   await notifyTeam(
     {
       kind: "upgrade_request",
-      title: `💰 Upsell: ${c.businessName}`,
+      title: `Upsell: ${c.businessName}`,
       body: `${describeItem(item)}${note ? `: "${note}"` : ""}. Call them while it's hot.`,
       url: `/team/clients/${clientId}`,
       buzz: "money",
@@ -250,7 +250,7 @@ export async function markReferralSigned(referralId: number) {
   const filledCard = nth % REFERRAL.cardSlots === 0;
   await notifyClient(ref.clientId, {
     kind: "referral",
-    title: filledCard ? `🎟️ Card complete! +$${credit}` : `🤑 You just earned $${credit}`,
+    title: filledCard ? `Card complete: +$${credit}` : `You just earned $${credit}`,
     body: filledCard
       ? `${ref.name} signed, and that fills your punch card. $${REFERRAL.perSignup} + a $${REFERRAL.cardBonus} bonus off your bill.`
       : `${ref.name} signed with Black Widow. $${credit} comes off your next month. ${REFERRAL.cardSlots - (nth % REFERRAL.cardSlots)} more to fill your card!`,
@@ -317,11 +317,11 @@ export async function recordSiteCheck(c: Client) {
   await db.insert(schema.siteChecks).values({ clientId: c.id, ok: r.ok, status: (r as any).status ?? null, responseMs: (r as any).responseMs ?? null });
   if (prev && prev.ok && !r.ok) {
     await notifyTeam(
-      { kind: "escalation", title: `🚨 SITE DOWN: ${c.businessName}`, body: `${c.siteUrl}: ${r.detail}`, url: `/team/clients/${c.id}`, buzz: "urgent" },
+      { kind: "escalation", title: `Site down: ${c.businessName}`, body: `${c.siteUrl}: ${r.detail}`, url: `/team/clients/${c.id}`, buzz: "urgent" },
       { email: true },
     );
   } else if (prev && !prev.ok && r.ok) {
-    await notifyTeam({ kind: "escalation", title: `✅ Back up: ${c.businessName}`, body: `${c.siteUrl} is responding again.`, url: `/team/clients/${c.id}` });
+    await notifyTeam({ kind: "escalation", title: `Back up: ${c.businessName}`, body: `${c.siteUrl} is responding again.`, url: `/team/clients/${c.id}` });
   }
   return r;
 }

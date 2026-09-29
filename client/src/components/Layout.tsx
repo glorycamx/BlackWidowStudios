@@ -13,9 +13,9 @@ function DemoBar() {
   const other = me?.role === "team" ? "client" : "team";
   return (
     <div className="demo-bar">
-      Preview with sample data · viewing as {me?.role === "team" ? "Cam (team)" : "Dan (client)"}
+      Sample data · {me?.role === "team" ? "team view" : "client view"}
       <button onClick={() => { demoSwitch(other); location.hash = other === "team" ? "#/team" : "#/"; location.reload(); }}>
-        Switch to {other === "team" ? "team view" : "client view"}
+        Switch to {other}
       </button>
     </div>
   );
@@ -26,30 +26,15 @@ export function PushBanner() {
   const [err, setErr] = useState("");
   useEffect(() => { pushState().then(setState); }, []);
   if (!state || state === "on" || state === "unsupported") return null;
+  const text =
+    state === "ios-install" ? "Add to Home Screen (Share → Add to Home Screen) to get lead alerts."
+    : state === "denied" ? "Notifications are blocked. Turn them on in your phone's settings."
+    : err || "Get a buzz the second a lead comes in.";
   return (
     <div className="banner">
-      <div className="avatar" style={{ width: 40, height: 40 }}><Icon name="bell" /></div>
-      <div className="grow">
-        {state === "ios-install" ? (
-          <>
-            <div style={{ fontWeight: 600 }}>Get buzzed for every lead</div>
-            <div className="small muted">Tap Share, then “Add to Home Screen”, then open the app from there.</div>
-          </>
-        ) : state === "denied" ? (
-          <>
-            <div style={{ fontWeight: 600 }}>Notifications are blocked</div>
-            <div className="small muted">Turn them on for this app in your phone's settings.</div>
-          </>
-        ) : (
-          <>
-            <div style={{ fontWeight: 600 }}>Turn on buzz alerts</div>
-            <div className="small muted">{err || "Your phone buzzes the second a lead comes in."}</div>
-          </>
-        )}
-      </div>
-      {state === "off" && (
-        <button className="btn primary sm" onClick={() => enablePush().then(setState).catch((e) => setErr(e.message))}>Turn on</button>
-      )}
+      <Icon name="bell" size={18} />
+      <div className="grow small">{text}</div>
+      {state === "off" && <button className="btn sm primary" onClick={() => enablePush().then(setState).catch((e) => setErr(e.message))}>Turn on</button>}
     </div>
   );
 }
@@ -68,7 +53,7 @@ export function ClientLayout() {
     <div className="app">
       <DemoBar />
       <header className="topbar">
-        <div className="brand"><WebMark size={24} /> Black Widow</div>
+        <div className="brand"><WebMark size={22} /> Black Widow</div>
         <div className="spacer" />
         <BellButton />
         <NavLink to="/more" className="avatar-btn" aria-label="Account">{(me?.name || "?")[0]}</NavLink>
@@ -77,7 +62,7 @@ export function ClientLayout() {
       <nav className="tabbar">
         {tabs.map((t) => (
           <NavLink key={t.to} to={t.to} end={t.to === "/"} className={({ isActive }) => (isActive ? "active" : "")}>
-            <Icon name={t.icon} size={21} />
+            <Icon name={t.icon} size={20} />
             {t.label}
             {t.dot && <span className="dot" />}
           </NavLink>
@@ -95,7 +80,7 @@ export function TeamLayout() {
     <div className="app">
       <DemoBar />
       <header className="topbar">
-        <div className="brand"><WebMark size={24} /> Black Widow <span className="pill red" style={{ letterSpacing: 0 }}>Team</span></div>
+        <div className="brand"><WebMark size={22} /> Black Widow <span className="muted" style={{ letterSpacing: 0, textTransform: "none", fontWeight: 400 }}>Team</span></div>
         <div className="spacer" />
         <BellButton />
         <button className="icon-btn" aria-label="Sign out" onClick={async () => { await post("/auth/logout"); setMe(null); nav("/"); }}><Icon name="logout" /></button>

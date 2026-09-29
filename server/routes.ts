@@ -93,7 +93,7 @@ api.post(
   "/push/test",
   h(async (req, res) => {
     if (!req.user) return res.status(401).json({ error: "Please sign in" });
-    const n = { kind: "offer" as const, title: "🕷️ Buzz check", body: "Notifications are on. This is what a new lead feels like.", url: "/", buzz: "money" as const };
+    const n = { kind: "offer" as const, title: "Buzz check", body: "Notifications are on. This is what a new lead feels like.", url: "/", buzz: "money" as const };
     if (req.user.clientId) await notifyClient(req.user.clientId, n);
     else await notifyTeam(n);
     res.json({ ok: true });
@@ -162,7 +162,7 @@ api.post(
       .returning();
     await notifyClient(client.id, {
       kind: "lead",
-      title: `💸 New lead: ${name || phone || email}`,
+      title: `New lead: ${name || phone || email}`,
       body: message ? message.slice(0, 120) : "Tap to call them back while they're hot.",
       url: `/leads/${lead.id}`,
       buzz: "money",
@@ -236,7 +236,7 @@ api.post(
     await db.insert(schema.referrals).values({ clientId: c.id, ...input, email: input.email || null, source: "link" });
     await notifyClient(c.id, {
       kind: "referral",
-      title: `🔥 ${input.name} just used your link!`,
+      title: `${input.name} just used your link!`,
       body: `${input.business || "They"} asked about a website. You'll earn $${REFERRAL.perSignup} if they sign.`,
       url: "/refer",
       buzz: "money",
@@ -244,7 +244,7 @@ api.post(
     await notifyTeam(
       {
         kind: "referral",
-        title: `🤝 Referral via ${c.businessName}'s link`,
+        title: `Referral via ${c.businessName}'s link`,
         body: `${input.name}${input.business ? ` (${input.business})` : ""} ${input.phone || input.email}. Warm lead, call now.`,
         url: `/team/clients/${c.id}`,
         buzz: "money",
@@ -311,7 +311,7 @@ client.patch(
     if (!lead) return res.status(404).json({ error: "Lead not found" });
     if (status === "won") {
       const c = await getClient(cid(req));
-      await notifyTeam({ kind: "lead", title: `🏆 ${c.businessName} won a job`, body: `From ${lead.name || "a website lead"}. Good time for a review or referral ask.`, url: `/team/clients/${c.id}`, buzz: "money" });
+      await notifyTeam({ kind: "lead", title: `${c.businessName} won a job`, body: `From ${lead.name || "a website lead"}. Good time for a review or referral ask.`, url: `/team/clients/${c.id}`, buzz: "money" });
     }
     res.json({ lead });
   }),
@@ -389,7 +389,7 @@ client.post(
     const [ref] = await db.insert(schema.referrals).values({ clientId: cid(req), ...input }).returning();
     const c = await getClient(cid(req));
     await notifyTeam(
-      { kind: "referral", title: `🤝 Referral from ${c.businessName}`, body: `${input.name}${input.business ? ` (${input.business})` : ""}${input.phone ? `, ${input.phone}` : ""}. Warm lead, call today.`, url: `/team/clients/${c.id}`, buzz: "money" },
+      { kind: "referral", title: `Referral from ${c.businessName}`, body: `${input.name}${input.business ? ` (${input.business})` : ""}${input.phone ? `, ${input.phone}` : ""}. Warm lead, call today.`, url: `/team/clients/${c.id}`, buzz: "money" },
       { email: true },
     );
     res.json({ referral: ref });
@@ -568,7 +568,7 @@ team.patch(
       // Referral ask #1: go-live is peak emotion (Ops Manual, Section 6)
       await notifyClient(clientId, {
         kind: "site_live",
-        title: "🎉 Your new site is LIVE",
+        title: "Your new site is live",
         body: `Go take a look! Know someone who needs one? Refer them and get $${REFERRAL_CREDIT} off your next month.`,
         url: "/",
         buzz: "money",
@@ -577,7 +577,7 @@ team.patch(
     if (before.tier !== c.tier && c.tier > before.tier) {
       await notifyClient(clientId, {
         kind: "offer",
-        title: `Welcome to ${PLANS[c.tier as 1 | 2 | 3 | 4].name} 🚀`,
+        title: `Welcome to ${PLANS[c.tier as 1 | 2 | 3 | 4].name}`,
         body: `Your edits now turn around in ${PLANS[c.tier as 1 | 2 | 3 | 4].revisionLabel.toLowerCase()} time.`,
         url: "/plan",
         buzz: "money",
@@ -624,7 +624,7 @@ team.post(
     await recordTeamReply(clientId, req.user!.name, body);
     await notifyClient(clientId, {
       kind: "team_reply",
-      title: `💬 ${req.user!.name} from Black Widow`,
+      title: `${req.user!.name} from Black Widow`,
       body: body.slice(0, 140),
       url: "/help",
       buzz: "normal",
@@ -696,7 +696,7 @@ team.patch(
       .where(and(eq(schema.referrals.id, refId), ne(schema.referrals.status, "signed")))
       .returning();
     if (r && status === "contacted") {
-      await notifyClient(r.clientId, { kind: "referral", title: "📞 We're talking to your referral", body: `Cam reached out to ${r.name}. Fingers crossed for your $${REFERRAL.perSignup}!`, url: "/refer" });
+      await notifyClient(r.clientId, { kind: "referral", title: "We're talking to your referral", body: `Cam reached out to ${r.name}. Fingers crossed for your $${REFERRAL.perSignup}!`, url: "/refer" });
     }
     res.json({ referral: r || null });
   }),
@@ -711,7 +711,7 @@ team.patch(
       .set({ creditStatus: "applied" })
       .where(and(eq(schema.referrals.id, id(String(req.params.id))), eq(schema.referrals.creditStatus, "pending")))
       .returning();
-    if (r) await notifyClient(r.clientId, { kind: "referral", title: `💵 $${r.creditAmount} credit applied`, body: `Thanks to ${r.name}, your bill just got smaller. Who's next?`, url: "/refer", buzz: "money" });
+    if (r) await notifyClient(r.clientId, { kind: "referral", title: `$${r.creditAmount} credit applied`, body: `Thanks to ${r.name}, your bill just got smaller. Who's next?`, url: "/refer", buzz: "money" });
     res.json({ referral: r || null });
   }),
 );

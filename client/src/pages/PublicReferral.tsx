@@ -38,35 +38,31 @@ export default function PublicReferral() {
   return (
     <div className="landing">
       <div className="row" style={{ gap: 10 }}>
-        <WebMark size={32} />
+        <WebMark size={26} />
         <div className="brand">Black Widow Studios</div>
       </div>
       {missing ? (
-        <div className="card"><h2>This link isn't active</h2><p className="muted small" style={{ marginTop: 6 }}>Ask whoever sent it for a new one, or email hello@blackwidow.studio.</p></div>
+        <div><h1>This link isn't active</h1><p className="muted small" style={{ marginTop: 8 }}>Ask whoever sent it for a new one, or email hello@blackwidow.studio.</p></div>
       ) : !info ? (
         <div className="empty">Loading…</div>
       ) : done ? (
-        <div className="card col" style={{ gap: 10, textAlign: "center", padding: 28 }}>
-          <div style={{ fontSize: 44 }}>🕷️</div>
-          <h1 style={{ fontSize: 28 }}>You're in.</h1>
+        <div className="col" style={{ gap: 10 }}>
+          <h1>You're in.</h1>
           <p className="muted">Cam will reach out shortly to hear about your business. We pick up until 7:30 PM Eastern. Your {amount || "discount"} is locked in.</p>
         </div>
       ) : (
         <>
           <div className="date-line">{info.owner} from {info.business} sent you</div>
           <h1>Get a website that <span className="accent">actually gets you calls.</span></h1>
-          <div className="offer-ticket">
-            <span className="amt">{amount || "🎁"}</span>
-            <div><b>{info.offer}</b><div className="small muted">Because {info.owner} sent you.</div></div>
+          <div className="offer">
+            <span className="amt">{amount || "Offer"}</span>
+            <span className="small muted">off your website build, because {info.owner} sent you</span>
           </div>
           <ul className="checks">
             <li>We build your new site first. You see it before you pay a dime.</li>
-            <li>Built for local service businesses, right in Londonderry, NH.</li>
-            <li>Leads from your site go straight to your phone.</li>
-            <li>Unlimited edits, no charge. Just text us.</li>
+            <li>Local, from Londonderry, NH. Leads go straight to your phone.</li>
           </ul>
-          <form className="card form" onSubmit={submit}>
-            <h2>Claim your {amount || "discount"}</h2>
+          <form className="form" onSubmit={submit}>
             <label htmlFor="ref-name">Your name<input {...f("name")} required minLength={2} autoComplete="name" /></label>
             <label htmlFor="ref-business">Business name<input {...f("business")} autoComplete="organization" /></label>
             <div className="grid2">
@@ -77,7 +73,7 @@ export default function PublicReferral() {
             <input {...f("_gotcha")} tabIndex={-1} autoComplete="off" style={{ display: "none" }} aria-hidden="true" />
             {err && <div className="err">{err}</div>}
             <button className="btn primary block" disabled={busy}>{busy ? "Sending…" : "Get my free demo site"}</button>
-            <p className="tiny muted" style={{ textAlign: "center" }}>No spam. A real person (Cam or Trae) will reach out.</p>
+            <p className="tiny muted">Cam or Trae will reach out. No spam.</p>
           </form>
         </>
       )}
