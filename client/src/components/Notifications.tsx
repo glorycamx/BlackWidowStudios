@@ -1,0 +1,128 @@
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
+import { get, post } from "../api";
+import { buzz } from "../buzz";
+import type { Notification } from "../types";
+import { Icon } from "./Icon";
+import { NOTIF_EMOJI, timeAgo } from "../util";
+
+interface Ctx {
+  unread: number;
+  items: Notification[];
+  open: () => void;
+  refresh: () => void;
+  toast: (title: string, body?: string, kind?: string) => void;
+  kinds: Set<string>;
+}
+const NotificationsCtx = createContext<Ctx>(null!);
+export const useNotifications = () => useContext(NotificationsCtx);
+
+interface Toast { id: number; title: string; body?: string; kind: string; url?: string }
+
+export function NotificationsProvider({ children }: { children: ReactNode }) {
+  const [items, setItems] = useState<Notification[]>([]);
+  const [unread, setUnread] = useState(0);
+  const [drawer, setDrawer] = useState(false);
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const lastId = useRef<number | null>(null);
+  const nav = useNavigate();
+
+  const pushToast = useCallback((t: Omit<Toast, "id">) => {
+    const id = Math.random();
+    setToasts((ts) => [{ ...t, id }, ...ts].slice(0, 3));
+    buzz(t.kind);
+    setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)), 6000);
+  }, []);
+
+  const refresh = useCallback(async () => {
+    try {
+      const data = await get<{ notifications: Notification[]; unread: number }>("/notifications");
+      setUnread(data.unread);
+      setItems(data.notifications);
+      const newest = data.notifications[0]?.id ?? 0;
+      if (lastId.current !== null && newest > lastId.current) {
+        // Pop, buzz and chime for everything that arrived since the last poll
+        data.notifications
+          .filter((n) => n.id > lastId.current!)
+          .reverse()
+          .forEach((n) => pushToast({ title: n.title, body: n.body, kind: n.kind, url: n.url }));
+      }
+      lastId.current = newest;
+    } catch {}
+  }, [pushToast]);
+
+  useEffect(() => {
+    refresh();
+    const t = setInterval(refresh, 8000);
+    const onVis = () => document.visibilityState === "visible" && refresh();
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      clearInterval(t);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, [refresh]);
+
+  const openDrawer = () => {
+    setDrawer(true);
+    if (unread) post("/notifications/read-all").then(() => setUnread(0));
+  };
+
+  const go = (url?: string) => {
+    setDrawer(false);
+    if (url) nav(url);
+  };
+
+  const kinds = new Set(items.filter((n) => !n.read).map((n) => n.kind));
+
+  return (
+    <NotificationsCtx.Provider value={{ unread, items, open: openDrawer, refresh, toast: (title, body, kind = "default") => pushToast({ title, body, kind }), kinds }}>
+      {children}
+      <div className="toasts">
+        {toasts.map((t) => (
+          <div key={t.id} className="toast" onClick={() => { setToasts((ts) => ts.filter((x) => x.id !== t.id)); go(t.url); }}>
+            <div className="t-icon" style={{ fontSize: 18 }}>{NOTIF_EMOJI[t.kind] || "🕷️"}</div>
+            <div className="grow">
+              <div className="t-title">{t.title}</div>
+              {t.body && <div className="small muted" style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{t.body}</div>}
+            </div>
+            <span className="tiny muted">now</span>
+          </div>
+        ))}
+      </div>
+      {drawer && (
+        <>
+          <div className="drawer-bg" onClick={() => setDrawer(false)} />
+          <aside className="drawer" role="dialog" aria-label="Notifications">
+            <div className="drawer-head">
+              <h2 className="grow">Notifications</h2>
+              <button className="icon-btn" onClick={() => setDrawer(false)} aria-label="Close"><Icon name="close" /></button>
+            </div>
+            <div className="drawer-body">
+              {items.length === 0 && <div className="empty">Nothing yet. We'll buzz you when something happens.</div>}
+              {items.map((n) => (
+                <button key={n.id} className={`notif ${n.read ? "" : "unread"}`} style={{ width: "100%", background: "none", border: 0, borderBottom: "1px solid var(--line)", textAlign: "left" }} onClick={() => go(n.url)}>
+                  <div className="n-ic">{NOTIF_EMOJI[n.kind] || "🕷️"}</div>
+                  <div className="grow">
+                    <div className="n-title" style={{ fontWeight: 600 }}>{n.title}</div>
+                    <div className="small muted">{n.body}</div>
+                    <div className="tiny muted" style={{ marginTop: 3 }}>{timeAgo(n.createdAt)}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </aside>
+        </>
+      )}
+    </NotificationsCtx.Provider>
+  );
+}
+
+export function BellButton() {
+  const { unread, open } = useNotifications();
+  return (
+    <button className={`icon-btn ${unread ? "buzzing" : ""}`} key={unread} onClick={open} aria-label={`Notifications${unread ? `, ${unread} unread` : ""}`}>
+      <Icon name="bell" size={22} />
+      {unread > 0 && <span className="badge pulse">{unread > 9 ? "9+" : unread}</span>}
+    </button>
+  );
+}
