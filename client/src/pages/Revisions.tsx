@@ -1,4 +1,3 @@
-import { RevealText } from "../components/Motion";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { get, post } from "../api";
@@ -6,6 +5,7 @@ import type { Overview, Revision } from "../types";
 import { Icon } from "../components/Icon";
 import { dueLabel, timeAgo } from "../util";
 import { useNotifications } from "../components/Notifications";
+import { Group, Page, Row, Section } from "../components/Page";
 
 const STATUS: Record<string, [string, string]> = { open: ["Queued", "amber"], in_progress: ["In progress", "green"], done: ["Live", ""] };
 
@@ -30,44 +30,42 @@ export default function Revisions() {
   };
 
   return (
-    <main className="main">
-      <Link to="/website" className="row small muted" style={{ gap: 4 }}><Icon name="back" size={16} /> Website</Link>
-      <div className="page-head">
-        <h1><RevealText text="Edits" /></h1>
-        {o && (
-          <p className="muted small">
-            Unlimited on your plan, done within {o.plan.revisionTurnaround.toLowerCase()}.
-            {o.nextPlan && <> <Link to="/plan" style={{ color: "var(--text)", fontWeight: 500 }}>{o.nextPlan.revisionTurnaround} with {o.nextPlan.name} →</Link></>}
-          </p>
-        )}
-      </div>
-
+    <Page
+      page="edits"
+      back={{ to: "/website", label: "Website" }}
+      blurb={o ? `Unlimited changes to your site, done within ${o.plan.revisionTurnaround.toLowerCase()}.` : "Unlimited changes to your site."}
+    >
       {form ? (
-        <form className="form" onSubmit={submit}>
+        <form className="form group" style={{ padding: 16 }} onSubmit={submit}>
           <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="What should change?" required minLength={3} autoFocus />
           <textarea value={details} onChange={(e) => setDetails(e.target.value)} placeholder="Details: exact wording, which page, where photos are coming from" required minLength={3} />
           <div className="btn-row">
-            <button className="btn primary grow">Send</button>
-            <button type="button" className="btn ghost" onClick={() => setForm(false)}>Cancel</button>
+            <button className="btn primary grow">Send request</button>
+            <button type="button" className="btn" onClick={() => setForm(false)}>Cancel</button>
           </div>
         </form>
       ) : (
-        <button className="btn primary block" onClick={() => setForm(true)}>Request an edit</button>
+        <button className="btn primary block" onClick={() => setForm(true)}><Icon name="plus" size={16} /> Request an edit</button>
       )}
 
-      {!revs ? <div className="empty">Loading…</div> : revs.length === 0 ? <div className="empty">No edits yet.</div> : (
-        <div className="list">
-          {revs.map((r) => (
-            <div key={r.id} className="item">
-              <div className="grow">
-                <div className="title">{r.title}</div>
-                <div className="meta">{r.status === "done" ? `Done ${timeAgo(r.completedAt || r.createdAt)}` : dueLabel(r.dueAt)}</div>
-              </div>
-              <span className={`pill ${STATUS[r.status][1]}`}>{STATUS[r.status][0]}</span>
-            </div>
-          ))}
-        </div>
+      <Section title="Your edits">
+        {!revs ? <div className="empty">Loading…</div> : revs.length === 0 ? <div className="empty">No edits yet.</div> : (
+          <Group>
+            {revs.map((r) => (
+              <Row
+                key={r.id}
+                title={r.title}
+                meta={r.status === "done" ? `Done ${timeAgo(r.completedAt || r.createdAt)}` : dueLabel(r.dueAt)}
+                trail={<span className={`pill ${STATUS[r.status][1]}`}>{STATUS[r.status][0]}</span>}
+              />
+            ))}
+          </Group>
+        )}
+      </Section>
+
+      {o?.nextPlan && (
+        <Group><Row to="/plan" title="Need edits faster?" meta={`${o.nextPlan.name} turns them around in ${o.nextPlan.revisionTurnaround.toLowerCase()}`} /></Group>
       )}
-    </main>
+    </Page>
   );
 }

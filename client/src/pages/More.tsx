@@ -1,37 +1,36 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { post } from "../api";
 import { useMe } from "../App";
-import { Icon } from "../components/Icon";
 import { PushBanner } from "../components/Layout";
 import { useNotifications } from "../components/Notifications";
+import { Group, Page, PageBadge, Row, Section } from "../components/Page";
 
 export default function More() {
   const { info, setMe } = useMe();
   const nav = useNavigate();
   const { toast } = useNotifications();
-  const rows = [
-    { to: "/plan", title: "Plan & upgrades" },
-    { to: "/revisions", title: "Edits" },
-    { to: "/refer", title: "Earn" },
-    { to: "/help", title: "Assistant" },
-  ];
   return (
-    <main className="main">
-      <div className="page-head">
-        <h1>{info?.client?.businessName}</h1>
-        <p className="muted small">{info?.user?.email}</p>
-      </div>
-      <div className="list">
-        {rows.map((r) => (
-          <Link key={r.to} to={r.to} className="item"><span className="grow">{r.title}</span><Icon name="arrow" size={16} /></Link>
-        ))}
-        <button className="item" style={{ background: "none", border: 0, borderTop: "1px solid var(--line)", width: "100%", textAlign: "left" }} onClick={async () => { await post("/push/test"); toast("Buzz check", "This is what a new lead feels like.", "lead"); }}>
-          <span className="grow">Test notifications</span><Icon name="bell" size={16} />
-        </button>
-        <a className="item" href="mailto:hello@blackwidow.studio"><span className="grow">Email Cam & Trae</span><span className="meta">until 7:30 PM</span></a>
-      </div>
-      <PushBanner />
-      <button className="btn ghost" style={{ alignSelf: "flex-start", paddingLeft: 0, color: "var(--muted)" }} onClick={async () => { await post("/auth/logout"); setMe(null); nav("/"); }}>Sign out</button>
-    </main>
+    <Page page="account" back={{ to: "/", label: "Home" }} heading={info?.client?.businessName || "Account"} blurb={info?.user?.email}>
+      <Section title="Your business">
+        <Group>
+          <Row to="/plan" lead={<PageBadge page="plan" size={34} />} title="Plan & upgrades" meta="What's included and what's next" />
+          <Row to="/revisions" lead={<PageBadge page="edits" size={34} />} title="Edits" meta="Request changes and track them" />
+          <Row to="/refer" lead={<PageBadge page="earn" size={34} />} title="Earn" meta="Your referral link and credit" />
+        </Group>
+      </Section>
+      <Section title="Help">
+        <Group>
+          <Row to="/help" lead={<PageBadge page="assistant" size={34} />} title="Assistant" meta="Answers in seconds, any time" />
+          <Row href="mailto:hello@blackwidow.studio" title="Email Cam & Trae" meta="hello@blackwidow.studio · until 7:30 PM" />
+        </Group>
+      </Section>
+      <Section title="Notifications">
+        <PushBanner />
+        <Group>
+          <Row onClick={async () => { await post("/push/test"); toast("Buzz check", "This is what a new lead feels like.", "lead"); }} title="Send a test notification" />
+        </Group>
+      </Section>
+      <button className="btn block" onClick={async () => { await post("/auth/logout"); setMe(null); nav("/"); }}>Sign out</button>
+    </Page>
   );
 }

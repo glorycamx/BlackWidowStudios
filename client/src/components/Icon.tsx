@@ -11,6 +11,8 @@ const paths: Record<string, string> = {
   sparkle: "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.7 2.3L22 19l-2.3.7L19 22l-.7-2.3L16 19l2.3-.7z",
   arrow: "M5 12h14M13 6l6 6-6 6",
   back: "M15 5l-7 7 7 7",
+  chevron: "M9 5l7 7-7 7",
+  forward: "M9 5l7 7-7 7",
   send: "M4 12 20 4l-6 16-3-7z",
   check: "M5 12l5 5L20 7",
   close: "M6 6l12 12M18 6 6 18",

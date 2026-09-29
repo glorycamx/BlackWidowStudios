@@ -74,12 +74,6 @@ export function ClientLayout() {
   return (
     <div className="app">
       <DemoBar />
-      <header className="topbar">
-        <div className="brand"><WebMark size={22} /> Black Widow</div>
-        <div className="spacer" />
-        <BellButton />
-        <NavLink to="/more" className="avatar-btn" aria-label="Account">{(me?.name || "?")[0]}</NavLink>
-      </header>
       <PageTransition><Outlet /></PageTransition>
       <TabBar tabs={tabs} />
     </div>
@@ -93,12 +87,6 @@ export function TeamLayout() {
   return (
     <div className="app">
       <DemoBar />
-      <header className="topbar">
-        <div className="brand"><WebMark size={22} /> Black Widow <span className="muted" style={{ letterSpacing: 0, textTransform: "none", fontWeight: 400 }}>Team</span></div>
-        <div className="spacer" />
-        <BellButton />
-        <button className="icon-btn" aria-label="Sign out" onClick={async () => { await post("/auth/logout"); setMe(null); nav("/"); }}><Icon name="logout" /></button>
-      </header>
       <PageTransition><Outlet /></PageTransition>
       <TabBar
         tabs={[

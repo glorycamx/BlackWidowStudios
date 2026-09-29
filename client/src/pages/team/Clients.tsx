@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 import { get } from "../../api";
 import type { Client } from "../../types";
 import { PLANS, type Tier } from "../../../../shared/plans";
+import { Group, Page, Row } from "../../components/Page";
+import { Icon } from "../../components/Icon";
 
-const STATUS: Record<string, [string, string]> = { build: ["Building", "amber"], phase1: ["Phase 1", "amber"], live: ["Live", "green"] };
+const STATUS: Record<string, string> = { build: "Building", phase1: "Phase 1", live: "Live" };
 
 export default function Clients() {
   const [clients, setClients] = useState<Client[] | null>(null);
@@ -12,26 +14,25 @@ export default function Clients() {
   useEffect(() => { get<{ clients: Client[] }>("/team/clients").then((r) => setClients(r.clients)); }, []);
   const shown = (clients || []).filter((c) => `${c.businessName} ${c.ownerName} ${c.niche}`.toLowerCase().includes(q.toLowerCase()));
   return (
-    <main className="main wide">
-      <div className="page-head row">
-        <h1 className="grow">Clients</h1>
-        <Link to="/team/new" className="btn sm">New</Link>
+    <Page page="clients" wide blurb={clients ? `${clients.length} businesses on Black Widow` : undefined}>
+      <div className="row">
+        <input className="grow" placeholder="Search clients" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search clients" />
+        <Link to="/team/new" className="btn primary"><Icon name="plus" size={16} /> New</Link>
       </div>
-      <input placeholder="Search" value={q} onChange={(e) => setQ(e.target.value)} />
-      {!clients ? <div className="empty">Loading…</div> : shown.length === 0 ? <div className="empty">No clients yet.</div> : (
-        <div className="list">
+      {!clients ? <div className="empty">Loading…</div> : shown.length === 0 ? <div className="empty">No clients found.</div> : (
+        <Group>
           {shown.map((c) => (
-            <Link key={c.id} to={`/team/clients/${c.id}`} className="item">
-              <span className={`sdot ${c.openEscalations ? "red" : c.status === "live" ? "green" : "amber"}`} />
-              <div className="grow">
-                <div className="title">{c.businessName}</div>
-                <div className="meta">{PLANS[c.tier as Tier].name} · {STATUS[c.status][0]} · {c.leads30} leads/30d{c.openRevisions ? ` · ${c.openRevisions} edits` : ""}</div>
-              </div>
-              {!!c.openEscalations && <span className="pill red">{c.openEscalations}</span>}
-            </Link>
+            <Row
+              key={c.id}
+              to={`/team/clients/${c.id}`}
+              lead={<span className={`sdot ${c.openEscalations ? "red" : c.status === "live" ? "green" : "amber"}`} />}
+              title={c.businessName}
+              meta={`${PLANS[c.tier as Tier].name} · ${STATUS[c.status]} · ${c.leads30} leads/30d${c.openRevisions ? ` · ${c.openRevisions} edits` : ""}`}
+              trail={c.openEscalations ? <span className="pill red">{c.openEscalations} need you</span> : undefined}
+            />
           ))}
-        </div>
+        </Group>
       )}
-    </main>
+    </Page>
   );
 }

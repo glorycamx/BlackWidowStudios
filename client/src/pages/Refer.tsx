@@ -6,7 +6,8 @@ import { Icon } from "../components/Icon";
 import { useNotifications } from "../components/Notifications";
 import { useMe } from "../App";
 import { timeAgo } from "../util";
-import { CountUp, RevealText } from "../components/Motion";
+import { CountUp } from "../components/Motion";
+import { Group, Page, Row, Section } from "../components/Page";
 import { celebrate, useTilt } from "../motion";
 
 export function shareMessage(r: ReferralSummary, business?: string) {
@@ -44,11 +45,7 @@ export function PunchCard({ r }: { r: ReferralSummary }) {
   const onCard = r.stats.signedCount % slots;
   const left = slots - onCard;
   return (
-    <div className="section">
-      <div className="section-head">
-        <span className="label">Punch card</span>
-        <span className="small muted">{left} to go · +${r.program.cardBonus} bonus</span>
-      </div>
+    <Section title="Punch card" action={<span className="pill gold">{left} to go · +${r.program.cardBonus}</span>}>
       <div className="punch">
         {Array.from({ length: slots }, (_, i) => {
           const punched = i < onCard;
@@ -60,7 +57,7 @@ export function PunchCard({ r }: { r: ReferralSummary }) {
           );
         })}
       </div>
-    </div>
+    </Section>
   );
 }
 
@@ -82,7 +79,7 @@ export default function Refer() {
   const { toast, items } = useNotifications();
   const load = () => get<ReferralSummary>("/client/referrals").then(setR);
   useEffect(() => { load(); }, [items[0]?.id]);
-  if (!r) return <main className="main"><div className="empty">Loading…</div></main>;
+  if (!r) return <Page page="earn"><div className="empty">Loading…</div></Page>;
 
   const biz = info?.client?.businessName?.replace(/\s*\(.*?\)\s*/g, " ").trim();
   const msg = shareMessage(r, biz);
@@ -111,35 +108,25 @@ export default function Refer() {
   };
 
   return (
-    <main className="main">
-      <div className="page-head">
-        <h1><RevealText text="Earn" /></h1>
-        <p className="muted small">${r.program.perSignup} off your bill for every business you send us that signs. They get {r.program.friendOffer}.</p>
-      </div>
-
+    <Page page="earn" blurb={`$${r.program.perSignup} off your bill for every business you send us that signs. They get ${r.program.friendOffer}.`}>
       <EarningsTicket r={r} />
       <PunchCard r={r} />
 
-      <div className="section">
-        <span className="label">Your link</span>
+      <Section title="Share your link">
         <div className="share-link">
           <code>{r.link.replace(/^https?:\/\//, "")}</code>
           <button className="btn sm" onClick={copy}>Copy</button>
         </div>
         <div className="share-btns">
-          <button className="btn primary" onClick={share}>Share</button>
-          <a className="btn" href={`sms:?&body=${encodeURIComponent(msg)}`}>Text a friend</a>
+          <button className="btn primary" onClick={share}><Icon name="send" size={16} /> Share</button>
+          <a className="btn" href={`sms:?&body=${encodeURIComponent(msg)}`}><Icon name="text" size={16} /> Text a friend</a>
         </div>
-        <Link to={`/r/${r.code}`} className="small muted">Preview what they see →</Link>
-      </div>
+        <Group><Row to={`/r/${r.code}`} title="Preview what they see" meta="The page your link opens" /></Group>
+      </Section>
 
-      <div className="section">
-        <div className="section-head">
-          <span className="label">Referrals</span>
-          <button className="link small" onClick={() => setShowForm((v) => !v)}>{showForm ? "Cancel" : "Add one"}</button>
-        </div>
+      <Section title="Your referrals" action={<button className="btn sm" onClick={() => setShowForm((v) => !v)}>{showForm ? "Cancel" : <><Icon name="plus" size={14} /> Add</>}</button>}>
         {showForm && (
-          <form className="form" onSubmit={submit}>
+          <form className="form group" style={{ padding: 16 }} onSubmit={submit}>
             <input value={name} onChange={(e) => setName(e.target.value)} required minLength={2} placeholder="Their name" />
             <input value={business} onChange={(e) => setBusiness(e.target.value)} placeholder="Business (optional)" />
             <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone (optional)" />
@@ -147,24 +134,23 @@ export default function Refer() {
           </form>
         )}
         {r.referrals.length === 0 ? (
-          <div className="empty">No referrals yet.</div>
+          <div className="empty">No referrals yet. Your first one's worth ${r.program.perSignup}.</div>
         ) : (
-          <div className="list">
+          <Group>
             {r.referrals.map((ref) => {
               const [text, tone] = stage(ref, r.program.perSignup);
               return (
-                <div key={ref.id} className="item">
-                  <span className={`sdot ${tone}`} />
-                  <div className="grow">
-                    <div className="title">{ref.name}{ref.business ? <span className="muted"> · {ref.business}</span> : null}</div>
-                    <div className="meta">{text} · {timeAgo(ref.createdAt)}</div>
-                  </div>
-                </div>
+                <Row
+                  key={ref.id}
+                  lead={<span className={`sdot ${tone}`} />}
+                  title={<>{ref.name}{ref.business ? <span className="muted"> · {ref.business}</span> : null}</>}
+                  meta={`${text} · ${timeAgo(ref.createdAt)}`}
+                />
               );
             })}
-          </div>
+          </Group>
         )}
-      </div>
-    </main>
+      </Section>
+    </Page>
   );
 }

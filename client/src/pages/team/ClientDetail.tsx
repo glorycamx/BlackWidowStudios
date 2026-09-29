@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { del, get, patch, post } from "../../api";
 import type { ChatMessage, Client, Escalation, Lead, Referral, Revision, Upgrade, WebsiteStats } from "../../types";
 import { photoSrc } from "../../photos";
+import { Page } from "../../components/Page";
 import { Icon } from "../../components/Icon";
 import { useNotifications } from "../../components/Notifications";
 import { PLANS, nextPlan, type Tier } from "../../../../shared/plans";
@@ -32,7 +33,7 @@ export default function ClientDetail() {
   const load = () => get<Detail>(`/team/clients/${id}`).then(setD);
   useEffect(() => { load(); }, [id, items[0]?.id]);
   useEffect(() => { const t = setInterval(load, 5000); return () => clearInterval(t); }, [id]);
-  if (!d) return <main className="main wide"><div className="empty">Loading…</div></main>;
+  if (!d) return <Page page="client" back={{ to: "/team/clients", label: "Clients" }}><div className="empty">Loading…</div></Page>;
 
   const c = d.client;
   const plan = PLANS[c.tier as Tier];
@@ -40,12 +41,12 @@ export default function ClientDetail() {
   const tel = c.phone?.replace(/[^\d+]/g, "");
 
   return (
-    <main className="main">
-      <Link to="/team/clients" className="row small muted" style={{ gap: 4 }}><Icon name="back" size={18} /> Clients</Link>
-      <div className="page-head">
-        <h1>{c.businessName}</h1>
-        <p className="muted small">{c.ownerName} · {plan.name} (${plan.monthly}/mo) · {c.status === "live" ? "Live" : c.status === "phase1" ? "Phase 1" : "Building"}</p>
-      </div>
+    <Page
+      page="client"
+      back={{ to: "/team/clients", label: "Clients" }}
+      heading={c.businessName}
+      blurb={`${c.ownerName} · ${plan.name} ($${plan.monthly}/mo) · ${c.status === "live" ? "Live" : c.status === "phase1" ? "Phase 1" : "Building"}`}
+    >
       <div className="actions" style={{ justifyContent: "flex-start" }}>
         <a className="action primary" href={tel ? `tel:${tel}` : undefined}><span><Icon name="phone" /></span>Call</a>
         <a className="action" href={tel ? `sms:${tel}` : undefined}><span><Icon name="text" /></span>Text</a>
@@ -112,7 +113,7 @@ export default function ClientDetail() {
           <button className="btn ghost" style={{ color: "var(--red-text)" }} onClick={async () => { if (confirm(`Delete ${c.businessName} and all their data?`)) { await del(`/team/clients/${c.id}`); nav("/team/clients"); } }}>Delete client</button>
         </div>
       )}
-    </main>
+    </Page>
   );
 }
 

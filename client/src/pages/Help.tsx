@@ -1,4 +1,4 @@
-import { RevealText } from "../components/Motion";
+import { Group, Page, Row, Section } from "../components/Page";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { get, post } from "../api";
@@ -64,22 +64,14 @@ export default function Help() {
   const fresh = msgs.filter((m) => m.sender === "client").length === 0;
 
   return (
-    <main className="main" style={{ paddingBottom: 170, gap: 16 }}>
+    <Page page="assistant" heading={fresh ? `Hi ${me?.name}, how can I help?` : "Assistant"} blurb="Edits, site checks and your numbers. Cam and Trae step in when needed." mainStyle={{ paddingBottom: 170 }}>
       {fresh ? (
-        <div className="assistant-hero">
-          <h1><RevealText text={`Hi ${me?.name}. How can I help?`} /></h1>
-          <p className="muted small" style={{ marginTop: 8 }}>Edits, site checks, your numbers. Cam and Trae step in when needed.</p>
-          <div className="suggest">
-            {SUGGESTED.map((s) => (
-              <button key={s} onClick={() => send(s)}>{s} <Icon name="arrow" size={15} /></button>
-            ))}
-          </div>
-        </div>
+        <Section title="Try asking">
+          <Group>
+            {SUGGESTED.map((s) => <Row key={s} title={s} onClick={() => send(s)} />)}
+          </Group>
+        </Section>
       ) : (
-        <div className="page-head"><h1>Assistant</h1></div>
-      )}
-
-      {!fresh && (
         <div className="chat">
           {msgs.map((m) =>
             m.sender === "system" ? (
@@ -99,7 +91,7 @@ export default function Help() {
       <div className="composer">
         <form onSubmit={(e) => { e.preventDefault(); send(text); }}>
           <textarea
-            placeholder="Message"
+            placeholder="Message the assistant"
             ref={inputRef}
             value={text}
             rows={text.length > 40 ? 2 : 1}
@@ -109,6 +101,6 @@ export default function Help() {
           <button className="send" disabled={!text.trim()} aria-label="Send"><Icon name="send" size={18} /></button>
         </form>
       </div>
-    </main>
+    </Page>
   );
 }

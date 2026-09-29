@@ -76,7 +76,6 @@ p { margin: 0; }
 /* Sections and lists: dividers instead of boxes */
 .section { display: flex; flex-direction: column; gap: 10px; }
 .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-.section-head a, .section-head button.link { font-size: 13px; color: var(--muted); background: none; border: 0; padding: 0; }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
 .card.tight { padding: 12px 14px; }
 .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
@@ -390,3 +389,96 @@ html { background: var(--bg); }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .ticket { transform: none !important; }
 }
+
+/* ================= Cohesive page frame ================= */
+:root { --blue: #1f5fd1; --blue-soft: #e7eefc; --violet: #6b4de6; --violet-soft: #efebfd; --shadow-btn: 0 1px 0 rgba(18, 17, 20, 0.04), 0 1px 3px rgba(18, 17, 20, 0.06); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --blue: #7aa5ff; --blue-soft: rgba(122, 165, 255, 0.14); --violet: #a996ff; --violet-soft: rgba(169, 150, 255, 0.14); --shadow-btn: 0 1px 2px rgba(0, 0, 0, 0.4); } }
+:root[data-theme="dark"] { --blue: #7aa5ff; --blue-soft: rgba(122, 165, 255, 0.14); --violet: #a996ff; --violet-soft: rgba(169, 150, 255, 0.14); --shadow-btn: 0 1px 2px rgba(0, 0, 0, 0.4); }
+
+/* Page identity colors */
+.page-badge { display: grid; place-items: center; border-radius: 13px; flex: none; }
+.tone-ink { background: var(--text); color: var(--bg); }
+.tone-red { background: var(--red-soft); color: var(--red-text); }
+.tone-blue { background: var(--blue-soft); color: var(--blue); }
+.tone-violet { background: var(--violet-soft); color: var(--violet); }
+.tone-gold { background: var(--gold-soft); color: var(--gold); }
+.tone-green { background: var(--green-soft); color: var(--green); }
+
+/* Nav bar: back on the left, page name in the middle, alerts and account on the right */
+.navbar { position: sticky; top: 0; z-index: 20; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; height: 56px; padding: 0 12px; padding-top: env(safe-area-inset-top); box-sizing: content-box; background: var(--glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--line); }
+.nav-left { display: flex; align-items: center; min-width: 0; }
+.nav-right { display: flex; align-items: center; justify-content: flex-end; gap: 2px; }
+.nav-title { font-weight: 600; font-size: 16px; text-align: center; white-space: nowrap; }
+.nav-logo { display: grid; place-items: center; width: 38px; height: 38px; color: var(--text); }
+.back-btn { display: inline-flex; align-items: center; gap: 2px; height: 36px; padding: 0 12px 0 6px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow-btn); font-size: 14px; font-weight: 500; color: var(--text); max-width: 100%; transition: transform 0.2s var(--spring); }
+.back-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.back-btn:active { transform: scale(0.95); }
+.topbar { display: none; }
+
+/* Page header */
+.page-hero { display: flex; align-items: center; gap: 14px; padding-top: 6px; }
+.page-hero h1 { font-size: 30px; line-height: 1.1; }
+.page-blurb { color: var(--muted); font-size: 14px; margin-top: 4px; }
+
+/* Sections: a clear title, then grouped cards */
+.section { gap: 10px; }
+.section-head { align-items: center; min-height: 32px; }
+.section-title { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+.group { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.group > * + * { border-top: 1px solid var(--line); }
+.grow-row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 16px; background: none; border: 0; text-align: left; color: var(--text); font: inherit; }
+.grow-row.tappable { cursor: pointer; transition: background 0.15s; }
+.grow-row.tappable:active { background: var(--surface-2); }
+@media (hover: hover) { .grow-row.tappable:hover { background: color-mix(in srgb, var(--surface-2) 70%, transparent); } }
+.row-title { font-weight: 500; }
+.row-meta { font-size: 13px; color: var(--muted); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.group .chev { color: var(--faint); display: grid; place-items: center; }
+.page-anim .group > * { animation: slidein-row 0.5s var(--ease-out) both; }
+.page-anim .group > *:nth-child(1) { animation-delay: 160ms; }
+.page-anim .group > *:nth-child(2) { animation-delay: 210ms; }
+.page-anim .group > *:nth-child(3) { animation-delay: 260ms; }
+.page-anim .group > *:nth-child(4) { animation-delay: 310ms; }
+.page-anim .group > *:nth-child(n + 5) { animation-delay: 360ms; }
+
+/* Buttons always look like buttons */
+.btn { background: var(--surface); border: 1px solid color-mix(in srgb, var(--text) 16%, var(--line)); box-shadow: var(--shadow-btn); font-weight: 600; }
+.btn.primary { box-shadow: 0 4px 14px rgba(18, 17, 20, 0.18); }
+.btn.sm { font-weight: 600; }
+.btn.ghost { box-shadow: none; border-color: transparent; }
+.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pager .btn { justify-content: space-between; }
+.pager .btn:disabled { visibility: hidden; }
+
+/* Figures read as tappable cards when they link somewhere */
+.figures.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.figures.cards .figure { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.figures.cards a.figure { box-shadow: var(--shadow-btn); }
+.figures.cards a.figure .l::after { content: " ›"; color: var(--faint); }
+.figures.cards .figure .n { font-size: 26px; }
+
+/* Nudge becomes a clear card */
+.nudge { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; }
+.banner { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; }
+.quote { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--red); border-radius: 12px; padding: 14px 16px; font-size: 16px; line-height: 1.5; }
+.plan-list { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 5px; }
+.plan-list li { font-size: 14px; color: var(--muted); display: flex; gap: 8px; }
+.plan-list li::before { content: "✓"; color: var(--green); font-weight: 700; }
+/* Older plain lists get the same card treatment as groups */
+.list { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 0 16px; }
+.list > .item { border-radius: 0; }
+.tabs button { font-weight: 600; }
+/* Fixes: row dividers and section buttons */
+.group > .grow-row + .grow-row, .group > * + * { border-top: 1px solid var(--line); }
+.section-head .btn { color: var(--text); background: var(--surface); border: 1px solid color-mix(in srgb, var(--text) 16%, var(--line)); padding: 5px 12px; }
+.section-head .btn.primary { background: var(--text); color: var(--bg); }
+
+/* Tabs look like buttons: outlined pills, active one filled */
+.tabs { gap: 8px; border-bottom: 0; padding-bottom: 2px; }
+.tabs button { padding: 7px 14px; border-radius: 99px; border: 1px solid color-mix(in srgb, var(--text) 16%, var(--line)); background: var(--surface); color: var(--text); margin: 0; box-shadow: var(--shadow-btn); transition: background 0.2s, color 0.2s, transform 0.2s var(--spring); }
+.tabs button:active { transform: scale(0.95); }
+.tabs button.on { background: var(--text); color: var(--bg); border-color: var(--text); }
+/* Wide team layout: columns may shrink, long row text truncates instead of pushing the page wider */
+@media (min-width: 900px) { .team-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.team-grid > *, .grow-row > .grow, .main > * { min-width: 0; }
+html, body { overflow-x: hidden; }
+.tabs { flex-wrap: wrap; overflow: visible; }
