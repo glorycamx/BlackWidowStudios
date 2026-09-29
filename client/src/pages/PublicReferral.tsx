@@ -1,3 +1,4 @@
+import { RevealText } from "../components/Motion";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "../api";
@@ -53,7 +54,7 @@ export default function PublicReferral() {
       ) : (
         <>
           <div className="date-line">{info.owner} from {info.business} sent you</div>
-          <h1>Get a website that <span className="accent">actually gets you calls.</span></h1>
+          <h1><RevealText text="Get a website that" /> <span className="accent"><RevealText text="actually gets you calls." /></span></h1>
           <div className="offer">
             <span className="amt">{amount || "Offer"}</span>
             <span className="small muted">off your website build, because {info.owner} sent you</span>

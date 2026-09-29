@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { post } from "../api";
 import { useNotifications } from "./Notifications";
+import { celebrate } from "../motion";
 
 interface Props {
   item: string;
@@ -23,6 +24,7 @@ export function Upsell({ item, title, body, cta = "Interested", note }: Props) {
     try {
       const r = await post<{ message: string }>("/client/upgrades", { item, note: note || title });
       setSent(true);
+      celebrate();
       toast("Request sent", r.message, "upgrade_request");
     } finally {
       setBusy(false);

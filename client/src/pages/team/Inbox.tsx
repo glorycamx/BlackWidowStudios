@@ -5,6 +5,7 @@ import type { Escalation, Revision, Upgrade } from "../../types";
 import { useNotifications } from "../../components/Notifications";
 import { dueLabel, greeting, timeAgo } from "../../util";
 import { useMe } from "../../App";
+import { CountUp, RevealText } from "../../components/Motion";
 
 interface Inbox {
   stats: { clients: number; live: number; mrr: number };
@@ -28,12 +29,12 @@ export default function Inbox() {
   return (
     <main className="main wide">
       <div className="page-head">
-        <h1>{greeting()}, {me?.name}.</h1>
+        <h1><RevealText text={`${greeting()}, ${me?.name}.`} /></h1>
         <p className="muted small">{d.escalations.length ? <span className="accent">{d.escalations.length} need{d.escalations.length === 1 ? "s" : ""} you</span> : "Nothing needs you"} · {d.revisions.length} edits open · {d.upgrades.length} upsells</p>
       </div>
 
       <div className="figures">
-        <div className="figure"><span className="n">${d.stats.mrr.toLocaleString()}</span><span className="l">monthly recurring</span></div>
+        <div className="figure"><span className="n"><CountUp value={d.stats.mrr} prefix="$" ms={1300} /></span><span className="l">monthly recurring</span></div>
         <div className="figure"><span className="n">{d.stats.live}/{d.stats.clients}</span><span className="l">sites live</span></div>
       </div>
 

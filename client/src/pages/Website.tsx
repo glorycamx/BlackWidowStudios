@@ -7,6 +7,7 @@ import { Upsell } from "../components/Upsell";
 import { Sparkline, dailyCounts } from "../components/Sparkline";
 import { useNotifications } from "../components/Notifications";
 import { downscale, photoSrc } from "../photos";
+import { CountUp, RevealText } from "../components/Motion";
 
 const QUICK = [
   { label: "Update hours", q: "Please update our business hours to: " },
@@ -57,7 +58,7 @@ export default function Website() {
   return (
     <main className="main">
       <div className="page-head">
-        <h1>{host || "Your website"}</h1>
+        <h1><RevealText text={host || "Your website"} /></h1>
         <div className="row small muted" style={{ gap: 8, flexWrap: "wrap" }}>
           <span className={`sdot ${w.health.up === false ? "red" : w.status === "live" ? "green" : "amber"}`} />
           <span>{statusText}</span>
@@ -73,9 +74,9 @@ export default function Website() {
       {w.tracking ? (
         <div className="section">
           <div className="figures">
-            <div className="figure"><span className="n">{w.traffic.views}</span><span className="l">visitors</span></div>
-            <div className="figure"><span className="n">{w.traffic.calls}</span><span className="l">calls tapped</span></div>
-            <div className="figure"><span className="n">{w.traffic.forms}</span><span className="l">forms sent</span></div>
+            <div className="figure"><span className="n"><CountUp value={w.traffic.views} ms={1200} /></span><span className="l">visitors</span></div>
+            <div className="figure"><span className="n"><CountUp value={w.traffic.calls} /></span><span className="l">calls tapped</span></div>
+            <div className="figure"><span className="n"><CountUp value={w.traffic.forms} /></span><span className="l">forms sent</span></div>
           </div>
           <Sparkline values={dailyCounts(w.traffic.dailyViews, 30)} height={44} color="var(--text)" />
           <span className="tiny muted">Last 30 days · top page: {w.traffic.topPages[0]?.path === "/" ? "Home" : w.traffic.topPages[0]?.path}</span>

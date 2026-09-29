@@ -1,3 +1,4 @@
+import { RevealText } from "../components/Motion";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { get, post } from "../api";
@@ -32,7 +33,7 @@ export default function Revisions() {
     <main className="main">
       <Link to="/website" className="row small muted" style={{ gap: 4 }}><Icon name="back" size={16} /> Website</Link>
       <div className="page-head">
-        <h1>Edits</h1>
+        <h1><RevealText text="Edits" /></h1>
         {o && (
           <p className="muted small">
             Unlimited on your plan, done within {o.plan.revisionTurnaround.toLowerCase()}.

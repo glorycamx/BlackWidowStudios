@@ -1,3 +1,4 @@
+import { RevealText } from "../components/Motion";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { get } from "../api";
@@ -30,7 +31,7 @@ export default function Leads() {
   return (
     <main className="main">
       <div className="page-head">
-        <h1>Leads</h1>
+        <h1><RevealText text="Leads" /></h1>
         <p className="muted small">{inRange.length} leads · {won} won · {waiting ? <span className="accent">{waiting} waiting</span> : "none waiting"}</p>
       </div>
       <div className="seg">

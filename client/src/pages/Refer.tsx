@@ -6,17 +6,22 @@ import { Icon } from "../components/Icon";
 import { useNotifications } from "../components/Notifications";
 import { useMe } from "../App";
 import { timeAgo } from "../util";
+import { CountUp, RevealText } from "../components/Motion";
+import { celebrate, useTilt } from "../motion";
 
 export function shareMessage(r: ReferralSummary, business?: string) {
   return `Hey! Black Widow Studios built our website${business ? ` for ${business}` : ""} and it's been great for getting calls. They build yours first so you see it before you pay a dime. Use my link and you get ${r.program.friendOffer}: ${r.link}`;
 }
 
 export function EarningsTicket({ r, mini }: { r: ReferralSummary; mini?: boolean }) {
+  const tilt = useTilt<HTMLDivElement>(mini ? 5 : 10);
   return (
-    <div className={`ticket ${mini ? "mini" : ""}`}>
+    <div className="ticket-wrap">
+    <div ref={tilt} className={`ticket ${mini ? "mini" : ""}`}>
+      <div className="ticket-shine" />
       <div className="ticket-main">
         <span className="label">Earned from referrals</span>
-        <span className="big">${r.stats.earned.toLocaleString()}</span>
+        <span className="big"><CountUp value={r.stats.earned} prefix="$" ms={1300} /></span>
         <span className="sub">
           {r.stats.earned === 0
             ? `Your first signup is worth $${r.program.perSignup}.`
@@ -26,9 +31,10 @@ export function EarningsTicket({ r, mini }: { r: ReferralSummary; mini?: boolean
         </span>
       </div>
       <div className="ticket-stub">
-        <span className="count">{r.stats.signedCount}</span>
+        <span className="count"><CountUp value={r.stats.signedCount} /></span>
         <span className="lbl">signed</span>
       </div>
+    </div>
     </div>
   );
 }
@@ -48,7 +54,7 @@ export function PunchCard({ r }: { r: ReferralSummary }) {
           const punched = i < onCard;
           const bonus = i === slots - 1;
           return (
-            <div key={i} className={`hole ${punched ? "punched" : ""} ${bonus ? "bonus" : ""}`} style={{ animationDelay: `${i * 80}ms` }}>
+            <div key={i} className={`hole ${punched ? "punched" : ""} ${bonus ? "bonus" : ""}`} style={{ animationDelay: `${300 + i * 140}ms` }}>
               {punched ? <Icon name="check" size={16} stroke={2.4} /> : `$${bonus ? r.program.perSignup + r.program.cardBonus : r.program.perSignup}`}
             </div>
           );
@@ -84,6 +90,7 @@ export default function Refer() {
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(r.link);
+      celebrate();
       toast("Link copied", "Paste it in a text, Facebook, anywhere.", "offer");
     } catch {
       toast("Couldn't copy", "Press and hold the link to copy it.", "offer");
@@ -98,6 +105,7 @@ export default function Refer() {
     e.preventDefault();
     await post("/client/referrals", { name, business: business || null, phone: phone || null });
     setName(""); setBusiness(""); setPhone(""); setShowForm(false);
+    celebrate();
     toast("Referral sent", `Cam will reach out. You earn $${r.program.perSignup} when they sign.`, "referral");
     load();
   };
@@ -105,7 +113,7 @@ export default function Refer() {
   return (
     <main className="main">
       <div className="page-head">
-        <h1>Earn</h1>
+        <h1><RevealText text="Earn" /></h1>
         <p className="muted small">${r.program.perSignup} off your bill for every business you send us that signs. They get {r.program.friendOffer}.</p>
       </div>
 

@@ -5,6 +5,7 @@ import { buzz } from "../buzz";
 import type { Notification } from "../types";
 import { Icon } from "./Icon";
 import { timeAgo } from "../util";
+import { celebrate } from "../motion";
 
 interface Ctx {
   unread: number;
@@ -45,7 +46,11 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         data.notifications
           .filter((n) => n.id > lastId.current!)
           .reverse()
-          .forEach((n) => pushToast({ title: n.title, body: n.body, kind: n.kind, url: n.url }));
+          .forEach((n) => {
+            pushToast({ title: n.title, body: n.body, kind: n.kind, url: n.url });
+            // Money moments get confetti
+            if (/earned|card complete|credit applied|won a job|site is live/i.test(n.title)) celebrate();
+          });
       }
       lastId.current = newest;
     } catch {}

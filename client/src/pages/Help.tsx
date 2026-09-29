@@ -1,3 +1,4 @@
+import { RevealText } from "../components/Motion";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { get, post } from "../api";
@@ -66,7 +67,7 @@ export default function Help() {
     <main className="main" style={{ paddingBottom: 170, gap: 16 }}>
       {fresh ? (
         <div className="assistant-hero">
-          <h1>Hi {me?.name}. How can I help?</h1>
+          <h1><RevealText text={`Hi ${me?.name}. How can I help?`} /></h1>
           <p className="muted small" style={{ marginTop: 8 }}>Edits, site checks, your numbers. Cam and Trae step in when needed.</p>
           <div className="suggest">
             {SUGGESTED.map((s) => (

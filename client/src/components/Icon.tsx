@@ -39,9 +39,9 @@ export function WebMark({ size = 22 }: { size?: number }) {
   // Spider-web mark for Black Widow
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" aria-hidden="true">
-      <path d="M32 4v56M4 32h56M12 12l40 40M52 12 12 52" opacity=".55" />
-      <path d="M32 14 44.7 19.3 50 32l-5.3 12.7L32 50l-12.7-5.3L14 32l5.3-12.7z" />
-      <path d="M32 23l6.4 2.6L41 32l-2.6 6.4L32 41l-6.4-2.6L23 32l2.6-6.4z" />
+      <path pathLength={1} d="M32 4v56M4 32h56M12 12l40 40M52 12 12 52" opacity=".55" />
+      <path pathLength={1} d="M32 14 44.7 19.3 50 32l-5.3 12.7L32 50l-12.7-5.3L14 32l5.3-12.7z" />
+      <path pathLength={1} d="M32 23l6.4 2.6L41 32l-2.6 6.4L32 41l-6.4-2.6L23 32l2.6-6.4z" />
       <circle cx="32" cy="32" r="4.5" fill="#c1121f" stroke="none" />
     </svg>
   );

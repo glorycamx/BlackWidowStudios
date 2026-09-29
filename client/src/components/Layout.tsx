@@ -1,4 +1,5 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { PageTransition } from "./Motion";
 import { useEffect, useState } from "react";
 import { BellButton, useNotifications } from "./Notifications";
 import { Icon, WebMark } from "./Icon";
@@ -39,6 +40,27 @@ export function PushBanner() {
   );
 }
 
+interface Tab { to: string; label: string; icon: string; dot: boolean }
+
+// Floating tab bar with an indicator that springs to the active tab
+function TabBar({ tabs }: { tabs: Tab[] }) {
+  const { pathname } = useLocation();
+  const idx = Math.max(0, tabs.findIndex((t) => (t.to === "/" || t.to === "/team" ? pathname === t.to : pathname.startsWith(t.to))));
+  const active = tabs.some((t) => (t.to === "/" || t.to === "/team" ? pathname === t.to : pathname.startsWith(t.to)));
+  return (
+    <nav className="tabbar">
+      {active && <span className="tab-indicator" style={{ width: `calc((100% - 8px) / ${tabs.length})`, transform: `translateX(${idx * 100}%)` }} />}
+      {tabs.map((t) => (
+        <NavLink key={t.to} to={t.to} end={t.to === "/" || t.to === "/team"} className={({ isActive }) => (isActive ? "active" : "")}>
+          <Icon name={t.icon} size={20} />
+          {t.label}
+          {t.dot && <span className="dot" />}
+        </NavLink>
+      ))}
+    </nav>
+  );
+}
+
 export function ClientLayout() {
   const { kinds } = useNotifications();
   const { me } = useMe();
@@ -58,16 +80,8 @@ export function ClientLayout() {
         <BellButton />
         <NavLink to="/more" className="avatar-btn" aria-label="Account">{(me?.name || "?")[0]}</NavLink>
       </header>
-      <Outlet />
-      <nav className="tabbar">
-        {tabs.map((t) => (
-          <NavLink key={t.to} to={t.to} end={t.to === "/"} className={({ isActive }) => (isActive ? "active" : "")}>
-            <Icon name={t.icon} size={20} />
-            {t.label}
-            {t.dot && <span className="dot" />}
-          </NavLink>
-        ))}
-      </nav>
+      <PageTransition><Outlet /></PageTransition>
+      <TabBar tabs={tabs} />
     </div>
   );
 }
@@ -85,15 +99,14 @@ export function TeamLayout() {
         <BellButton />
         <button className="icon-btn" aria-label="Sign out" onClick={async () => { await post("/auth/logout"); setMe(null); nav("/"); }}><Icon name="logout" /></button>
       </header>
-      <Outlet />
-      <nav className="tabbar">
-        <NavLink to="/team" end className={({ isActive }) => (isActive ? "active" : "")}>
-          <Icon name="inbox" size={21} /> Inbox
-          {(kinds.has("escalation") || kinds.has("upgrade_request")) && <span className="dot" />}
-        </NavLink>
-        <NavLink to="/team/clients" className={({ isActive }) => (isActive ? "active" : "")}><Icon name="users" size={21} /> Clients</NavLink>
-        <NavLink to="/team/new" className={({ isActive }) => (isActive ? "active" : "")}><Icon name="plus" size={21} /> New client</NavLink>
-      </nav>
+      <PageTransition><Outlet /></PageTransition>
+      <TabBar
+        tabs={[
+          { to: "/team", label: "Inbox", icon: "inbox", dot: kinds.has("escalation") || kinds.has("upgrade_request") },
+          { to: "/team/clients", label: "Clients", icon: "users", dot: false },
+          { to: "/team/new", label: "New client", icon: "plus", dot: false },
+        ]}
+      />
     </div>
   );
 }

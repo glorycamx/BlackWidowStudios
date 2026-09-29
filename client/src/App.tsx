@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { get } from "./api";
 import type { Me, User } from "./types";
 import { NotificationsProvider } from "./components/Notifications";
+import { AmbientWeb, PageTransition, Splash } from "./components/Motion";
 import { ClientLayout, TeamLayout } from "./components/Layout";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
@@ -31,15 +32,17 @@ export default function App() {
   useEffect(() => { reload(); }, []);
 
   // Share links work for anyone, signed in or not
-  if (loc.pathname.startsWith("/r/")) return <Routes><Route path="/r/:code" element={<PublicReferral />} /></Routes>;
+  if (loc.pathname.startsWith("/r/")) return <><AmbientWeb /><PageTransition><Routes><Route path="/r/:code" element={<PublicReferral />} /></Routes></PageTransition></>;
   if (loading) return <div className="login"><div className="empty">Loading…</div></div>;
   const me = info?.user ?? null;
   const setMe = (u: User | null) => (u ? reload() : setInfo({ user: null }));
 
   return (
     <MeCtx.Provider value={{ me, info, setMe, reload }}>
+      <Splash />
+      <AmbientWeb />
       {!me ? (
-        <Login />
+        <div className="page-anim"><Login /></div>
       ) : (
         <NotificationsProvider key={me.id}>
           {me.role === "team" ? (

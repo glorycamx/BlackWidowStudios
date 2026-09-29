@@ -1,9 +1,11 @@
+import { RevealText } from "../components/Motion";
 import { useEffect, useState } from "react";
 import { get, post } from "../api";
 import type { Overview } from "../types";
 import { ADDONS, PLANS, type Tier } from "../../../shared/plans";
 import { useNotifications } from "../components/Notifications";
 import { fmtDate } from "../util";
+import { celebrate } from "../motion";
 
 export default function Plan() {
   const [o, setO] = useState<Overview | null>(null);
@@ -15,13 +17,14 @@ export default function Plan() {
   const ask = async (item: string, label: string) => {
     await post("/client/upgrades", { item, note: `Tapped "${label}" on the Plan screen` });
     setSent((s) => new Set(s).add(item));
+    celebrate();
     toast("Request sent", "Cam will reach out to walk you through it.", "upgrade_request");
   };
 
   return (
     <main className="main">
       <div className="page-head">
-        <h1>{o.plan.name}</h1>
+        <h1><RevealText text={o.plan.name} /></h1>
         <p className="muted small">${o.plan.monthly}/mo · {o.plan.revisionTurnaround} edits{o.monthlyStartsOn ? ` · monthly starts ${fmtDate(o.monthlyStartsOn)}` : ""}</p>
       </div>
 

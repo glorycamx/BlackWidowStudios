@@ -6,6 +6,7 @@ import { Icon } from "../components/Icon";
 import { Upsell } from "../components/Upsell";
 import { timeAgo } from "../util";
 import { useNotifications } from "../components/Notifications";
+import { celebrate } from "../motion";
 
 export default function LeadDetail() {
   const { id } = useParams();
@@ -21,6 +22,7 @@ export default function LeadDetail() {
   const set = async (status: Lead["status"]) => {
     const r = await patch<{ lead: Lead }>(`/client/leads/${lead.id}`, { status });
     setLead(r.lead);
+    if (status === "won") celebrate();
     if (status === "won") toast("Nice work", "Another job booked from your website.", "revision_done");
   };
   const tel = lead.phone?.replace(/[^\d+]/g, "");

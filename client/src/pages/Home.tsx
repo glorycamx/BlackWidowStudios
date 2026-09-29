@@ -7,6 +7,7 @@ import { Upsell } from "../components/Upsell";
 import { PushBanner } from "../components/Layout";
 import { EarningsTicket } from "./Refer";
 import { greeting, timeAgo } from "../util";
+import { CountUp, RevealText } from "../components/Motion";
 
 const UPSELL: Record<number, { title: string; body: string }> = {
   2: { title: "Get found on Google", body: "Get Found: 3 pages, Google profile set up, 48-hour edits." },
@@ -34,7 +35,7 @@ export default function Home() {
     <main className="main">
       <div className="page-head">
         <div className="date-line">{new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}</div>
-        <h1>{greeting()}, {o.owner}.</h1>
+        <h1><RevealText text={`${greeting()}, ${o.owner}.`} /></h1>
         <p className="muted">{waiting.length ? <><span className="accent">{waiting.length} lead{waiting.length > 1 ? "s" : ""}</span> waiting on a call back.</> : "You're all caught up."}</p>
       </div>
 
@@ -55,9 +56,9 @@ export default function Home() {
       )}
 
       <div className="figures">
-        <Link to="/leads" className="figure"><span className="n">{o.leads.last30}</span><span className="l">leads this month</span></Link>
-        <Link to="/leads" className="figure"><span className="n">{won}</span><span className="l">jobs won</span></Link>
-        {ref && <Link to="/refer" className="figure"><span className="n">${ref.stats.earned}</span><span className="l">referral credit</span></Link>}
+        <Link to="/leads" className="figure"><span className="n"><CountUp value={o.leads.last30} /></span><span className="l">leads this month</span></Link>
+        <Link to="/leads" className="figure"><span className="n"><CountUp value={won} /></span><span className="l">jobs won</span></Link>
+        {ref && <Link to="/refer" className="figure"><span className="n"><CountUp value={ref.stats.earned} prefix="$" /></span><span className="l">referral credit</span></Link>}
       </div>
 
       <Link to="/website" className="list">
