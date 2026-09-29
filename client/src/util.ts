@@ -20,7 +20,7 @@ export function dueLabel(iso: string) {
 export function formatPhone(p: string | null | undefined) {
   if (!p) return "";
   const d = p.replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "");
-  return d.length === 10 ? `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}` : p;
+  return d.length === 10 ? `(${d.slice(0, 3)})\u00a0${d.slice(3, 6)}\u2011${d.slice(6)}` : p;
 }
 
 // "48-hour" -> "48 hours", "Same-day" -> "the same day"

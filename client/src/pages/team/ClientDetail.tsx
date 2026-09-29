@@ -152,7 +152,7 @@ function ChatTab({ d, reload }: { d: Detail; reload: () => void }) {
   return (
     <Section title="Conversation">
       <div className="group chat" style={{ maxHeight: 460, overflowY: "auto", padding: 12 }}>
-        {d.chat.length === 0 && <div className="empty">No messages yet. When {d.client.ownerName} messages the assistant, it shows up here.</div>}
+        {d.chat.length === 0 && <div className="sys">No messages yet. When {d.client.ownerName.split(" ")[0]} messages the assistant, it shows up here.</div>}
         {d.chat.map((m) =>
           m.sender === "system" ? <div key={m.id} className="sys">{/^(Sent to Cam|Flagged as urgent)/.test(m.body) ? `Escalated to the team${m.body.startsWith("Flagged") ? " (urgent)" : ""}` : m.body}</div> : (
             <div key={m.id} className={`bubble ${m.sender === "team" ? "me" : m.sender === "client" ? "team" : "them"}`}>
@@ -297,7 +297,12 @@ function LoginsCard({ d, reload }: { d: Detail; reload: () => void }) {
       ) : (
         <p className="small muted">No login yet. Create one, then text {d.client.ownerName} the email and temporary password.</p>
       )}
-      {notice && <div className="banner small" style={{ fontWeight: 500 }}><span className="grow">{notice}</span><CopyButton text={notice.replace(/^New temporary password for /, "").replace(/^Login created\. Text [^:]+: /, "")} /></div>}
+      {notice && (
+        <div className="banner small" style={{ fontWeight: 500 }}>
+          <span className="grow">{notice.split(/(\S+@\S+|\b[a-z]+-[a-z]+-\d{4}\b)/).map((part, i) => (i % 2 ? <code key={i} className="secret">{part}</code> : part))}</span>
+          <CopyButton text={notice.replace(/^New temporary password for /, "").replace(/^Login created\. Text [^:]+: /, "")} />
+        </div>
+      )}
       {showForm ? (
       <form
         className="form group"
@@ -370,7 +375,7 @@ function ReferralsTab({ d, reload }: { d: Detail; reload: () => void }) {
     <>
       <div className="figures cards">
         <div className="figure"><span className="n">${earned}</span><span className="l">Earned</span></div>
-        <div className="figure"><span className="n" style={{ color: owed ? "var(--red-text)" : undefined }}>${owed}</span><span className="l">Pending: take off next bill</span></div>
+        <div className="figure"><span className="n" style={{ color: owed ? "var(--red-text)" : undefined }}>${owed}</span><span className="l">Pending</span></div>
         <div className="figure"><span className="n">${earned - owed}</span><span className="l">Applied</span></div>
       </div>
       <Section title="Referrals">

@@ -60,7 +60,7 @@ export default function Website() {
   return (
     <Page
       page="website"
-      blurb={<span className="row" style={{ gap: 8, flexWrap: "wrap" }}><span className={`sdot ${w.health.up === false ? "red" : w.status === "live" ? "green" : "amber"}`} />{host || "Your site"} · {statusText}</span>}
+      blurb={<span className="row" style={{ gap: 8 }}><span className={`sdot ${w.health.up === false ? "red" : w.status === "live" ? "green" : "amber"}`} /><span>{host || "Your site"} · {statusText}</span></span>}
     >
       <div className="btn-row">
         {w.siteUrl && <a className="btn grow" href={/^https?:/.test(w.siteUrl) ? w.siteUrl : `https://${w.siteUrl}`} target="_blank" rel="noreferrer"><Icon name="globe" size={16} /> Open site</a>}
@@ -68,7 +68,13 @@ export default function Website() {
       </div>
 
       <Section title="Health">
-        {w.health.uptime == null && <p className="small muted">{w.status === "live" ? "We check your site every 15 minutes. The first results show up here shortly." : "Health checks start once your site is live."}</p>}
+        {w.health.checkedAt == null ? (
+          <p className="small muted">{w.status === "live" ? "We check your site every 15 minutes. The first results show up here shortly." : "Health checks start once your site is live."}</p>
+        ) : w.health.up === false ? (
+          <p className="small muted">Your site didn't respond on the last check. Cam and Trae were alerted automatically.</p>
+        ) : w.health.uptime == null ? (
+          <p className="small muted">Uptime shows after about an hour of checks.</p>
+        ) : null}
         <div className="figures cards">
           <div className="figure"><span className="n">{w.health.uptime != null ? `${w.health.uptime}%` : "—"}</span><span className="l">Uptime</span></div>
           <div className="figure"><span className="n">{w.health.responseMs != null ? `${(w.health.responseMs / 1000).toFixed(1)}s` : "—"}</span><span className="l">Load time</span></div>

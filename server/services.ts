@@ -44,7 +44,14 @@ export async function accountOverview(clientId: number) {
     .where(and(eq(schema.revisions.clientId, clientId), ne(schema.revisions.status, "done")))
     .orderBy(schema.revisions.dueAt);
   const next = nextPlan(plan.tier);
+  const [lastCheck] = await db
+    .select({ ok: schema.siteChecks.ok })
+    .from(schema.siteChecks)
+    .where(eq(schema.siteChecks.clientId, clientId))
+    .orderBy(desc(schema.siteChecks.createdAt))
+    .limit(1);
   return {
+    siteUp: lastCheck ? lastCheck.ok : null,
     business: c.businessName,
     owner: c.ownerName,
     siteUrl: c.siteUrl,
@@ -337,7 +344,7 @@ export async function websiteStats(clientId: number) {
     health: {
       checkedAt: checks[0]?.createdAt || null,
       up: checks[0]?.ok ?? null,
-      responseMs: checks[0]?.responseMs ?? null,
+      responseMs: checks[0]?.ok ? checks[0].responseMs : null,
       // Only report a percentage once there's about an hour of checks, so one bad first check doesn't read as 0%
       uptime: checks.length >= 4 ? Math.round((checks.filter((x) => x.ok).length / checks.length) * 1000) / 10 : null,
       https: c.siteUrl ? !/^http:\/\//.test(c.siteUrl) : null,
@@ -355,12 +362,18 @@ export async function recordSiteCheck(c: Client) {
     .orderBy(desc(schema.siteChecks.createdAt))
     .limit(1);
   await db.insert(schema.siteChecks).values({ clientId: c.id, ok: r.ok, status: (r as any).status ?? null, responseMs: (r as any).responseMs ?? null });
-  if (prev && prev.ok && !r.ok) {
+  // Went down (or failed its very first check): alert the team and put it in their Needs-you list
+  if ((!prev || prev.ok) && !r.ok) {
+    await db.insert(schema.escalations).values({ clientId: c.id, category: "site_down", urgency: "urgent", summary: `Website down: ${c.siteUrl}. ${r.detail}` });
     await notifyTeam(
       { kind: "escalation", title: `Site down: ${c.businessName}`, body: `${c.siteUrl}: ${r.detail}`, url: `/team/clients/${c.id}`, buzz: "urgent" },
       { email: true },
     );
   } else if (prev && !prev.ok && r.ok) {
+    await db
+      .update(schema.escalations)
+      .set({ status: "resolved", resolvedBy: "Uptime monitor", resolvedAt: new Date() })
+      .where(and(eq(schema.escalations.clientId, c.id), eq(schema.escalations.category, "site_down"), eq(schema.escalations.status, "open")));
     await notifyTeam({ kind: "escalation", title: `Back up: ${c.businessName}`, body: `${c.siteUrl} is responding again.`, url: `/team/clients/${c.id}` });
   }
   return r;

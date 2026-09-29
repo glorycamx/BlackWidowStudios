@@ -35,7 +35,7 @@ export default function Home() {
   return (
     <Page
       page="home"
-      heading={`${greeting()}, ${o.owner}.`}
+      heading={`${greeting()}, ${o.owner.split(" ")[0]}.`}
       blurb={waiting.length ? <><span className="accent">{waiting.length} lead{waiting.length > 1 ? "s" : ""}</span> waiting on a call back.</> : "You're all caught up."}
     >
       <PushBanner />
@@ -64,7 +64,7 @@ export default function Home() {
 
       <Section title="Go to">
         <Group>
-          <Row to="/website" lead={<PageBadge page="website" size={34} />} title="Website" meta={`${o.siteUrl?.replace(/^https?:\/\//, "") || "Your site"} · ${STATUS[o.status]}`} />
+          <Row to="/website" lead={<PageBadge page="website" size={34} />} title="Website" meta={`${o.siteUrl?.replace(/^https?:\/\//, "") || "Your site"} · ${o.status === "live" && o.siteUp === false ? "Down, the team is on it" : STATUS[o.status]}`} />
           <Row to="/revisions" lead={<PageBadge page="edits" size={34} />} title="Edits" meta={o.openRevisions.length ? `${o.openRevisions.length} in progress` : "Request a change"} />
           <Row to="/help" lead={<PageBadge page="assistant" size={34} />} title="Assistant" meta="Edits, site checks, reach Cam & Trae" />
         </Group>

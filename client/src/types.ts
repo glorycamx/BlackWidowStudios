@@ -6,6 +6,7 @@ export interface ChatMessage { id: number; clientId: number; sender: "client" | 
 export interface Notification { id: number; kind: string; title: string; body: string; url: string; read: boolean; createdAt: string }
 export interface PlanSummary { tier: number; name: string; monthly: number; pages?: string; revisionTurnaround: string; features: string[] }
 export interface Overview {
+  siteUp?: boolean | null;
   business: string; owner: string; siteUrl: string | null; status: "build" | "phase1" | "live"; goLiveDate: string | null; monthlyStartsOn: string | null;
   plan: PlanSummary; nextPlan: PlanSummary | null;
   leads: { last30: number; newCount: number; total: number };

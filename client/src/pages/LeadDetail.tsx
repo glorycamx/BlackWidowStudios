@@ -26,7 +26,11 @@ export default function LeadDetail() {
   const set = async (status: Lead["status"]) => {
     const r = await patch<{ lead: Lead }>(`/client/leads/${lead.id}`, { status });
     setLeads((ls) => ls!.map((l) => (l.id === r.lead.id ? r.lead : l)));
-    if (status === "won") { celebrate(); toast("Nice work", "Another job booked from your website.", "revision_done"); }
+    if (status === "won") {
+      celebrate();
+      const wins = leads!.filter((l) => l.status === "won" && l.id !== lead.id).length;
+      toast("Nice work", wins ? "Another job booked from your website." : "Your first job booked from your website.", "revision_done");
+    }
   };
   const tel = lead.phone?.replace(/[^\d+]/g, "");
   const first = lead.name?.split(" ")[0] || "there";

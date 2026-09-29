@@ -64,7 +64,7 @@ export default function Help() {
   const fresh = msgs.filter((m) => m.sender === "client").length === 0;
 
   return (
-    <Page page="assistant" heading={fresh ? `Hi ${me?.name}, how can I help?` : "Assistant"} blurb="Edits, site checks and your numbers. Cam and Trae step in when needed." mainStyle={{ paddingBottom: 170 }}>
+    <Page page="assistant" heading={fresh ? `Hi ${me?.name?.split(" ")[0]}, how can I help?` : "Assistant"} blurb="Edits, site checks and your numbers. Cam and Trae step in when needed." mainStyle={{ paddingBottom: 170 }}>
       {fresh ? (
         <Section title="Try asking">
           <Group>
