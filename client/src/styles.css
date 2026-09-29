@@ -482,3 +482,4 @@ html { background: var(--bg); }
 .team-grid > *, .grow-row > .grow, .main > * { min-width: 0; }
 html, body { overflow-x: hidden; }
 .tabs { flex-wrap: wrap; overflow: visible; }
+.form.group > * + * { border-top: 0; }

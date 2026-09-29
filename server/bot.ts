@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { asc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { db, schema } from "./db.js";
 import {
   accountOverview,
@@ -213,13 +213,43 @@ function withLock<T>(clientId: number, fn: () => Promise<T>): Promise<T> {
   return next;
 }
 
-async function loadHistory(clientId: number): Promise<Anthropic.Beta.BetaMessageParam[]> {
+// Conversations restart after a quiet stretch or once they get long, so cost and context stay bounded.
+// Each restart is a brand-new message list (history is never edited), with a short recap of the chat.
+const NEW_CONVERSATION_AFTER_MS = 6 * 3600_000;
+const MAX_TURNS = 60;
+const MAX_HISTORY_CHARS = 250_000;
+
+async function loadHistory(clientId: number): Promise<{ history: Anthropic.Beta.BetaMessageParam[]; fresh: boolean }> {
   const rows = await db
     .select()
     .from(schema.botTurns)
     .where(eq(schema.botTurns.clientId, clientId))
     .orderBy(asc(schema.botTurns.id));
-  return rows.map((r) => ({ role: r.role as "user" | "assistant", content: r.content as any }));
+  let startAt = 0;
+  rows.forEach((r, i) => { if (r.role === "reset") startAt = i + 1; });
+  const turns = rows.slice(startAt);
+  const last = turns[turns.length - 1];
+  const size = turns.reduce((n, r) => n + JSON.stringify(r.content).length, 0);
+  const stale = !last || Date.now() - last.createdAt.getTime() > NEW_CONVERSATION_AFTER_MS;
+  if (stale || turns.length > MAX_TURNS || size > MAX_HISTORY_CHARS) {
+    if (turns.length) await db.insert(schema.botTurns).values({ clientId, role: "reset", content: {} });
+    return { history: [], fresh: true };
+  }
+  return { history: turns.map((r) => ({ role: r.role as "user" | "assistant", content: r.content as any })), fresh: false };
+}
+
+// Plain-text recap of the last few chat messages, for the start of a new conversation
+async function recentChatRecap(clientId: number) {
+  const rows = await db
+    .select()
+    .from(schema.chatMessages)
+    .where(eq(schema.chatMessages.clientId, clientId))
+    .orderBy(desc(schema.chatMessages.id))
+    .limit(9);
+  const earlier = rows.slice(1).reverse(); // the newest row is the message being answered now
+  if (!earlier.length) return "";
+  const who = (m: typeof rows[number]) => (m.sender === "client" ? m.authorName || "Client" : m.sender === "team" ? `${m.authorName} (team)` : m.sender === "bot" ? "Assistant" : "Note");
+  return `[Recent chat, for context]\n${earlier.map((m) => `${who(m)}: ${m.body.slice(0, 300)}`).join("\n")}\n\n`;
 }
 
 function stamp() {
@@ -256,10 +286,13 @@ export async function handleClientMessage(clientId: number, clientName: string, 
       return;
     }
 
-    const history = await loadHistory(clientId);
+    const { history, fresh } = await loadHistory(clientId);
+    const recap = fresh ? await recentChatRecap(clientId) : "";
     const newTurns: Anthropic.Beta.BetaMessageParam[] = [
-      { role: "user", content: [{ type: "text", text: `[${clientName}, ${stamp()} ET]: ${text}` }] },
+      { role: "user", content: [{ type: "text", text: `${recap}[${clientName}, ${stamp()} ET]: ${text}` }] },
     ];
+    // newTurns[0..safeLen) is always a valid, complete history (every tool_use has its tool_result)
+    let safeLen = 1;
 
     try {
       for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
@@ -289,41 +322,57 @@ export async function handleClientMessage(clientId: number, clientName: string, 
           .trim();
         if (reply) await saveBotReply(clientId, reply);
 
-        if (response.stop_reason !== "tool_use") break;
-
         const toolUses = response.content.filter(
           (b): b is Anthropic.Beta.BetaToolUseBlock => b.type === "tool_use",
         );
-        const results: Anthropic.Beta.BetaToolResultBlockParam[] = await Promise.all(
-          toolUses.map(async (t) => {
-            try {
-              const out = await runTool(clientId, t.name, t.input);
-              return { type: "tool_result" as const, tool_use_id: t.id, content: JSON.stringify(out) };
-            } catch (err: any) {
-              return { type: "tool_result" as const, tool_use_id: t.id, content: `Error: ${err?.message || err}`, is_error: true };
-            }
-          }),
-        );
+        if (toolUses.length === 0) {
+          safeLen = newTurns.length;
+          break;
+        }
+
+        // Every tool_use gets a tool_result, even when the reply was cut off mid-call
+        const results: Anthropic.Beta.BetaToolResultBlockParam[] =
+          response.stop_reason === "tool_use"
+            ? await Promise.all(
+                toolUses.map(async (t) => {
+                  try {
+                    const out = await runTool(clientId, t.name, t.input);
+                    return { type: "tool_result" as const, tool_use_id: t.id, content: JSON.stringify(out) };
+                  } catch (err: any) {
+                    return { type: "tool_result" as const, tool_use_id: t.id, content: `Error: ${err?.message || err}`, is_error: true };
+                  }
+                }),
+              )
+            : toolUses.map((t) => ({
+                type: "tool_result" as const,
+                tool_use_id: t.id,
+                content: "Not run: your reply was cut off before this call finished. Try again with a shorter reply.",
+                is_error: true,
+              }));
         newTurns.push({ role: "user", content: results });
+        safeLen = newTurns.length;
 
         if (round === MAX_TOOL_ROUNDS - 1) {
-          // Out of rounds: close the loop with a plain assistant turn so history stays valid
-          newTurns.push({ role: "assistant", content: [{ type: "text", text: "Let me get the team on this." }] });
-          await saveBotReply(clientId, "Let me get the team on this.");
+          // Out of rounds: hand off to a human and close the loop with a plain assistant turn
+          const note = "This one needs a person. I've passed it to Cam and Trae.";
+          newTurns.push({ role: "assistant", content: [{ type: "text", text: note }] });
+          safeLen = newTurns.length;
+          await saveBotReply(clientId, note);
+          await createEscalation(clientId, { category: "other", urgency: "normal", summary: `Assistant ran out of steps on: "${text.slice(0, 300)}"` });
         }
       }
     } catch (err: any) {
       console.error("[bot] error", err?.status, err?.message);
-      // Drop the partial turn; keep only the client's message plus a plain assistant note
-      newTurns.splice(1);
+      // Keep the finished work (its tickets and replies really happened); drop only the unfinished tail
+      newTurns.splice(safeLen);
       const note = "Sorry, I hit a snag on my end. I've sent your message to Cam and Trae so nothing gets missed.";
-      newTurns.push({ role: "assistant", content: [{ type: "text", text: note }] });
+      if (newTurns[newTurns.length - 1].role === "user") newTurns.push({ role: "assistant", content: [{ type: "text", text: note }] });
       await saveBotReply(clientId, note);
       await createEscalation(clientId, {
         category: "bug",
         urgency: "normal",
         summary: `Assistant couldn't handle this message (${err?.message?.slice(0, 80) || "error"}): "${text.slice(0, 300)}"`,
-      });
+      }).catch((e) => console.error("[bot] escalation failed", e));
     }
 
     await db.insert(schema.botTurns).values(newTurns.map((t) => ({ clientId, role: t.role, content: t.content as any })));

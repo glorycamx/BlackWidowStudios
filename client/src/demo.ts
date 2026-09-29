@@ -201,6 +201,8 @@ function route(method: string, path: string, body: any): any {
   if (!me) throw Object.assign(new Error("Please sign in"), { status: 401 });
 
   if (p === "/push/key") return { key: "" };
+  if (p === "/auth/password") return { ok: true };
+  if (p.match(/^\/team\/logins\/\d+(\/reset)?$/)) return { ok: true };
   if (p === "/push/test") { notify(me.id, { kind: "offer", title: "Buzz check", body: "Notifications are on. This is what a new lead feels like.", url: "/" }); return { ok: true }; }
   if (p === "/notifications") {
     const after = Number(q.get("after")) || 0;

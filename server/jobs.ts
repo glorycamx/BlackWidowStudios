@@ -7,7 +7,14 @@ import { recordSiteCheck } from "./services.js";
 // Runs every 15 minutes. Each scheduled alert is keyed in job_log so it fires once.
 async function once(key: string, fn: () => Promise<void>) {
   const inserted = await db.insert(schema.jobLog).values({ key }).onConflictDoNothing().returning();
-  if (inserted.length) await fn();
+  if (!inserted.length) return;
+  try {
+    await fn();
+  } catch (err) {
+    // Release the key so the next run retries
+    await db.delete(schema.jobLog).where(eq(schema.jobLog.key, key));
+    throw err;
+  }
 }
 
 function easternNow() {
@@ -31,7 +38,13 @@ async function leadNudges() {
     .from(schema.leads)
     .where(and(eq(schema.leads.status, "new"), isNull(schema.leads.nudgedAt), lt(schema.leads.createdAt, cutoff)));
   for (const lead of stale) {
-    await db.update(schema.leads).set({ nudgedAt: new Date() }).where(eq(schema.leads.id, lead.id));
+    // Claim the nudge atomically so it's sent once even if two server copies run this job
+    const claimed = await db
+      .update(schema.leads)
+      .set({ nudgedAt: new Date() })
+      .where(and(eq(schema.leads.id, lead.id), isNull(schema.leads.nudgedAt)))
+      .returning({ id: schema.leads.id });
+    if (!claimed.length) continue;
     await notifyClient(lead.clientId, {
       kind: "lead",
       title: `${lead.name || "A lead"} is still waiting`,

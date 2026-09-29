@@ -2,7 +2,7 @@ import express, { Router } from "express";
 import crypto from "node:crypto";
 import { z } from "zod";
 import { and, asc, desc, eq, gt, inArray, ne, sql } from "drizzle-orm";
-import { db, schema } from "./db.js";
+import { db, pool, schema } from "./db.js";
 import { hashPassword, publicUser, requireRole, verifyLogin } from "./auth.js";
 import { notifyClient, notifyTeam, vapidPublicKey } from "./notify.js";
 import { botEnabled, handleClientMessage, recordTeamReply } from "./bot.js";
@@ -56,6 +56,21 @@ api.post(
 api.post("/auth/logout", (req, res) => {
   req.session.destroy(() => res.json({ ok: true }));
 });
+
+api.post(
+  "/auth/password",
+  h(async (req, res) => {
+    if (!req.user) return res.status(401).json({ error: "Please sign in" });
+    const { current, next } = z
+      .object({ current: z.string().min(1), next: z.string().min(8, "New password must be at least 8 characters").max(200) })
+      .parse(req.body);
+    if (!(await verifyLogin(req.user.email, current))) return res.status(400).json({ error: "Current password is wrong" });
+    await db.update(schema.users).set({ passwordHash: await hashPassword(next) }).where(eq(schema.users.id, req.user.id));
+    // Sign out every other device that used the old password
+    await pool.query(`delete from "session" where (sess->>'userId')::int = $1 and sid <> $2`, [req.user.id, req.sessionID]);
+    res.json({ ok: true });
+  }),
+);
 
 api.get(
   "/me",
@@ -167,7 +182,15 @@ api.post(
       url: `/leads/${lead.id}`,
       buzz: "money",
     });
-    if (typeof body._redirect === "string" && /^https?:\/\//.test(body._redirect)) return res.redirect(303, body._redirect);
+    // Only redirect back to the client's own website, never to arbitrary URLs
+    if (typeof body._redirect === "string" && client.siteUrl) {
+      try {
+        const target = new URL(body._redirect);
+        const site = new URL(/^https?:\/\//.test(client.siteUrl) ? client.siteUrl : `https://${client.siteUrl}`);
+        const bare = (h: string) => h.replace(/^www\./, "");
+        if (/^https?:$/.test(target.protocol) && bare(target.hostname) === bare(site.hostname)) return res.redirect(303, target.toString());
+      } catch {}
+    }
     res.json({ ok: true });
   }),
 );
@@ -177,7 +200,8 @@ api.post(
 
 api.get("/hooks/t/:siteKey.js", (req, res) => {
   const key = String(req.params.siteKey).replace(/[^\w-]/g, "");
-  const endpoint = `${req.protocol}://${req.get("host")}/api/hooks/event/${key}`;
+  const base = (process.env.APP_URL || `${req.protocol}://${req.get("host")}`).replace(/\/$/, "");
+  const endpoint = `${base}/api/hooks/event/${key}`;
   res.type("application/javascript").set("Cache-Control", "public, max-age=3600").send(`(function(){
   var U=${JSON.stringify(endpoint)};
   function s(k){try{var b=JSON.stringify({kind:k,path:location.pathname});if(navigator.sendBeacon){navigator.sendBeacon(U,new Blob([b],{type:"text/plain"}))}else{fetch(U,{method:"POST",body:b,keepalive:true})}}catch(e){}}
@@ -609,6 +633,31 @@ team.post(
       .values({ email, name: input.name, role: "client", clientId, passwordHash: await hashPassword(input.password) })
       .returning();
     res.json({ user: publicUser(u) });
+  }),
+);
+
+// Set a new temporary password for one of a client's logins
+team.post(
+  "/logins/:id/reset",
+  h(async (req, res) => {
+    const { password } = z.object({ password: z.string().min(8).max(200) }).parse(req.body);
+    const userId = id(String(req.params.id));
+    const [u] = await db
+      .update(schema.users)
+      .set({ passwordHash: await hashPassword(password) })
+      .where(and(eq(schema.users.id, userId), eq(schema.users.role, "client")))
+      .returning();
+    if (!u) return res.status(404).json({ error: "Login not found" });
+    await pool.query(`delete from "session" where (sess->>'userId')::int = $1`, [userId]);
+    res.json({ ok: true });
+  }),
+);
+
+team.delete(
+  "/logins/:id",
+  h(async (req, res) => {
+    await db.delete(schema.users).where(and(eq(schema.users.id, id(String(req.params.id))), eq(schema.users.role, "client")));
+    res.json({ ok: true });
   }),
 );
 

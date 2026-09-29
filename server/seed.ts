@@ -20,7 +20,8 @@ export async function seed() {
     }
   }
 
-  if (process.env.SEED_DEMO !== "1") return;
+  // Sample client is for local development only, never on the live site
+  if (process.env.SEED_DEMO !== "1" || process.env.NODE_ENV === "production") return;
   const [existing] = await db.select().from(schema.users).where(eq(schema.users.email, "demo@blackwidow.studio"));
   if (existing) return;
 

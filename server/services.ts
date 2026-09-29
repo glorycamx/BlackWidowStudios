@@ -1,3 +1,6 @@
+import crypto from "node:crypto";
+import dns from "node:dns/promises";
+import net from "node:net";
 import { and, desc, eq, gte, ne, sql } from "drizzle-orm";
 import { db, schema } from "./db.js";
 import { notifyClient, notifyTeam } from "./notify.js";
@@ -154,19 +157,45 @@ export async function createUpgradeRequest(clientId: number, item: string, note:
   return reqRow;
 }
 
+function isPrivateIp(ip: string) {
+  if (net.isIPv4(ip)) {
+    const [a, b] = ip.split(".").map(Number);
+    return a === 10 || a === 127 || a === 0 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127) || a >= 224;
+  }
+  const v = ip.toLowerCase();
+  if (v.startsWith("::ffff:")) return isPrivateIp(v.slice(7));
+  return v === "::1" || v === "::" || v.startsWith("fc") || v.startsWith("fd") || v.startsWith("fe80");
+}
+
+// Only public web addresses may be checked (blocks probing internal services)
+async function assertPublicUrl(u: URL) {
+  if (!/^https?:$/.test(u.protocol)) throw new Error("Only http and https sites can be checked");
+  const addrs = await dns.lookup(u.hostname, { all: true });
+  if (!addrs.length || addrs.some((a) => isPrivateIp(a.address))) throw new Error("That address isn't a public website");
+}
+
 export async function checkSite(url: string | null) {
   if (!url) return { ok: false, detail: "No live site URL on file yet." };
-  const target = /^https?:\/\//.test(url) ? url : `https://${url}`;
   const started = Date.now();
   try {
-    const res = await fetch(target, { redirect: "follow", signal: AbortSignal.timeout(10_000) });
-    const ms = Date.now() - started;
-    return {
-      ok: res.status < 500,
-      status: res.status,
-      responseMs: ms,
-      detail: res.status < 400 ? `Up (HTTP ${res.status}, ${ms} ms)` : `Responded with HTTP ${res.status}`,
-    };
+    let target = new URL(/^https?:\/\//.test(url) ? url : `https://${url}`);
+    for (let hop = 0; hop < 5; hop++) {
+      await assertPublicUrl(target);
+      const res = await fetch(target, { redirect: "manual", signal: AbortSignal.timeout(10_000) });
+      const loc = res.headers.get("location");
+      if (res.status >= 300 && res.status < 400 && loc) {
+        target = new URL(loc, target);
+        continue;
+      }
+      const ms = Date.now() - started;
+      return {
+        ok: res.status < 500,
+        status: res.status,
+        responseMs: ms,
+        detail: res.status < 400 ? `Up (HTTP ${res.status}, ${ms} ms)` : `Responded with HTTP ${res.status}`,
+      };
+    }
+    return { ok: false, detail: "Too many redirects" };
   } catch (err: any) {
     return { ok: false, detail: `Could not reach the site: ${err?.name === "TimeoutError" ? "timed out after 10s" : err?.message}` };
   }
@@ -187,7 +216,7 @@ export async function ensureReferralCode(c: Client): Promise<string> {
   if (c.referralCode) return c.referralCode;
   const base = (c.businessName.replace(/\(.*?\)/g, "").match(/[A-Za-z]+/g) || ["BW"])[0].toUpperCase().slice(0, 10);
   for (let i = 0; i < 20; i++) {
-    const code = `${base}${Math.floor(10 + Math.random() * 90)}`;
+    const code = `${base}${crypto.randomBytes(3).toString("hex").toUpperCase().slice(0, 4)}`;
     const updated = await db
       .update(schema.clients)
       .set({ referralCode: code })
@@ -234,19 +263,29 @@ function appUrlFor(path: string) {
 }
 
 export async function markReferralSigned(referralId: number) {
-  const [ref] = await db.select().from(schema.referrals).where(eq(schema.referrals.id, referralId));
-  if (!ref || ref.status === "signed") return ref;
-  const [{ n }] = await db
-    .select({ n: sql<number>`count(*)`.mapWith(Number) })
-    .from(schema.referrals)
-    .where(and(eq(schema.referrals.clientId, ref.clientId), eq(schema.referrals.status, "signed")));
-  const nth = n + 1;
-  const credit = creditForSignup(nth);
-  const [updated] = await db
-    .update(schema.referrals)
-    .set({ status: "signed", signedAt: new Date(), creditAmount: credit, creditStatus: "pending" })
-    .where(eq(schema.referrals.id, referralId))
-    .returning();
+  // One transaction, with the referring client's row locked, so double taps or two signings at
+  // once can't double-pay a card bonus or send two "you earned" alerts
+  const result = await db.transaction(async (tx) => {
+    const [ref] = await tx.select().from(schema.referrals).where(eq(schema.referrals.id, referralId));
+    if (!ref) return null;
+    await tx.execute(sql`select id from clients where id = ${ref.clientId} for update`);
+    const [{ n }] = await tx
+      .select({ n: sql<number>`count(*)`.mapWith(Number) })
+      .from(schema.referrals)
+      .where(and(eq(schema.referrals.clientId, ref.clientId), eq(schema.referrals.status, "signed")));
+    const nth = n + 1;
+    const credit = creditForSignup(nth);
+    const [updated] = await tx
+      .update(schema.referrals)
+      .set({ status: "signed", signedAt: new Date(), creditAmount: credit, creditStatus: "pending" })
+      .where(and(eq(schema.referrals.id, referralId), ne(schema.referrals.status, "signed")))
+      .returning();
+    return updated ? { ref: updated, nth, credit } : { ref, nth: 0, credit: 0, already: true };
+  });
+  if (!result) return undefined;
+  if ("already" in result) return result.ref;
+  const { ref, nth, credit } = result;
+  const updated = ref;
   const filledCard = nth % REFERRAL.cardSlots === 0;
   await notifyClient(ref.clientId, {
     kind: "referral",

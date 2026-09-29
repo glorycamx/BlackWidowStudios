@@ -1,0 +1,15 @@
+run = "npm run dev"
+modules = ["nodejs-20", "postgresql-16"]
+
+[deployment]
+deploymentTarget = "vm"
+build = ["sh", "-c", "npm ci && npm run build"]
+run = ["npm", "start"]
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 5173
+externalPort = 5173

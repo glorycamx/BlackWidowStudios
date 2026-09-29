@@ -4,6 +4,7 @@ import { useMe } from "../App";
 import { PushBanner } from "../components/Layout";
 import { useNotifications } from "../components/Notifications";
 import { Group, Page, PageBadge, Row, Section } from "../components/Page";
+import { ChangePassword } from "../components/ChangePassword";
 
 export default function More() {
   const { info, setMe } = useMe();
@@ -29,6 +30,9 @@ export default function More() {
         <Group>
           <Row onClick={async () => { await post("/push/test"); toast("Buzz check", "This is what a new lead feels like.", "lead"); }} title="Send a test notification" />
         </Group>
+      </Section>
+      <Section title="Password">
+        <ChangePassword />
       </Section>
       <button className="btn block" onClick={async () => { await post("/auth/logout"); setMe(null); nav("/"); }}>Sign out</button>
     </Page>

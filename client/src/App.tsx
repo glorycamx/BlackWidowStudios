@@ -20,6 +20,7 @@ import Inbox from "./pages/team/Inbox";
 import Clients from "./pages/team/Clients";
 import ClientDetail from "./pages/team/ClientDetail";
 import NewClient from "./pages/team/NewClient";
+import TeamAccount from "./pages/team/TeamAccount";
 
 const MeCtx = createContext<{ me: User | null; info: Me | null; setMe: (u: User | null) => void; reload: () => void }>(null!);
 export const useMe = () => useContext(MeCtx);
@@ -52,6 +53,7 @@ export default function App() {
                 <Route path="clients" element={<Clients />} />
                 <Route path="clients/:id" element={<ClientDetail />} />
                 <Route path="new" element={<NewClient />} />
+                <Route path="account" element={<TeamAccount />} />
               </Route>
               <Route path="*" element={<Navigate to="/team" replace />} />
             </Routes>

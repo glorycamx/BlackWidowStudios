@@ -43,23 +43,48 @@ Every "I'm interested" tap buzzes Cam and Trae as a hot upsell. On each client's
 
 ```bash
 npm install
-cp .env.example .env          # fill in DATABASE_URL, SESSION_SECRET, ANTHROPIC_API_KEY
-npm run vapid:generate        # paste the two keys into .env for phone push
-npm run db:push               # create tables
-npm run dev                   # API on :3001, app on :5173
+cp .env.example .env          # fill in DATABASE_URL and SESSION_SECRET; set SEED_DEMO=1 for sample data
+npm run vapid:generate        # optional: paste the two keys into .env for phone push
+npm run dev                   # API on :3001, app on :5173. Tables are created automatically.
 ```
 
-On first start the server creates team logins from `TEAM_SEED` and prints their passwords to the log once. `SEED_DEMO=1` also creates a sample client (`demo@blackwidow.studio` / `demo1234`).
+On first start the server creates team logins from `TEAM_SEED` and prints their passwords to the log once. In development, `SEED_DEMO=1` also creates a sample client (`demo@blackwidow.studio` / `demo1234`). Sample data is never created in production.
 
 Without `ANTHROPIC_API_KEY` the app still works: chat messages go straight to the team as escalations.
 
-## Deploy on Replit
+Database changes: edit `server/schema.ts`, run `npm run db:generate`, and commit the new file in `migrations/`. The server applies pending migrations every time it starts.
 
-1. Import the repo. Add Replit's Postgres, which sets `DATABASE_URL`.
-2. Add secrets: `SESSION_SECRET`, `ANTHROPIC_API_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `APP_URL`, and optionally `RESEND_API_KEY`. Set `SEED_DEMO=0`.
-3. Build with `npm install && npm run db:push && npm run build`. Run with `npm start`, which serves the API and app on port 5000.
+## Go live on Replit
 
-Push notifications need HTTPS, which Replit deployments provide.
+1. **Import** the repo into Replit and add Replit's PostgreSQL database, which sets `DATABASE_URL`.
+2. **Add secrets** (Tools → Secrets):
+
+   | Secret | Value |
+   | --- | --- |
+   | `SESSION_SECRET` | 64 random characters: `openssl rand -hex 32` |
+   | `APP_URL` | The live address, starting with `https://`, e.g. `https://app.blackwidow.studio` |
+   | `ANTHROPIC_API_KEY` | From console.anthropic.com. Powers the assistant. |
+   | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | From `npm run vapid:generate`. Powers phone buzzes. Generate once and keep them; changing them logs every phone out of alerts. |
+   | `VAPID_SUBJECT` | `mailto:admin@blackwidow.studio` |
+   | `RESEND_API_KEY`, `EMAIL_FROM`, `TEAM_ALERT_EMAILS` | Optional team email alerts. The sending domain must be verified in Resend. |
+   | `TEAM_SEED` | Team logins to create on first boot, e.g. `Cam:admin@blackwidow.studio,Trae:trae@blackwidow.studio` |
+
+3. **Check** everything with `npm run preflight`. It tests the database, keys and email domain without sending anything, and prints PASS / FAIL / NOTE for each.
+4. **Deploy** as a **Reserved VM** (already set in `.replit`: build `npm ci && npm run build`, run `npm start`). Use a single always-on instance: the scheduled alerts, uptime checks and rate limits run inside the server, so Autoscale would duplicate or reset them.
+5. **First sign-in:** open the deploy logs and copy the team passwords printed once at first boot. Sign in, open Account (top right), and change your password right away.
+6. **Custom domain:** point `app.blackwidow.studio` (or similar) at the deployment in Replit's Deployments → Settings → Domains, then make sure `APP_URL` matches it exactly and redeploy.
+7. **Add clients:** Clients → New client, create their login (the app generates a temporary password to text them), paste the lead form and tracking snippet into their site, and add their Google review link.
+8. **Test on a phone:** sign in as a client on an iPhone, add it to the Home Screen, turn on alerts, and submit a test lead from their website form. The phone should buzz within seconds.
+
+After launch, run `npm run preflight` again. The "Live app health" line should now pass.
+
+### Security built in
+
+- Passwords are hashed with bcrypt. Sessions last 90 days, use Secure and HttpOnly cookies, and are cleared on password change or reset.
+- Clients can only see their own business's data. Team pages are team-only.
+- Rate limits cover sign-in (per address and per email), the public referral form, the lead and tracking webhooks, assistant chat (40 messages an hour per client), photo uploads and site checks.
+- The site check refuses private and internal addresses. The lead form's thank-you redirect only goes back to the client's own site.
+- Security headers (HSTS, nosniff, frame blocking) are set on every response.
 
 ## Hook up a client's lead form
 

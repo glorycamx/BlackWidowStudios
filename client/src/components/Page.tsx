@@ -1,10 +1,9 @@
 import type { ReactNode } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Icon, WebMark } from "./Icon";
 import { BellButton } from "./Notifications";
 import { RevealText } from "./Motion";
 import { useMe } from "../App";
-import { post } from "../api";
 
 // Every page has one identity: the same icon, color and name everywhere it appears
 export const PAGES = {
@@ -68,8 +67,7 @@ export function Page({ page, heading, blurb, back, wide, headerExtra, mainStyle,
 }
 
 export function NavBar({ title, back }: { title: string; back?: { to: string; label: string } }) {
-  const { me, setMe } = useMe();
-  const nav = useNavigate();
+  const { me } = useMe();
   return (
     <header className="navbar">
       <div className="nav-left">
@@ -85,11 +83,7 @@ export function NavBar({ title, back }: { title: string; back?: { to: string; la
       <div className="nav-title">{title}</div>
       <div className="nav-right">
         <BellButton />
-        {me?.role === "team" ? (
-          <button className="icon-btn" aria-label="Sign out" onClick={async () => { await post("/auth/logout"); setMe(null); nav("/"); }}><Icon name="logout" size={19} /></button>
-        ) : (
-          <Link to="/more" className="avatar-btn" aria-label="Account">{(me?.name || "?")[0]}</Link>
-        )}
+        <Link to={me?.role === "team" ? "/team/account" : "/more"} className="avatar-btn" aria-label="Account">{(me?.name || "?")[0]}</Link>
       </div>
     </header>
   );

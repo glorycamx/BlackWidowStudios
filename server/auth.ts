@@ -58,10 +58,13 @@ export function requireRole(role: "team" | "client") {
   };
 }
 
+// Compared against when the email doesn't exist, so response time doesn't reveal which emails have accounts
+const DUMMY_HASH = bcrypt.hashSync("not-a-real-password", 10);
+
 export async function verifyLogin(email: string, password: string) {
   const [u] = await db.select().from(schema.users).where(eq(schema.users.email, email.trim().toLowerCase()));
-  if (!u) return null;
-  return (await bcrypt.compare(password, u.passwordHash)) ? u : null;
+  const ok = await bcrypt.compare(password, u?.passwordHash || DUMMY_HASH);
+  return u && ok ? u : null;
 }
 
 export function hashPassword(pw: string) {

@@ -229,15 +229,41 @@ function UpsellTab({ d, reload }: { d: Detail; reload: () => void }) {
   );
 }
 
+// Readable, hard-to-guess temporary password
+function tempPassword() {
+  const words = "spider web silk crimson widow studio granite harbor maple cedar".split(" ");
+  const n = new Uint32Array(3);
+  crypto.getRandomValues(n);
+  return `${words[n[0] % words.length]}-${words[n[1] % words.length]}-${1000 + (n[2] % 9000)}`;
+}
+
 function LoginsCard({ d, reload }: { d: Detail; reload: () => void }) {
   const [name, setName] = useState(d.client.ownerName);
   const [email, setEmail] = useState(d.client.email || "");
-  const [password, setPassword] = useState(() => Math.random().toString(36).slice(2, 10) + "A1");
+  const [password, setPassword] = useState(() => tempPassword());
   const [err, setErr] = useState("");
+  const [notice, setNotice] = useState("");
   return (
     <div className="section">
       <h2>App logins</h2>
-      {d.logins.map((l) => <div key={l.id} className="small">{l.name} · {l.email}</div>)}
+      {d.logins.length > 0 && (
+        <div className="group">
+          {d.logins.map((l) => (
+            <div key={l.id} className="grow-row">
+              <div className="grow"><div className="row-title">{l.name}</div><div className="row-meta">{l.email}</div></div>
+              <button
+                type="button"
+                className="btn sm"
+                onClick={async () => {
+                  const temp = tempPassword();
+                  try { await post(`/team/logins/${l.id}/reset`, { password: temp }); setErr(""); setNotice(`New temporary password for ${l.email}: ${temp} (text it to them; they can change it under Account)`); } catch (e: any) { setErr(e.message); }
+                }}
+              >Reset password</button>
+              <button type="button" className="btn sm ghost" onClick={async () => { await del(`/team/logins/${l.id}`); reload(); }}>Remove</button>
+            </div>
+          ))}
+        </div>
+      )}
       {d.logins.length === 0 && <p className="small muted">No login yet. Create one and text it to them.</p>}
       <form className="form" onSubmit={async (e) => { e.preventDefault(); setErr(""); try { await post(`/team/clients/${d.client.id}/logins`, { name, email, password }); reload(); } catch (e: any) { setErr(e.message); } }}>
         <div className="figures">
@@ -246,6 +272,7 @@ function LoginsCard({ d, reload }: { d: Detail; reload: () => void }) {
         </div>
         <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         {err && <div className="err">{err}</div>}
+        {notice && <div className="small" style={{ fontWeight: 500 }}>{notice}</div>}
         <button className="btn">Create login</button>
       </form>
     </div>
