@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { get, post } from "../api";
-import type { Lead, Overview } from "../types";
+import type { Lead, Overview, ReferralSummary } from "../types";
+import { EarningsTicket } from "./Refer";
 import { Icon } from "../components/Icon";
 import { Upsell } from "../components/Upsell";
 import { PushBanner } from "../components/Layout";
@@ -24,10 +25,12 @@ export default function Home() {
   const [o, setO] = useState<Overview | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [check, setCheck] = useState<string>("");
+  const [ref, setRef] = useState<ReferralSummary | null>(null);
 
   useEffect(() => {
     get<Overview>("/client/overview").then(setO);
     get<{ leads: Lead[] }>("/client/leads").then((r) => setLeads(r.leads));
+    get<ReferralSummary>("/client/referrals").then(setRef);
   }, []);
   if (!o) return <main className="main"><div className="empty">Loading…</div></main>;
 
@@ -101,19 +104,29 @@ export default function Home() {
           </>
         ) : (
           <div className="col">
-            <div className="row">
+            <Link to="/website" className="row">
               <div className="grow">
                 <div style={{ fontWeight: 600 }} className="ellipsis">{o.siteUrl?.replace(/^https?:\/\//, "")}</div>
-                <div className="small muted">Live since {fmtDate(o.goLiveDate)}</div>
+                <div className="small muted">Live since {fmtDate(o.goLiveDate)} · stats, photos & quick edits →</div>
               </div>
-              <button className="btn sm" onClick={async () => { setCheck("Checking…"); const r = await post("/client/site-check"); setCheck(r.detail); }}>
+              <button className="btn sm" onClick={async (e) => { e.preventDefault(); setCheck("Checking…"); const r = await post("/client/site-check"); setCheck(r.detail); }}>
                 <Icon name="pulse" size={16} /> Check
               </button>
-            </div>
+            </Link>
             {check && <div className="small">{check}</div>}
           </div>
         )}
       </div>
+
+      {ref && (
+        <Link to="/refer" className="col" style={{ gap: 8 }}>
+          <EarningsTicket r={ref} mini />
+          <div className="row small" style={{ padding: "0 4px" }}>
+            <span className="muted grow">Send a business our way: ${ref.program.perSignup} off per signup, +${ref.program.cardBonus} per full punch card.</span>
+            <span className="accent" style={{ fontWeight: 700 }}>Share →</span>
+          </div>
+        </Link>
+      )}
 
       {o.openRevisions.length > 0 && (
         <div className="card">
@@ -150,14 +163,6 @@ export default function Home() {
         <span className="small muted grow">Edits, site issues, or reach Cam and Trae.</span>
       </Link>
 
-      <Link to="/refer" className="upsell soft compact">
-        <span style={{ fontSize: 26 }}>🤝</span>
-        <div className="grow">
-          <div style={{ fontWeight: 700 }}>Get $100 off your next month</div>
-          <div className="small muted">Know a business owner who needs a site? Send them our way.</div>
-        </div>
-        <Icon name="arrow" />
-      </Link>
     </main>
   );
 }

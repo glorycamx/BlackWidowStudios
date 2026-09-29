@@ -11,7 +11,8 @@ export default function More() {
   const { toast } = useNotifications();
   const rows = [
     { to: "/plan", icon: "rocket", title: "Your plan & upgrades", sub: "See what's included and what's next" },
-    { to: "/refer", icon: "gift", title: "Refer a business, get $100", sub: "Off your next month for every signup" },
+    { to: "/revisions", icon: "edit", title: "Edits", sub: "Request changes and track every one" },
+    { to: "/refer", icon: "gift", title: "Earn: refer a business", sub: "$100 off per signup, bonus for a full punch card" },
     { to: "/help", icon: "sparkle", title: "Assistant", sub: "Edits, site checks, reach Cam & Trae" },
   ];
   return (

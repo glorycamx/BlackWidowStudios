@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { get, patch } from "../api";
-import type { Lead } from "../types";
+import type { Lead, Overview } from "../types";
 import { Icon } from "../components/Icon";
 import { Upsell } from "../components/Upsell";
 import { initials, timeAgo } from "../util";
@@ -10,6 +10,8 @@ import { useNotifications } from "../components/Notifications";
 export default function LeadDetail() {
   const { id } = useParams();
   const [lead, setLead] = useState<Lead | null>(null);
+  const [o, setO] = useState<Overview | null>(null);
+  useEffect(() => { get<Overview>("/client/overview").then(setO); }, []);
   const { toast } = useNotifications();
   useEffect(() => {
     get<{ leads: Lead[] }>("/client/leads").then((r) => setLead(r.leads.find((l) => l.id === Number(id)) || null));
@@ -60,6 +62,19 @@ export default function LeadDetail() {
           ))}
         </div>
       </div>
+
+      {lead.status === "won" && o?.reviewUrl && tel && (
+        <div className="card col" style={{ gap: 10 }}>
+          <h2>⭐ Ask {lead.name?.split(" ")[0] || "them"} for a review</h2>
+          <p className="small muted">Happy customers leave reviews when you ask right after the job. One tap sends a text with your Google review link.</p>
+          <a
+            className="btn primary"
+            href={`sms:${tel}?&body=${encodeURIComponent(`Hi ${lead.name?.split(" ")[0] || "there"}, thanks again for choosing ${o.business.replace(/\s*\(.*?\)\s*/g, " ").trim()}! If you have 30 seconds, a quick Google review would mean a lot: ${o.reviewUrl}`)}`}
+          >
+            <Icon name="star" size={18} /> Text review request
+          </a>
+        </div>
+      )}
 
       {lead.status === "won" && (
         <Upsell

@@ -56,12 +56,13 @@ export function PushBanner() {
 
 export function ClientLayout() {
   const { kinds } = useNotifications();
+  const { me } = useMe();
   const tabs = [
     { to: "/", label: "Home", icon: "home", dot: kinds.has("offer") || kinds.has("site_live") },
     { to: "/leads", label: "Leads", icon: "leads", dot: kinds.has("lead") },
     { to: "/help", label: "Assistant", icon: "sparkle", dot: kinds.has("team_reply") },
-    { to: "/revisions", label: "Edits", icon: "edit", dot: kinds.has("revision_done") || kinds.has("revision_update") },
-    { to: "/more", label: "More", icon: "more", dot: false },
+    { to: "/website", label: "Website", icon: "globe", dot: kinds.has("revision_done") || kinds.has("revision_update") },
+    { to: "/refer", label: "Earn", icon: "gift", dot: kinds.has("referral") },
   ];
   return (
     <div className="app">
@@ -70,6 +71,7 @@ export function ClientLayout() {
         <div className="brand"><WebMark size={24} /> Black Widow</div>
         <div className="spacer" />
         <BellButton />
+        <NavLink to="/more" className="avatar-btn" aria-label="Account">{(me?.name || "?")[0]}</NavLink>
       </header>
       <Outlet />
       <nav className="tabbar">

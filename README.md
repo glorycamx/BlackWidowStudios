@@ -7,8 +7,11 @@ The app Black Widow clients keep on their phone: every lead from their website, 
 - **Home**: greeting with leads waiting on a call back, lead and win-rate trends, site status (building, Phase 1, live) with a one-tap uptime check, edits in progress.
 - **Leads**: every website form submission, filterable by today, 7 or 30 days. One-tap call, text or email, then mark it contacted, won or lost.
 - **Assistant** (Claude): logs revision requests with the due time set by their plan, checks whether the site is up, pulls lead numbers, and escalates to Cam and Trae for billing, outages, unhappy clients, account access, or anyone asking for a person. The team can reply in the same thread.
+- **Website**: uptime and load time from a monitor that checks every 15 minutes, visitors, call taps and form sends from a small tracking snippet, top pages, one-tap quick changes (update hours, add a special, something's broken) that open the assistant with the message started, and a job-photo upload that opens an edit request.
+- **Earn**: the referral program. A ticket-style card shows dollars earned and what's coming off their next bill, a 5-punch card fills with each signup (the 5th pays a bonus), and a personal share link comes with Copy, Share and Text-a-friend buttons. Each referral has a Sent, Talking, Signed, Paid-you tracker. The link opens a public page ("Dan from Granite State Irrigation sent you") where the business claims its discount, and the referrer's phone buzzes right away.
 - **Edits**: the revision-turnaround ladder (72h, 48h, 24h, same day), request form, and status of every edit.
-- **Plan and Refer**: plan comparison with one-tap upgrade requests, add-ons, and the $100-off referral program.
+- **Review requests**: a lead marked won gets a button that texts the customer the client's Google review link.
+- **Plan**: plan comparison with one-tap upgrade requests and add-ons.
 
 ## Notifications
 
@@ -16,8 +19,8 @@ Every alert is saved in the in-app bell, and the app pops a toast with vibration
 
 | Who | Buzzes for |
 | --- | --- |
-| Client | New lead, lead still waiting after 2 hours, team reply, edit started or live, site went live, monthly report (1st of the month), referral signed, day-30 referral ask, day-60 upgrade nudge, offers Cam sends |
-| Team | Escalations (urgent ones buzz harder), upgrade requests, referrals, new revision requests, overdue revisions, a client marking a job won |
+| Client | Someone used their referral link, referral signed ($ earned), credit applied, new lead, lead still waiting after 2 hours, team reply, edit started or live, site went live, monthly report (1st of the month), referral signed, day-30 referral ask, day-60 upgrade nudge, offers Cam sends |
+| Team | Site down and back up, referrals from share links, escalations (urgent ones buzz harder), upgrade requests, referrals, new revision requests, overdue revisions, a client marking a job won |
 
 Push notes:
 
@@ -67,6 +70,20 @@ POST /api/hooks/lead/<siteKey>
 fields: name, phone, email, message   (JSON or form-encoded)
 optional: _redirect (thank-you URL), _gotcha (hidden honeypot)
 ```
+
+## Referral program settings
+
+Set in `shared/plans.ts` under `REFERRAL`: $100 per signup, a 5-punch card with a $250 bonus when it fills, and "$100 off your website build" for the business that was referred. These are a proposal; the Ops Manual still lists the incentive as undecided. When a referral signs, mark it Signed on the client's Referrals tab. After the credit comes off their Stripe invoice, tap "Mark applied".
+
+## Website stats snippet
+
+The Site tab on each client's page has a one-line script to paste into their site:
+
+```html
+<script src="https://YOUR-APP/api/hooks/t/<siteKey>.js" defer></script>
+```
+
+It counts page views, taps on phone, text and email links, and form sends. It uses no cookies and collects no personal data.
 
 ## Clickable preview
 

@@ -2,11 +2,11 @@ import { useState } from "react";
 import type { Client } from "../../types";
 import { PLANS } from "../../../../shared/plans";
 
-export type ClientFields = Pick<Client, "businessName" | "ownerName" | "phone" | "email" | "tier" | "siteUrl" | "status" | "goLiveDate" | "niche" | "notes">;
+export type ClientFields = Pick<Client, "businessName" | "ownerName" | "phone" | "email" | "tier" | "siteUrl" | "status" | "goLiveDate" | "niche" | "notes" | "googleReviewUrl">;
 
 export function ClientForm({ initial, onSubmit, submitLabel }: { initial?: Partial<ClientFields>; onSubmit: (v: ClientFields) => Promise<void>; submitLabel: string }) {
   const [v, setV] = useState<ClientFields>({
-    businessName: "", ownerName: "", phone: "", email: "", tier: 2, siteUrl: "", status: "build", goLiveDate: "", niche: "", notes: "",
+    businessName: "", ownerName: "", phone: "", email: "", tier: 2, siteUrl: "", status: "build", goLiveDate: "", niche: "", notes: "", googleReviewUrl: "",
     ...initial,
   } as ClientFields);
   const [err, setErr] = useState("");
@@ -39,6 +39,7 @@ export function ClientForm({ initial, onSubmit, submitLabel }: { initial?: Parti
         <label>Go-live date<input {...f("goLiveDate")} type="date" /></label>
       </div>
       <label>Niche<input {...f("niche")} placeholder="irrigation, septic, salon…" /></label>
+      <label>Google review link<input {...f("googleReviewUrl")} type="url" placeholder="https://g.page/r/…/review" /></label>
       <label>Notes<textarea {...f("notes")} /></label>
       {err && <div className="err">{err}</div>}
       <button className="btn primary" disabled={busy}>{busy ? "Saving…" : submitLabel}</button>

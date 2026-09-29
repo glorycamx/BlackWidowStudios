@@ -1,5 +1,5 @@
 // In-browser fake backend for the clickable preview (VITE_DEMO=1). Mirrors the real API's shapes.
-import { PLANS, ADDONS, REFERRAL_CREDIT, nextPlan, type Tier } from "../../shared/plans";
+import { PLANS, ADDONS, REFERRAL, creditForSignup, nextPlan, type Tier } from "../../shared/plans";
 
 const now = () => new Date().toISOString();
 const ago = (h: number) => new Date(Date.now() - h * 3600_000).toISOString();
@@ -16,7 +16,7 @@ const team = { id: 1, email: "admin@blackwidow.studio", name: "Cam", role: "team
 const clientUser = { id: 3, email: "demo@blackwidow.studio", name: "Dan", role: "client" as const, clientId: 1 };
 
 const clients: any[] = [
-  { id: 1, businessName: "Granite State Irrigation", ownerName: "Dan", phone: "603-555-0142", email: "dan@example.com", tier: 2, siteUrl: "granitestateirrigation.com", status: "live", goLiveDate: ago(24 * 12).slice(0, 10), niche: "irrigation", siteKey: "demo-site-key", notes: "Referral via Green By Me." },
+  { id: 1, businessName: "Granite State Irrigation", ownerName: "Dan", phone: "603-555-0142", email: "dan@example.com", tier: 2, siteUrl: "granitestateirrigation.com", status: "live", goLiveDate: ago(24 * 12).slice(0, 10), niche: "irrigation", siteKey: "demo-site-key", referralCode: "GRANITE42", googleReviewUrl: "https://g.page/r/demo/review", notes: "Referral via Green By Me." },
   { id: 2, businessName: "G. Skin Therapy", ownerName: "Glenda", phone: "978-555-0120", email: null, tier: 3, siteUrl: null, status: "phase1", goLiveDate: null, niche: "aesthetician", siteKey: "k2", notes: null },
   { id: 3, businessName: "Bentleys Stoneworks", ownerName: "Barry", phone: "603-555-0163", email: null, tier: 2, siteUrl: null, status: "build", goLiveDate: null, niche: "masonry", siteKey: "k3", notes: "Waiting on Gabe's domain credentials." },
   { id: 4, businessName: "Kerry Lapierre Septic", ownerName: "Kerry", phone: "603-555-0181", email: null, tier: 2, siteUrl: "lapierreseptic.com", status: "live", goLiveDate: ago(24 * 40).slice(0, 10), niche: "septic", siteKey: "k4", notes: null },
@@ -44,7 +44,61 @@ const escalations: any[] = [
   { id: 2, clientId: 2, category: "site_down", urgency: "urgent", summary: "Glenda says the booking form on the preview isn't sending.", status: "open", createdAt: ago(0.4) },
 ];
 const upgrades: any[] = [{ id: 1, clientId: 4, item: "tier-3", note: "Wants help with Google reviews", source: "chatbot", status: "new", createdAt: ago(5) }];
-const referrals: any[] = [{ id: 1, clientId: 1, name: "Rick from Rick's Landscaping", business: "Rick's Landscaping", phone: "603-555-0190", note: null, status: "contacted", createdAt: ago(48) }];
+const referrals: any[] = [
+  { id: 1, clientId: 1, name: "Rick Morin", business: "Rick's Landscaping", phone: "603-555-0190", email: null, source: "app", status: "signed", signedAt: ago(24 * 9), creditAmount: 100, creditStatus: "applied", createdAt: ago(24 * 20) },
+  { id: 2, clientId: 1, name: "Maria Santos", business: "Santos Cleaning Co.", phone: "978-555-0161", email: null, source: "link", status: "signed", signedAt: ago(30), creditAmount: 100, creditStatus: "pending", createdAt: ago(24 * 6) },
+  { id: 3, clientId: 1, name: "Jeff Lavoie", business: "Lavoie Paving", phone: "603-555-0114", email: null, source: "link", status: "contacted", signedAt: null, creditAmount: 0, creditStatus: "none", createdAt: ago(26) },
+];
+
+// A month of sample site traffic and uptime
+const siteEvents: { kind: string; path: string; createdAt: string }[] = [];
+{
+  const paths = ["/", "/", "/", "/services", "/services", "/sprinkler-repair", "/contact", "/about", "/winterization"];
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+  for (let d = 0; d < 30; d++) {
+    const views = 6 + Math.round(rnd() * 10 + (d % 7 === 1 ? 6 : 0));
+    for (let i = 0; i < views; i++) siteEvents.push({ kind: "view", path: paths[Math.floor(rnd() * paths.length)], createdAt: ago(d * 24 + rnd() * 20) });
+    if (rnd() < 0.6) siteEvents.push({ kind: "call", path: "/contact", createdAt: ago(d * 24 + 3) });
+    if (rnd() < 0.25) siteEvents.push({ kind: "form", path: "/contact", createdAt: ago(d * 24 + 5) });
+  }
+}
+const photos: any[] = [];
+
+function referralSummary(clientId: number) {
+  const c = cOf(clientId);
+  const rows = referrals.filter((r) => r.clientId === clientId).sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
+  const signed = rows.filter((r) => r.status === "signed");
+  const earned = signed.reduce((s, r) => s + r.creditAmount, 0);
+  const pending = signed.filter((r) => r.creditStatus === "pending").reduce((s, r) => s + r.creditAmount, 0);
+  const inPlay = rows.filter((r) => r.status === "new" || r.status === "contacted").length;
+  const origin = location.protocol.startsWith("http") ? `${location.origin}${location.pathname}#` : "https://app.blackwidow.studio";
+  return {
+    code: c.referralCode || "BW10",
+    link: `${origin}/r/${c.referralCode || "BW10"}`,
+    referrals: rows,
+    stats: { earned, pending, applied: earned - pending, signedCount: signed.length, inPlay, potential: inPlay * REFERRAL.perSignup },
+    program: REFERRAL,
+  };
+}
+
+function websiteStats(clientId: number) {
+  const c = cOf(clientId);
+  const ev = clientId === 1 ? siteEvents : [];
+  const pages = new Map<string, number>();
+  for (const e of ev) if (e.kind === "view") pages.set(e.path, (pages.get(e.path) || 0) + 1);
+  const live = c.status === "live";
+  return {
+    siteUrl: c.siteUrl, status: c.status, tracking: ev.length > 0,
+    traffic: {
+      views: ev.filter((e) => e.kind === "view").length, calls: ev.filter((e) => e.kind === "call").length, texts: 0, forms: ev.filter((e) => e.kind === "form").length,
+      dailyViews: ev.filter((e) => e.kind === "view").map((e) => e.createdAt),
+      topPages: [...pages.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([path, views]) => ({ path, views })),
+    },
+    health: live ? { checkedAt: ago(0.1), up: true, responseMs: 412, uptime: 99.9, https: true } : { checkedAt: null, up: null, responseMs: null, uptime: null, https: null },
+    photos: photos.filter((p) => p.clientId === clientId),
+  };
+}
 
 const notifs: Record<number, any[]> = {
   3: [
@@ -81,6 +135,7 @@ function overview(clientId: number) {
     leads: { last30: mine.filter((l) => Date.now() - +new Date(l.createdAt) < 30 * 86400_000).length, newCount: mine.filter((l) => l.status === "new").length, total: mine.length },
     openRevisions: revisions.filter((r) => r.clientId === clientId && r.status !== "done"),
     pendingUpgrade: upgrades.find((u) => u.clientId === clientId && u.status === "new") || null,
+    reviewUrl: c.googleReviewUrl || null,
   };
 }
 
@@ -133,6 +188,16 @@ function route(method: string, path: string, body: any): any {
     return { user: role === "team" ? team : clientUser };
   }
   if (p === "/auth/logout") { role = null; try { localStorage.removeItem("bw-demo-role"); } catch {} return { ok: true }; }
+  if ((m = p.match(/^\/public\/ref\/(\w+)$/))) {
+    const c = clients.find((x) => x.referralCode === m![1].toUpperCase());
+    if (!c) throw Object.assign(new Error("This referral link isn't active."), { status: 404 });
+    if (method === "GET") return { business: c.businessName, owner: c.ownerName, offer: REFERRAL.friendOffer };
+    if (!body?.name || (!body.phone && !body.email)) throw Object.assign(new Error("Add your name and a phone number or email so we can reach you"), { status: 400 });
+    referrals.unshift({ id: nid(), clientId: c.id, name: body.name, business: body.business || null, phone: body.phone || null, email: body.email || null, source: "link", status: "new", signedAt: null, creditAmount: 0, creditStatus: "none", createdAt: now() });
+    notify(3, { kind: "referral", title: `🔥 ${body.name} just used your link!`, body: `${body.business || "They"} asked about a website. You'll earn $${REFERRAL.perSignup} if they sign.`, url: "/refer" });
+    notify(1, { kind: "referral", title: `🤝 Referral via ${c.businessName}'s link`, body: `${body.name}. Warm lead, call now.`, url: `/team/clients/${c.id}` });
+    return { ok: true };
+  }
   if (!me) throw Object.assign(new Error("Please sign in"), { status: 401 });
 
   if (p === "/push/key") return { key: "" };
@@ -176,8 +241,14 @@ function route(method: string, path: string, body: any): any {
     notify(1, { kind: "upgrade_request", title: "💰 Upsell: Granite State Irrigation", body: `${describe(body.item)}. Call them while it's hot.`, url: "/team/clients/1" });
     return { ok: true, message: `${describe(body.item)}: Cam will reach out shortly.` };
   }
-  if (p === "/client/referrals" && method === "GET") return { referrals: referrals.filter((r) => r.clientId === 1), credit: REFERRAL_CREDIT };
-  if (p === "/client/referrals") { const r = { id: nid(), clientId: 1, ...body, status: "new", createdAt: now() }; referrals.unshift(r); return { referral: r }; }
+  if (p === "/client/referrals" && method === "GET") return referralSummary(1);
+  if (p === "/client/referrals") { const r = { id: nid(), clientId: 1, ...body, source: "app", status: "new", signedAt: null, creditAmount: 0, creditStatus: "none", createdAt: now() }; referrals.unshift(r); return { referral: r }; }
+  if (p === "/client/website") return websiteStats(1);
+  if (p === "/client/photos") {
+    for (const ph of body.photos) photos.unshift({ id: nid(), clientId: 1, note: body.note || null, createdAt: now(), url: ph.dataUrl });
+    revisions.unshift({ id: nid(), clientId: 1, title: `Add ${body.photos.length} new photo${body.photos.length > 1 ? "s" : ""} to the site`, details: body.note || "Client sent new job photos from the app.", page: null, status: "open", createdBy: "client", dueAt: inH(48), completedAt: null, createdAt: now() });
+    return { ok: true, count: body.photos.length };
+  }
   if (p === "/client/site-check") return { ok: true, status: 200, responseMs: 412, detail: "Up (HTTP 200, 412 ms)" };
 
   // team
@@ -206,6 +277,7 @@ function route(method: string, path: string, body: any): any {
       escalations: escalations.filter((x) => x.clientId === id),
       upgrades: upgrades.filter((x) => x.clientId === id).map((u) => ({ ...u, label: describe(u.item) })),
       referrals: referrals.filter((x) => x.clientId === id),
+      website: websiteStats(id),
       logins: id === 1 ? [{ id: 3, email: "demo@blackwidow.studio", name: "Dan" }] : [],
     };
   }
@@ -227,7 +299,20 @@ function route(method: string, path: string, body: any): any {
   }
   if ((m = p.match(/^\/team\/escalations\/(\d+)$/))) { const e = escalations.find((x) => x.id === +m![1]); e.status = body.status; return { escalation: e }; }
   if ((m = p.match(/^\/team\/upgrades\/(\d+)$/))) { const u = upgrades.find((x) => x.id === +m![1]); u.status = body.status; return { upgrade: u }; }
-  if ((m = p.match(/^\/team\/referrals\/(\d+)$/))) { const r = referrals.find((x) => x.id === +m![1]); r.status = body.status; return { referral: r }; }
+  if ((m = p.match(/^\/team\/referrals\/(\d+)\/credit$/))) {
+    const r = referrals.find((x) => x.id === +m![1]);
+    if (r.creditStatus === "pending") { r.creditStatus = "applied"; if (r.clientId === 1) notify(3, { kind: "referral", title: `💵 $${r.creditAmount} credit applied`, body: `Thanks to ${r.name}, your bill just got smaller. Who's next?`, url: "/refer" }); }
+    return { referral: r };
+  }
+  if ((m = p.match(/^\/team\/referrals\/(\d+)$/))) {
+    const r = referrals.find((x) => x.id === +m![1]);
+    if (body.status === "signed" && r.status !== "signed") {
+      const nth = referrals.filter((x) => x.clientId === r.clientId && x.status === "signed").length + 1;
+      Object.assign(r, { status: "signed", signedAt: now(), creditAmount: creditForSignup(nth), creditStatus: "pending" });
+      if (r.clientId === 1) notify(3, { kind: "referral", title: `🤑 You just earned $${r.creditAmount}`, body: `${r.name} signed with Black Widow. ${REFERRAL.cardSlots - (nth % REFERRAL.cardSlots)} more to fill your card!`, url: "/refer" });
+    } else if (r.status !== "signed") r.status = body.status;
+    return { referral: r };
+  }
 
   throw Object.assign(new Error(`Demo: no handler for ${method} ${p}`), { status: 404 });
 }

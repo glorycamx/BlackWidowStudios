@@ -92,3 +92,16 @@ export const ADDONS = [
   { id: "seo", title: "SEO push", pitch: "Keyword research, town pages and rank reporting." },
   { id: "reviews", title: "Review blast", pitch: "We text your past customers for Google reviews." },
 ] as const;
+
+// Referral program. Amounts are a proposal; the Ops Manual (Section 6) still lists the incentive as open.
+export const REFERRAL = {
+  perSignup: REFERRAL_CREDIT, // off the referrer's next month, per business that signs
+  cardSlots: 5, // punch card: every 5 signups fills a card
+  cardBonus: 250, // extra credit for filling a card
+  friendOffer: "$100 off your website build", // what the referred business gets
+};
+
+// Credit a referrer earns for their Nth signup (1-based): per-signup credit plus the card bonus on every full card
+export function creditForSignup(n: number) {
+  return REFERRAL.perSignup + (n % REFERRAL.cardSlots === 0 ? REFERRAL.cardBonus : 0);
+}

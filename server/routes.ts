@@ -13,9 +13,12 @@ import {
   createUpgradeRequest,
   describeItem,
   getClient,
+  markReferralSigned,
+  referralSummary,
   setRevisionStatus,
+  websiteStats,
 } from "./services.js";
-import { ADDONS, PLANS, REFERRAL_CREDIT } from "../shared/plans.js";
+import { ADDONS, PLANS, REFERRAL, REFERRAL_CREDIT } from "../shared/plans.js";
 
 export const api = Router();
 
@@ -169,6 +172,100 @@ api.post(
   }),
 );
 
+// ---------- Tracking snippet for client websites ----------
+// <script src="https://APP/api/hooks/t/SITEKEY.js" defer></script> counts visits, call/text/email taps and form sends.
+
+api.get("/hooks/t/:siteKey.js", (req, res) => {
+  const key = String(req.params.siteKey).replace(/[^\w-]/g, "");
+  const endpoint = `${req.protocol}://${req.get("host")}/api/hooks/event/${key}`;
+  res.type("application/javascript").set("Cache-Control", "public, max-age=3600").send(`(function(){
+  var U=${JSON.stringify(endpoint)};
+  function s(k){try{var b=JSON.stringify({kind:k,path:location.pathname});if(navigator.sendBeacon){navigator.sendBeacon(U,new Blob([b],{type:"text/plain"}))}else{fetch(U,{method:"POST",body:b,keepalive:true})}}catch(e){}}
+  s("view");
+  document.addEventListener("click",function(e){var a=e.target&&e.target.closest&&e.target.closest("a[href]");if(!a)return;var h=a.getAttribute("href")||"";if(h.indexOf("tel:")==0)s("call");else if(h.indexOf("sms:")==0)s("text");else if(h.indexOf("mailto:")==0)s("email")},true);
+  document.addEventListener("submit",function(){s("form")},true);
+})();`);
+});
+
+api.options("/hooks/event/:siteKey", hookCors);
+api.post(
+  "/hooks/event/:siteKey",
+  hookCors,
+  express.text({ type: "*/*", limit: "2kb" }),
+  h(async (req, res) => {
+    const [client] = await db.select({ id: schema.clients.id }).from(schema.clients).where(eq(schema.clients.siteKey, String(req.params.siteKey)));
+    if (!client) return res.sendStatus(404);
+    let body: any = req.body;
+    if (typeof body === "string") {
+      try { body = JSON.parse(body); } catch { body = {}; }
+    }
+    const kind = ["view", "call", "text", "email", "form"].includes(body?.kind) ? body.kind : null;
+    if (!kind) return res.sendStatus(400);
+    await db.insert(schema.siteEvents).values({ clientId: client.id, kind, path: typeof body.path === "string" ? body.path.slice(0, 200) : null });
+    res.sendStatus(204);
+  }),
+);
+
+// ---------- Public referral page (/r/:code) ----------
+
+api.get(
+  "/public/ref/:code",
+  h(async (req, res) => {
+    const [c] = await db.select().from(schema.clients).where(eq(schema.clients.referralCode, String(req.params.code).toUpperCase()));
+    if (!c) return res.status(404).json({ error: "This referral link isn't active." });
+    res.json({ business: c.businessName.replace(/\s*\(.*?\)\s*/g, " ").trim(), owner: c.ownerName.split(" ")[0], offer: REFERRAL.friendOffer });
+  }),
+);
+
+api.post(
+  "/public/ref/:code",
+  h(async (req, res) => {
+    const [c] = await db.select().from(schema.clients).where(eq(schema.clients.referralCode, String(req.params.code).toUpperCase()));
+    if (!c) return res.status(404).json({ error: "This referral link isn't active." });
+    if (req.body?._gotcha) return res.json({ ok: true });
+    const input = z
+      .object({
+        name: z.string().trim().min(2, "Please add your name").max(120),
+        business: z.string().trim().max(160).nullish(),
+        phone: z.string().trim().max(40).nullish(),
+        email: z.string().trim().email("That email doesn't look right").max(200).nullish().or(z.literal("")),
+        note: z.string().trim().max(1000).nullish(),
+      })
+      .refine((v) => v.phone || v.email, { message: "Add a phone number or email so we can reach you" })
+      .parse(req.body);
+    await db.insert(schema.referrals).values({ clientId: c.id, ...input, email: input.email || null, source: "link" });
+    await notifyClient(c.id, {
+      kind: "referral",
+      title: `🔥 ${input.name} just used your link!`,
+      body: `${input.business || "They"} asked about a website. You'll earn $${REFERRAL.perSignup} if they sign.`,
+      url: "/refer",
+      buzz: "money",
+    });
+    await notifyTeam(
+      {
+        kind: "referral",
+        title: `🤝 Referral via ${c.businessName}'s link`,
+        body: `${input.name}${input.business ? ` (${input.business})` : ""} ${input.phone || input.email}. Warm lead, call now.`,
+        url: `/team/clients/${c.id}`,
+        buzz: "money",
+      },
+      { email: true },
+    );
+    res.json({ ok: true });
+  }),
+);
+
+// Job photos: visible to the client who sent them and the team
+api.get(
+  "/photos/:id",
+  h(async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const [p] = await db.select().from(schema.sitePhotos).where(eq(schema.sitePhotos.id, id(String(req.params.id))));
+    if (!p || (req.user.role !== "team" && req.user.clientId !== p.clientId)) return res.sendStatus(404);
+    res.type(p.mime).set("Cache-Control", "private, max-age=86400").send(p.data);
+  }),
+);
+
 // ---------- Client app ----------
 
 const client = Router();
@@ -184,7 +281,8 @@ client.get(
       .from(schema.upgradeRequests)
       .where(and(eq(schema.upgradeRequests.clientId, cid(req)), eq(schema.upgradeRequests.status, "new")))
       .limit(1);
-    res.json({ ...overview, pendingUpgrade: pendingUpgrade || null });
+    const c = await getClient(cid(req));
+    res.json({ ...overview, pendingUpgrade: pendingUpgrade || null, reviewUrl: c.googleReviewUrl });
   }),
 );
 
@@ -280,17 +378,7 @@ client.post(
   }),
 );
 
-client.get(
-  "/referrals",
-  h(async (req, res) => {
-    const rows = await db
-      .select()
-      .from(schema.referrals)
-      .where(eq(schema.referrals.clientId, cid(req)))
-      .orderBy(desc(schema.referrals.createdAt));
-    res.json({ referrals: rows, credit: REFERRAL_CREDIT });
-  }),
-);
+client.get("/referrals", h(async (req, res) => res.json(await referralSummary(cid(req)))));
 
 client.post(
   "/referrals",
@@ -305,6 +393,34 @@ client.post(
       { email: true },
     );
     res.json({ referral: ref });
+  }),
+);
+
+client.get("/website", h(async (req, res) => res.json(await websiteStats(cid(req)))));
+
+client.post(
+  "/photos",
+  h(async (req, res) => {
+    const input = z
+      .object({
+        photos: z.array(z.object({ dataUrl: z.string().regex(/^data:image\/(jpeg|png|webp);base64,/, "Photos must be JPEG, PNG or WebP") })).min(1).max(10),
+        note: z.string().max(1000).nullish(),
+      })
+      .parse(req.body);
+    const rows = input.photos.map((p) => {
+      const [head, b64] = p.dataUrl.split(",");
+      const data = Buffer.from(b64, "base64");
+      if (data.length > 4 * 1024 * 1024) throw new z.ZodError([{ code: "custom", message: "Each photo must be under 4 MB", path: [] }]);
+      return { clientId: cid(req), mime: head.slice(5, head.indexOf(";")), data, note: input.note || null };
+    });
+    await db.insert(schema.sitePhotos).values(rows);
+    const n = rows.length;
+    await createRevision(
+      cid(req),
+      { title: `Add ${n} new photo${n > 1 ? "s" : ""} to the site`, details: input.note || "Client sent new job photos from the app. Pick the best spots for them.", page: null },
+      "client",
+    );
+    res.json({ ok: true, count: n });
   }),
 );
 
@@ -395,9 +511,10 @@ const clientInput = z.object({
   goLiveDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullish().or(z.literal("")),
   niche: z.string().max(80).nullish(),
   notes: z.string().max(5000).nullish(),
+  googleReviewUrl: z.string().url().max(500).nullish().or(z.literal("")),
 });
 
-const clean = (v: z.infer<typeof clientInput>) => ({ ...v, email: v.email || null, goLiveDate: v.goLiveDate || null });
+const clean = (v: z.infer<typeof clientInput>) => ({ ...v, email: v.email || null, goLiveDate: v.goLiveDate || null, googleReviewUrl: v.googleReviewUrl || null });
 
 team.post(
   "/clients",
@@ -425,6 +542,7 @@ team.get(
       db.select().from(schema.referrals).where(eq(schema.referrals.clientId, clientId)).orderBy(desc(schema.referrals.createdAt)),
       db.select({ id: schema.users.id, email: schema.users.email, name: schema.users.name }).from(schema.users).where(eq(schema.users.clientId, clientId)),
     ]);
+    const website = await websiteStats(clientId);
     res.json({
       client: c,
       chat,
@@ -434,6 +552,7 @@ team.get(
       upgrades: upgrades.map((u) => ({ ...u, label: describeItem(u.item) })),
       referrals,
       logins,
+      website,
     });
   }),
 );
@@ -569,17 +688,31 @@ team.patch(
   "/referrals/:id",
   h(async (req, res) => {
     const { status } = z.object({ status: z.enum(["new", "contacted", "signed", "lost"]) }).parse(req.body);
-    const [r] = await db.update(schema.referrals).set({ status }).where(eq(schema.referrals.id, id(String(req.params.id)))).returning();
-    if (r && status === "signed") {
-      await notifyClient(r.clientId, {
-        kind: "referral",
-        title: `🤑 $${REFERRAL_CREDIT} off next month`,
-        body: `${r.name} signed with us. Thanks for the referral! Know anyone else?`,
-        url: "/refer",
-        buzz: "money",
-      });
+    const refId = id(String(req.params.id));
+    if (status === "signed") return res.json({ referral: await markReferralSigned(refId) });
+    const [r] = await db
+      .update(schema.referrals)
+      .set({ status, signedAt: null, creditAmount: 0, creditStatus: "none" })
+      .where(and(eq(schema.referrals.id, refId), ne(schema.referrals.status, "signed")))
+      .returning();
+    if (r && status === "contacted") {
+      await notifyClient(r.clientId, { kind: "referral", title: "📞 We're talking to your referral", body: `Cam reached out to ${r.name}. Fingers crossed for your $${REFERRAL.perSignup}!`, url: "/refer" });
     }
-    res.json({ referral: r });
+    res.json({ referral: r || null });
+  }),
+);
+
+// Mark a referral credit as taken off the client's bill
+team.patch(
+  "/referrals/:id/credit",
+  h(async (req, res) => {
+    const [r] = await db
+      .update(schema.referrals)
+      .set({ creditStatus: "applied" })
+      .where(and(eq(schema.referrals.id, id(String(req.params.id))), eq(schema.referrals.creditStatus, "pending")))
+      .returning();
+    if (r) await notifyClient(r.clientId, { kind: "referral", title: `💵 $${r.creditAmount} credit applied`, body: `Thanks to ${r.name}, your bill just got smaller. Who's next?`, url: "/refer", buzz: "money" });
+    res.json({ referral: r || null });
   }),
 );
 

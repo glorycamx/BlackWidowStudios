@@ -9,7 +9,7 @@ import { startJobs } from "./jobs.js";
 
 const app = express();
 app.set("trust proxy", 1);
-app.use(express.json({ limit: "200kb" }));
+app.use(express.json({ limit: "25mb" })); // photo uploads arrive as base64 JSON
 app.use(express.urlencoded({ extended: false, limit: "200kb" }));
 app.use("/api", sessionMiddleware(), loadUser, api);
 app.use("/api", ((err, _req, res, _next) => {

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { get } from "./api";
 import type { Me, User } from "./types";
 import { NotificationsProvider } from "./components/Notifications";
@@ -13,6 +13,8 @@ import Revisions from "./pages/Revisions";
 import More from "./pages/More";
 import Plan from "./pages/Plan";
 import Refer from "./pages/Refer";
+import Website from "./pages/Website";
+import PublicReferral from "./pages/PublicReferral";
 import Inbox from "./pages/team/Inbox";
 import Clients from "./pages/team/Clients";
 import ClientDetail from "./pages/team/ClientDetail";
@@ -24,9 +26,12 @@ export const useMe = () => useContext(MeCtx);
 export default function App() {
   const [info, setInfo] = useState<Me | null>(null);
   const [loading, setLoading] = useState(true);
+  const loc = useLocation();
   const reload = () => get<Me>("/me").then(setInfo).catch(() => setInfo({ user: null })).finally(() => setLoading(false));
   useEffect(() => { reload(); }, []);
 
+  // Share links work for anyone, signed in or not
+  if (loc.pathname.startsWith("/r/")) return <Routes><Route path="/r/:code" element={<PublicReferral />} /></Routes>;
   if (loading) return <div className="login"><div className="empty">Loading…</div></div>;
   const me = info?.user ?? null;
   const setMe = (u: User | null) => (u ? reload() : setInfo({ user: null }));
@@ -58,6 +63,7 @@ export default function App() {
                 <Route path="more" element={<More />} />
                 <Route path="plan" element={<Plan />} />
                 <Route path="refer" element={<Refer />} />
+                <Route path="website" element={<Website />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

@@ -9,8 +9,10 @@ import {
   createUpgradeRequest,
   getClient,
   recentLeads,
+  referralSummary,
+  websiteStats,
 } from "./services.js";
-import { ADDONS, REFERRAL_CREDIT } from "../shared/plans.js";
+import { ADDONS, REFERRAL } from "../shared/plans.js";
 
 const MODEL = "claude-opus-5-5";
 const MAX_TOOL_ROUNDS = 6;
@@ -29,7 +31,7 @@ How the service works:
 - Edits on the client's plan are unlimited and included. The turnaround depends on the plan.
 - The monthly fee starts 30 days after the site goes live, not at signup.
 - Leads from the website form show up in the Leads tab of this app, and the client gets a phone notification for each one.
-- Referral offer: for anyone they refer who signs up, they get $${REFERRAL_CREDIT} off their next month. The Refer tab in the app is where they send a name over.
+- Referral program: for every business they refer that signs, they get $${REFERRAL.perSignup} off their bill, and every ${REFERRAL.cardSlots} signups fills a punch card worth a $${REFERRAL.cardBonus} bonus. The business they refer gets ${REFERRAL.friendOffer}. The Earn tab has their personal share link, their earnings and a tracker for each referral. Mention it when they're happy with the work.
 - Cam and Trae answer calls and texts until 7:30 PM Eastern.
 
 Revisions: when the client asks for a change to their site (text, photos, hours, prices, colors, a new section, a broken link), log it with create_revision_request. Gather enough detail that someone could do the edit without calling them back: which page, the exact new wording or what to replace, and where photos are coming from (they can text or email them). If something is missing, ask once, briefly, then log it. Tell them the turnaround their plan gets. A brand-new page counts as a revision only if their plan has room for it; if they are at their plan's page count, it is an upgrade conversation.
@@ -96,6 +98,13 @@ const tools: Anthropic.Beta.BetaTool[] = [
       required: ["days"],
       additionalProperties: false,
     },
+    strict: true,
+  },
+  {
+    name: "get_website_stats",
+    description:
+      "Get the client's website numbers for the last 30 days (visits, call taps, text taps, form sends, top pages), uptime and speed from the monitor, and their referral earnings and share link.",
+    input_schema: { type: "object", properties: {}, additionalProperties: false },
     strict: true,
   },
   {
@@ -166,6 +175,17 @@ async function runTool(clientId: number, name: string, input: any): Promise<unkn
         count: rows.length,
         byStatus: rows.reduce<Record<string, number>>((acc, l) => ((acc[l.status] = (acc[l.status] || 0) + 1), acc), {}),
         latest: rows.slice(0, 5).map((l) => ({ name: l.name, createdAt: l.createdAt, status: l.status, message: l.message?.slice(0, 140) })),
+      };
+    }
+    case "get_website_stats": {
+      const w = await websiteStats(clientId);
+      const r = await referralSummary(clientId);
+      return {
+        siteUrl: w.siteUrl,
+        trackingInstalled: w.tracking,
+        last30Days: { visits: w.traffic.views, callTaps: w.traffic.calls, textTaps: w.traffic.texts, formSends: w.traffic.forms, topPages: w.traffic.topPages },
+        health: w.health,
+        referrals: { link: r.link, ...r.stats },
       };
     }
     case "escalate_to_team": {

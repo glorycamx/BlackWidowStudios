@@ -1,7 +1,7 @@
 import { and, desc, eq, gte, ne, sql } from "drizzle-orm";
 import { db, schema } from "./db.js";
 import { notifyClient, notifyTeam } from "./notify.js";
-import { PLANS, nextPlan, ADDONS, type Tier } from "../shared/plans.js";
+import { PLANS, nextPlan, ADDONS, REFERRAL, creditForSignup, type Tier } from "../shared/plans.js";
 
 export type Client = typeof schema.clients.$inferSelect;
 
@@ -179,4 +179,149 @@ export async function recentLeads(clientId: number, days: number) {
     .from(schema.leads)
     .where(and(eq(schema.leads.clientId, clientId), gte(schema.leads.createdAt, since)))
     .orderBy(desc(schema.leads.createdAt));
+}
+
+// ---------- Referrals ----------
+
+export async function ensureReferralCode(c: Client): Promise<string> {
+  if (c.referralCode) return c.referralCode;
+  const base = (c.businessName.replace(/\(.*?\)/g, "").match(/[A-Za-z]+/g) || ["BW"])[0].toUpperCase().slice(0, 10);
+  for (let i = 0; i < 20; i++) {
+    const code = `${base}${Math.floor(10 + Math.random() * 90)}`;
+    const updated = await db
+      .update(schema.clients)
+      .set({ referralCode: code })
+      .where(and(eq(schema.clients.id, c.id), sql`${schema.clients.referralCode} is null`))
+      .returning()
+      .catch(() => []); // unique clash: try another code
+    if (updated.length) return code;
+    const fresh = await getClient(c.id);
+    if (fresh.referralCode) return fresh.referralCode;
+  }
+  throw new Error("Could not create a referral code");
+}
+
+export async function referralSummary(clientId: number) {
+  const c = await getClient(clientId);
+  const code = await ensureReferralCode(c);
+  const rows = await db
+    .select()
+    .from(schema.referrals)
+    .where(eq(schema.referrals.clientId, clientId))
+    .orderBy(desc(schema.referrals.createdAt));
+  const signed = rows.filter((r) => r.status === "signed");
+  const earned = signed.reduce((s, r) => s + r.creditAmount, 0);
+  const pending = signed.filter((r) => r.creditStatus === "pending").reduce((s, r) => s + r.creditAmount, 0);
+  const inPlay = rows.filter((r) => r.status === "new" || r.status === "contacted").length;
+  return {
+    code,
+    link: appUrlFor(`/r/${code}`),
+    referrals: rows,
+    stats: {
+      earned,
+      pending,
+      applied: earned - pending,
+      signedCount: signed.length,
+      inPlay,
+      potential: inPlay * REFERRAL.perSignup,
+    },
+    program: REFERRAL,
+  };
+}
+
+function appUrlFor(path: string) {
+  return `${(process.env.APP_URL || "").replace(/\/$/, "")}${path}`;
+}
+
+export async function markReferralSigned(referralId: number) {
+  const [ref] = await db.select().from(schema.referrals).where(eq(schema.referrals.id, referralId));
+  if (!ref || ref.status === "signed") return ref;
+  const [{ n }] = await db
+    .select({ n: sql<number>`count(*)`.mapWith(Number) })
+    .from(schema.referrals)
+    .where(and(eq(schema.referrals.clientId, ref.clientId), eq(schema.referrals.status, "signed")));
+  const nth = n + 1;
+  const credit = creditForSignup(nth);
+  const [updated] = await db
+    .update(schema.referrals)
+    .set({ status: "signed", signedAt: new Date(), creditAmount: credit, creditStatus: "pending" })
+    .where(eq(schema.referrals.id, referralId))
+    .returning();
+  const filledCard = nth % REFERRAL.cardSlots === 0;
+  await notifyClient(ref.clientId, {
+    kind: "referral",
+    title: filledCard ? `🎟️ Card complete! +$${credit}` : `🤑 You just earned $${credit}`,
+    body: filledCard
+      ? `${ref.name} signed, and that fills your punch card. $${REFERRAL.perSignup} + a $${REFERRAL.cardBonus} bonus off your bill.`
+      : `${ref.name} signed with Black Widow. $${credit} comes off your next month. ${REFERRAL.cardSlots - (nth % REFERRAL.cardSlots)} more to fill your card!`,
+    url: "/refer",
+    buzz: "money",
+  });
+  return updated;
+}
+
+// ---------- Website ----------
+
+export async function websiteStats(clientId: number) {
+  const c = await getClient(clientId);
+  const since = new Date(Date.now() - 30 * 86400_000);
+  const events = await db
+    .select({ kind: schema.siteEvents.kind, path: schema.siteEvents.path, createdAt: schema.siteEvents.createdAt })
+    .from(schema.siteEvents)
+    .where(and(eq(schema.siteEvents.clientId, clientId), gte(schema.siteEvents.createdAt, since)));
+  const count = (k: string) => events.filter((e) => e.kind === k).length;
+  const pages = new Map<string, number>();
+  for (const e of events) if (e.kind === "view") pages.set(e.path || "/", (pages.get(e.path || "/") || 0) + 1);
+  const checks = await db
+    .select()
+    .from(schema.siteChecks)
+    .where(and(eq(schema.siteChecks.clientId, clientId), gte(schema.siteChecks.createdAt, since)))
+    .orderBy(desc(schema.siteChecks.createdAt));
+  const photos = await db
+    .select({ id: schema.sitePhotos.id, note: schema.sitePhotos.note, createdAt: schema.sitePhotos.createdAt })
+    .from(schema.sitePhotos)
+    .where(eq(schema.sitePhotos.clientId, clientId))
+    .orderBy(desc(schema.sitePhotos.createdAt))
+    .limit(12);
+  return {
+    siteUrl: c.siteUrl,
+    status: c.status,
+    tracking: events.length > 0,
+    traffic: {
+      views: count("view"),
+      calls: count("call"),
+      texts: count("text"),
+      forms: count("form"),
+      dailyViews: events.filter((e) => e.kind === "view").map((e) => e.createdAt),
+      topPages: [...pages.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([path, views]) => ({ path, views })),
+    },
+    health: {
+      checkedAt: checks[0]?.createdAt || null,
+      up: checks[0]?.ok ?? null,
+      responseMs: checks[0]?.responseMs ?? null,
+      uptime: checks.length ? Math.round((checks.filter((x) => x.ok).length / checks.length) * 1000) / 10 : null,
+      https: c.siteUrl ? !/^http:\/\//.test(c.siteUrl) : null,
+    },
+    photos,
+  };
+}
+
+export async function recordSiteCheck(c: Client) {
+  const r = await checkSite(c.siteUrl);
+  const [prev] = await db
+    .select()
+    .from(schema.siteChecks)
+    .where(eq(schema.siteChecks.clientId, c.id))
+    .orderBy(desc(schema.siteChecks.createdAt))
+    .limit(1);
+  await db.insert(schema.siteChecks).values({ clientId: c.id, ok: r.ok, status: (r as any).status ?? null, responseMs: (r as any).responseMs ?? null });
+  if (prev && prev.ok && !r.ok) {
+    await notifyTeam(
+      { kind: "escalation", title: `🚨 SITE DOWN: ${c.businessName}`, body: `${c.siteUrl}: ${r.detail}`, url: `/team/clients/${c.id}`, buzz: "urgent" },
+      { email: true },
+    );
+  } else if (prev && !prev.ok && r.ok) {
+    await notifyTeam({ kind: "escalation", title: `✅ Back up: ${c.businessName}`, body: `${c.siteUrl} is responding again.`, url: `/team/clients/${c.id}` });
+  }
+  return r;
 }

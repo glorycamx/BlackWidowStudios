@@ -2,6 +2,7 @@ import { and, eq, isNull, lt, ne, sql } from "drizzle-orm";
 import { db, schema } from "./db.js";
 import { notifyClient, notifyTeam } from "./notify.js";
 import { PLANS, REFERRAL_CREDIT, nextPlan, type Tier } from "../shared/plans.js";
+import { recordSiteCheck } from "./services.js";
 
 // Runs every 15 minutes. Each scheduled alert is keyed in job_log so it fires once.
 async function once(key: string, fn: () => Promise<void>) {
@@ -116,9 +117,17 @@ async function upgradeTeaser() {
   }
 }
 
+async function uptimeMonitor() {
+  const live = await db.select().from(schema.clients).where(and(eq(schema.clients.status, "live"), sql`${schema.clients.siteUrl} is not null`));
+  await Promise.all(live.map((c) => recordSiteCheck(c).catch((err) => console.error("[jobs] check failed", c.id, err))));
+  // Keep 45 days of checks and 400 days of traffic events
+  await db.delete(schema.siteChecks).where(lt(schema.siteChecks.createdAt, new Date(Date.now() - 45 * 86400_000)));
+  await db.delete(schema.siteEvents).where(lt(schema.siteEvents.createdAt, new Date(Date.now() - 400 * 86400_000)));
+}
+
 export function startJobs() {
   const run = async () => {
-    for (const job of [leadNudges, overdueRevisions, monthlyReports, day30ReferralAsk, upgradeTeaser]) {
+    for (const job of [uptimeMonitor, leadNudges, overdueRevisions, monthlyReports, day30ReferralAsk, upgradeTeaser]) {
       try {
         await job();
       } catch (err) {

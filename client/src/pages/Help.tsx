@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { get, post } from "../api";
 import type { ChatMessage } from "../types";
 import { Icon, WebMark } from "../components/Icon";
@@ -16,7 +17,17 @@ const SUGGESTED = [
 export default function Help() {
   const { me } = useMe();
   const [msgs, setMsgs] = useState<ChatMessage[]>([]);
-  const [text, setText] = useState("");
+  const [params, setParams] = useSearchParams();
+  const [text, setText] = useState(() => params.get("q") || "");
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    // Quick-change tiles open the assistant with a started message
+    if (params.get("q")) {
+      setParams({}, { replace: true });
+      const el = inputRef.current;
+      if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+    }
+  }, []);
   const [waiting, setWaiting] = useState(false);
   const lastId = useRef(0);
   const endRef = useRef<HTMLDivElement>(null);
@@ -103,8 +114,9 @@ export default function Help() {
         <form onSubmit={(e) => { e.preventDefault(); send(text); }}>
           <textarea
             placeholder="Ask the assistant anything…"
+            ref={inputRef}
             value={text}
-            rows={1}
+            rows={text.length > 40 ? 2 : 1}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(text); } }}
           />

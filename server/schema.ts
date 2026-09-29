@@ -8,6 +8,7 @@ import {
   boolean,
   date,
   index,
+  customType,
   varchar,
   json,
 } from "drizzle-orm/pg-core";
@@ -26,6 +27,9 @@ export const clients = pgTable("clients", {
   niche: text("niche"),
   // Public key used by the client's website form to post leads into the portal
   siteKey: text("site_key").notNull().unique(),
+  // Code in the client's personal referral link (/r/<code>)
+  referralCode: text("referral_code").unique(),
+  googleReviewUrl: text("google_review_url"),
   notes: text("notes"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -136,9 +140,16 @@ export const referrals = pgTable("referrals", {
   name: text("name").notNull(),
   business: text("business"),
   phone: text("phone"),
+  email: text("email"),
   note: text("note"),
+  // app (client typed it in) | link (came through their share link)
+  source: text("source").notNull().default("app"),
   // new | contacted | signed | lost
   status: text("status").notNull().default("new"),
+  signedAt: timestamp("signed_at", { withTimezone: true }),
+  creditAmount: integer("credit_amount").notNull().default(0),
+  // none | pending (earned, not yet taken off their bill) | applied
+  creditStatus: text("credit_status").notNull().default("none"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -181,3 +192,47 @@ export const jobLog = pgTable("job_log", {
   key: text("key").primaryKey(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+const bytea = customType<{ data: Buffer }>({ dataType: () => "bytea" });
+
+// Visits, call taps and form sends reported by the tracking snippet on the client's site
+export const siteEvents = pgTable(
+  "site_events",
+  {
+    id: serial("id").primaryKey(),
+    clientId: integer("client_id").notNull().references(() => clients.id, { onDelete: "cascade" }),
+    // view | call | text | email | form
+    kind: text("kind").notNull(),
+    path: text("path"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("site_events_client_idx").on(t.clientId, t.createdAt)],
+);
+
+// Uptime monitor results
+export const siteChecks = pgTable(
+  "site_checks",
+  {
+    id: serial("id").primaryKey(),
+    clientId: integer("client_id").notNull().references(() => clients.id, { onDelete: "cascade" }),
+    ok: boolean("ok").notNull(),
+    status: integer("status"),
+    responseMs: integer("response_ms"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("site_checks_client_idx").on(t.clientId, t.createdAt)],
+);
+
+// Job photos clients send in for their site
+export const sitePhotos = pgTable(
+  "site_photos",
+  {
+    id: serial("id").primaryKey(),
+    clientId: integer("client_id").notNull().references(() => clients.id, { onDelete: "cascade" }),
+    mime: text("mime").notNull(),
+    data: bytea("data").notNull(),
+    note: text("note"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("site_photos_client_idx").on(t.clientId)],
+);
