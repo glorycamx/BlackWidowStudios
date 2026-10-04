@@ -8,14 +8,14 @@ import { getAgent } from "@/data/agents";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
-type NodeId = "user" | "z80" | "dots" | "grok" | "muse" | "result";
+type NodeId = "user" | "z80" | "helm" | "lookout" | "beacon" | "result";
 
 const NODES: Record<NodeId, { x: number; y: number; label: string; sub: string }> = {
   user: { x: 70, y: 210, label: "You", sub: "The objective" },
   z80: { x: 280, y: 210, label: "Z80", sub: "Orchestration" },
-  dots: { x: 500, y: 95, label: "Dots", sub: "Operations" },
-  grok: { x: 500, y: 325, label: "Grok Bot", sub: "Growth" },
-  muse: { x: 720, y: 210, label: "Muse", sub: "Creative" },
+  helm: { x: 500, y: 95, label: "Helm", sub: "Operations" },
+  lookout: { x: 500, y: 325, label: "Lookout", sub: "Growth" },
+  beacon: { x: 720, y: 210, label: "Beacon", sub: "Creative" },
   result: { x: 930, y: 210, label: "Result", sub: "Ready for you" },
 };
 
@@ -28,11 +28,11 @@ interface Link {
 
 const LINKS: Link[] = [
   { from: "user", to: "z80", message: "Find 50 businesses near us that need a new website. Build the outreach." },
-  { from: "z80", to: "dots", message: "Mission decomposed into 7 tasks. Dots coordinates.", bend: -30 },
-  { from: "dots", to: "grok", message: "Find and qualify the companies. Owners included.", bend: -40 },
-  { from: "grok", to: "muse", message: "42 companies qualified. Sending website weaknesses and owner data.", bend: 30 },
-  { from: "muse", to: "dots", message: "Personalized outreach generated. Ready for approval.", bend: 30 },
-  { from: "dots", to: "result", message: "Campaign prepared. Review before deployment?", bend: -50 },
+  { from: "z80", to: "helm", message: "Mission decomposed into 7 tasks. Helm coordinates.", bend: -30 },
+  { from: "helm", to: "lookout", message: "Find and qualify the companies. Owners included.", bend: -40 },
+  { from: "lookout", to: "beacon", message: "42 companies qualified. Sending website weaknesses and owner data.", bend: 30 },
+  { from: "beacon", to: "helm", message: "Personalized outreach generated. Ready for approval.", bend: 30 },
+  { from: "helm", to: "result", message: "Campaign prepared. Review before deployment?", bend: -50 },
 ];
 
 function pathFor(l: Link) {

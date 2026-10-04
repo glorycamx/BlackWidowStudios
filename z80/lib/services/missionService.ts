@@ -260,7 +260,7 @@ export function resolveMissionApproval(
       m.outreachHeld = true;
       emissions.push({
         type: "activity",
-        event: { missionId: m.id, actor: "dots", kind: "action", message: "Outreach held. Prospects and drafts saved for your edits." },
+        event: { missionId: m.id, actor: "helm", kind: "action", message: "Outreach held. Prospects and drafts saved for your edits." },
       });
     } else {
       emissions.push({
@@ -277,7 +277,7 @@ export function resolveMissionApproval(
 export function interruptMission(mission: Mission): { mission: Mission; emissions: Emission[] } {
   if (mission.status !== "running") return { mission, emissions: [] };
   const running = mission.tasks.find((t) => t.status === "running");
-  const agentId = running?.agentId ?? mission.agents[0]?.agentId ?? "grok";
+  const agentId = running?.agentId ?? mission.agents[0]?.agentId ?? "lookout";
   const m: Mission = {
     ...mission,
     status: "interrupted",
@@ -294,7 +294,7 @@ export function interruptMission(mission: Mission): { mission: Mission; emission
 
 export function recoverMission(mission: Mission, mode: "reconnect" | "continue"): { mission: Mission; emissions: Emission[] } {
   if (mission.status !== "interrupted") return { mission, emissions: [] };
-  const agentId = mission.interruption?.agentId ?? "dots";
+  const agentId = mission.interruption?.agentId ?? "helm";
   const m: Mission = { ...mission, status: "running", interruption: undefined };
   return {
     mission: m,

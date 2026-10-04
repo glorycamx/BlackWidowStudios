@@ -2,8 +2,8 @@
  * IntelligenceEngine — the Z80 particle system.
  *
  * One Points draw call + one LineSegments draw call. Every particle carries
- * six precomputed formations (sphere, team clusters, Dots lattice, Grok
- * scanner, Muse ribbons, ambient field); the vertex shader blends them by
+ * six precomputed formations (sphere, team clusters, lattice, scanner,
+ * fluid ribbons, ambient field); the vertex shader blends them by
  * weights the SceneDirector sets, so morphs are free on the CPU.
  *
  * Deterministic (seeded) geometry, no React in the hot path, pauses when the
@@ -57,14 +57,14 @@ interface Built {
 function build(count: number, arcCount: number, linkCount: number): Built {
   const r = rng(80);
   const sphere = new Float32Array(count * 3);
-  const dots = new Float32Array(count * 3);
-  const grok = new Float32Array(count * 3);
-  const muse = new Float32Array(count * 3);
+  const lattice = new Float32Array(count * 3);
+  const scanner = new Float32Array(count * 3);
+  const fluid = new Float32Array(count * 3);
   const field = new Float32Array(count * 3);
   const rand = new Float32Array(count * 4);
   const group = new Float32Array(count);
 
-  // Dots lattice sites inside the unit sphere.
+  // lattice sites inside the unit sphere.
   const G = 6;
   const sites: [number, number, number][] = [];
   for (let x = -G; x <= G; x++)
@@ -74,7 +74,7 @@ function build(count: number, arcCount: number, linkCount: number): Built {
         if (Math.hypot(...p) <= 1.0) sites.push(p);
       }
 
-  // Muse ribbons: a few wide, flowing bands.
+  // fluid ribbons: a few wide, flowing bands.
   const ribbons = Array.from({ length: 4 }, (_, k) => ({
     a: 1,
     b: 2,
@@ -98,44 +98,44 @@ function build(count: number, arcCount: number, linkCount: number): Built {
     sphere[i3 + 1] = dy * rad;
     sphere[i3 + 2] = dz * rad;
 
-    // --- dots: lattice nodes + edges
+    // --- lattice: lattice nodes + edges
     const s = sites[Math.floor(r() * sites.length)];
     if (r() < 0.62) {
-      dots[i3] = s[0] + gauss(r) * 0.006;
-      dots[i3 + 1] = s[1] + gauss(r) * 0.006;
-      dots[i3 + 2] = s[2] + gauss(r) * 0.006;
+      lattice[i3] = s[0] + gauss(r) * 0.006;
+      lattice[i3 + 1] = s[1] + gauss(r) * 0.006;
+      lattice[i3 + 2] = s[2] + gauss(r) * 0.006;
     } else {
       const axis = Math.floor(r() * 3);
       const t = r() / G;
-      dots[i3] = s[0] + (axis === 0 ? t : 0);
-      dots[i3 + 1] = s[1] + (axis === 1 ? t : 0);
-      dots[i3 + 2] = s[2] + (axis === 2 ? t : 0);
+      lattice[i3] = s[0] + (axis === 0 ? t : 0);
+      lattice[i3 + 1] = s[1] + (axis === 1 ? t : 0);
+      lattice[i3 + 2] = s[2] + (axis === 2 ? t : 0);
     }
-    dots[i3] *= 0.92;
-    dots[i3 + 1] *= 0.92;
-    dots[i3 + 2] *= 0.92;
+    lattice[i3] *= 0.92;
+    lattice[i3 + 1] *= 0.92;
+    lattice[i3 + 2] *= 0.92;
 
-    // --- grok: data terrain of scan rows, tilted toward the viewer
+    // --- scanner: data terrain of scan rows, tilted toward the viewer
     const row = Math.floor(r() * 26);
     const gz = (row / 25) * 2.2 - 1.1;
     const gx = r() * 3.6 - 1.8;
     let gy = 0.16 * Math.sin(gx * 2.1 + gz * 3.0) + 0.08 * Math.sin(gx * 5.3 - gz * 2.2);
     if (r() < 0.035) gy += r() * 0.55; // signal spikes
     const tilt = -0.95;
-    grok[i3] = gx;
-    grok[i3 + 1] = gy * Math.cos(tilt) - gz * Math.sin(tilt) - 0.05;
-    grok[i3 + 2] = gy * Math.sin(tilt) + gz * Math.cos(tilt);
+    scanner[i3] = gx;
+    scanner[i3 + 1] = gy * Math.cos(tilt) - gz * Math.sin(tilt) - 0.05;
+    scanner[i3 + 2] = gy * Math.sin(tilt) + gz * Math.cos(tilt);
 
-    // --- muse: flowing ribbons (band = curve + offset along a twisting normal)
+    // --- fluid: flowing ribbons (band = curve + offset along a twisting normal)
     const rb = ribbons[Math.floor(r() * ribbons.length)];
     const u = r() * Math.PI * 2;
     const w = (r() - 0.5) * 0.22;
     const cx = Math.sin(u * rb.a + rb.p) * 1.2 * rb.amp;
     const cy = Math.sin(u * rb.b + rb.q) * 0.5 * rb.amp + rb.tilt * Math.cos(u);
     const cz = Math.cos(u * rb.c + rb.p) * 0.45;
-    muse[i3] = cx + gauss(r) * 0.012;
-    muse[i3 + 1] = cy + w * Math.cos(u * 2 + rb.q) + gauss(r) * 0.012;
-    muse[i3 + 2] = cz + w * Math.sin(u * 2 + rb.q);
+    fluid[i3] = cx + gauss(r) * 0.012;
+    fluid[i3 + 1] = cy + w * Math.cos(u * 2 + rb.q) + gauss(r) * 0.012;
+    fluid[i3 + 2] = cz + w * Math.sin(u * 2 + rb.q);
 
     // --- field: ambient volume
     field[i3] = (r() * 2 - 1) * 7.5;
@@ -152,9 +152,9 @@ function build(count: number, arcCount: number, linkCount: number): Built {
   const points = new THREE.BufferGeometry();
   points.setAttribute("position", new THREE.BufferAttribute(sphere, 3));
   points.setAttribute("aSphere", new THREE.BufferAttribute(sphere, 3));
-  points.setAttribute("aDots", new THREE.BufferAttribute(dots, 3));
-  points.setAttribute("aGrok", new THREE.BufferAttribute(grok, 3));
-  points.setAttribute("aMuse", new THREE.BufferAttribute(muse, 3));
+  points.setAttribute("aLattice", new THREE.BufferAttribute(lattice, 3));
+  points.setAttribute("aScanner", new THREE.BufferAttribute(scanner, 3));
+  points.setAttribute("aFluid", new THREE.BufferAttribute(fluid, 3));
   points.setAttribute("aField", new THREE.BufferAttribute(field, 3));
   points.setAttribute("aRand", new THREE.BufferAttribute(rand, 4));
   points.setAttribute("aGroup", new THREE.BufferAttribute(group, 1));
@@ -303,9 +303,9 @@ ${COMMON}
 uniform float uPixelRatio;
 uniform float uSize;
 attribute vec3 aSphere;
-attribute vec3 aDots;
-attribute vec3 aGrok;
-attribute vec3 aMuse;
+attribute vec3 aLattice;
+attribute vec3 aScanner;
+attribute vec3 aFluid;
 attribute vec3 aField;
 attribute vec4 aRand;
 attribute float aGroup;
@@ -329,23 +329,23 @@ void main() {
   // Clusters
   vec3 pC = groupCenter(g) + uScale * uClusterScale * (uRotSoft * clusterLocal(aSphere, g, t));
 
-  // Dots lattice
-  vec3 dL = aDots * (1.0 + 0.018 * sin(t * 1.4 + aDots.y * 6.0));
+  // lattice
+  vec3 dL = aLattice * (1.0 + 0.018 * sin(t * 1.4 + aLattice.y * 6.0));
   vec3 pD = uOffset + uScale * (uRot * dL);
 
-  // Grok scanner
-  vec3 gL = aGrok;
+  // scanner
+  vec3 gL = aScanner;
   float gx = mod(gL.x + t * 0.11 + 1.8, 3.6) - 1.8;
   gL.x = gx;
   vec3 pG = uOffset + uScale * (uRotSoft * gL);
   float bx = sin(t * 0.55) * 1.6;
   float beam = exp(-pow((gx - bx) * 3.0, 2.0));
 
-  // Muse ribbons
-  vec3 mL = aMuse + vec3(
-    0.06 * sin(t * 0.5 + aMuse.y * 2.4),
-    0.12 * sin(t * 0.7 + aMuse.x * 2.2),
-    0.08 * sin(t * 0.6 + aMuse.x * 1.7 + aMuse.y));
+  // fluid ribbons
+  vec3 mL = aFluid + vec3(
+    0.06 * sin(t * 0.5 + aFluid.y * 2.4),
+    0.12 * sin(t * 0.7 + aFluid.x * 2.2),
+    0.08 * sin(t * 0.6 + aFluid.x * 1.7 + aFluid.y));
   vec3 pM = uOffset + uScale * (uRotSoft * mL);
 
   // Field
@@ -373,7 +373,7 @@ void main() {
   vec3 cG = mix(vec3(0.34, 0.29, 1.0), vec3(0.74, 0.69, 1.0), aRand.y) + beam * vec3(0.35, 0.35, 0.5);
   float aG = (0.42 + 0.75 * beam + hot) * smoothstep(1.8, 1.2, abs(gx));
 
-  vec3 cM = mix(vec3(0.52, 0.3, 1.0), vec3(0.93, 0.38, 0.9), smoothstep(-1.2, 1.2, aMuse.x + sin(t * 0.3 + aMuse.y)));
+  vec3 cM = mix(vec3(0.52, 0.3, 1.0), vec3(0.93, 0.38, 0.9), smoothstep(-1.2, 1.2, aFluid.x + sin(t * 0.3 + aFluid.y)));
   float aM = 0.85;
 
   vec3 cF = vec3(0.62, 0.66, 0.86);

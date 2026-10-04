@@ -8,7 +8,7 @@
  */
 
 /** Weights for the six particle formations. Should sum to ~1. */
-export type FormWeights = [sphere: number, cluster: number, dots: number, grok: number, muse: number, field: number];
+export type FormWeights = [sphere: number, cluster: number, lattice: number, scanner: number, fluid: number, field: number];
 
 export type Vec2 = [number, number];
 
@@ -31,12 +31,12 @@ export interface SceneTarget {
   lines: number;
 }
 
-export const FORMS: Record<"sphere" | "cluster" | "dots" | "grok" | "muse" | "field", FormWeights> = {
+export const FORMS: Record<"sphere" | "cluster" | "lattice" | "scanner" | "fluid" | "field", FormWeights> = {
   sphere: [1, 0, 0, 0, 0, 0],
   cluster: [0, 1, 0, 0, 0, 0],
-  dots: [0, 0, 1, 0, 0, 0],
-  grok: [0, 0, 0, 1, 0, 0],
-  muse: [0, 0, 0, 0, 1, 0],
+  lattice: [0, 0, 1, 0, 0, 0],
+  scanner: [0, 0, 0, 1, 0, 0],
+  fluid: [0, 0, 0, 0, 1, 0],
   field: [0, 0, 0, 0, 0, 1],
 };
 

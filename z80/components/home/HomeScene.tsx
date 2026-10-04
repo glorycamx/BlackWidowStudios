@@ -104,20 +104,20 @@ export function HomeScene() {
         scale = fragScale;
         lines = 1 - s * 0.4;
       } else if (fragment && intel && y < intel.top) {
-        // Collaboration diagram: clusters dissolve into the ambient field, then gather into Dots.
+        // Collaboration diagram: clusters dissolve into the ambient field, then gather into the lattice.
         const start = fragment.top + fragment.height - vh;
         const q = clamp((y - start) / Math.max(1, intel.top - start));
-        weights = q < 0.5 ? blend(FORMS.cluster, FORMS.field, smooth(0, 0.3, q)) : blend(FORMS.field, FORMS.dots, smooth(0.72, 1, q));
+        weights = q < 0.5 ? blend(FORMS.cluster, FORMS.field, smooth(0, 0.3, q)) : blend(FORMS.field, FORMS.lattice, smooth(0.72, 1, q));
         offset = q < 0.5 ? fragOffset : stageOffset;
         scale = q < 0.5 ? fragScale : stageScale;
         opacity = q < 0.5 ? 1 - smooth(0, 0.3, q) * 0.55 : 0.45 + smooth(0.72, 1, q) * 0.55;
         lines = 0.6;
       } else if (intel && y < intel.top + intel.height - vh) {
-        // Meet the intelligences: Dots → Grok Bot → Muse.
+        // Meet the intelligences: lattice → scanner → fluid.
         const p = clamp((y - intel.top) / Math.max(1, intel.height - vh));
         const seg = p * 3;
         const x = 0.14;
-        weights = seg < 1.5 ? blend(FORMS.dots, FORMS.grok, smooth(1 - x, 1 + x, seg)) : blend(FORMS.grok, FORMS.muse, smooth(2 - x, 2 + x, seg));
+        weights = seg < 1.5 ? blend(FORMS.lattice, FORMS.scanner, smooth(1 - x, 1 + x, seg)) : blend(FORMS.scanner, FORMS.fluid, smooth(2 - x, 2 + x, seg));
         offset = stageOffset;
         scale = stageScale;
         opacity = desktop ? 1 : 0.6;
@@ -125,7 +125,7 @@ export function HomeScene() {
         // The rest of the story: ambient field; brighter at the final CTA.
         const end = intel ? intel.top + intel.height - vh : 0;
         const q = clamp((y - end) / vh);
-        weights = blend(FORMS.muse, FORMS.field, smooth(0, 0.6, q));
+        weights = blend(FORMS.fluid, FORMS.field, smooth(0, 0.6, q));
         offset = stageOffset;
         scale = stageScale;
         opacity = 0.42;

@@ -63,7 +63,7 @@ export interface Agent {
   /** Particle-scene cluster index (0-2) for the three showcase intelligences. */
   sceneGroup?: 0 | 1 | 2;
   availability: AgentAvailability;
-  /** Contextual loading copy: "Grok Bot is researching…" */
+  /** Contextual loading copy: "Lookout is researching…" */
   workingVerb: string;
 }
 

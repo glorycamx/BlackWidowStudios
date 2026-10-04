@@ -65,7 +65,7 @@ export function getAgentLiveState(
     doing = lastEvent?.missionId && activeMissions.some((m) => m.id === lastEvent.missionId) ? lastEvent.message : runningTask.label;
   } else if (activeMissions.length) {
     state = "active";
-    doing = agentId === "dots" ? `Coordinating ${activeMissions.length} mission${activeMissions.length === 1 ? "" : "s"}` : `Assigned to ${activeMissions.length} mission${activeMissions.length === 1 ? "" : "s"}`;
+    doing = agentId === "helm" ? `Coordinating ${activeMissions.length} mission${activeMissions.length === 1 ? "" : "s"}` : `Assigned to ${activeMissions.length} mission${activeMissions.length === 1 ? "" : "s"}`;
   }
   return { agent, state, doing, activeMissions, tasksToday, pendingApprovals, lastEvent };
 }

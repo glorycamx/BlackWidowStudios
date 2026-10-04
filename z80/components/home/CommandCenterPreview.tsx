@@ -20,9 +20,9 @@ const NAV = [
 /** STATE 09 — a calm, static preview of the logged-in product. */
 export function CommandCenterPreview() {
   const rail = [
-    { id: "dots", doing: "Coordinating 4 missions" },
-    { id: "grok", doing: "Researching 38 accounts" },
-    { id: "muse", doing: "Creating campaign concepts" },
+    { id: "helm", doing: "Coordinating 4 missions" },
+    { id: "lookout", doing: "Researching 38 accounts" },
+    { id: "beacon", doing: "Creating campaign concepts" },
   ];
   return (
     <Section id="product" index="10" label="Command center" className="py-[16vh]">
@@ -74,7 +74,7 @@ export function CommandCenterPreview() {
                     Understood. I&apos;d start by identifying commercial property operators in your area, researching which buildings likely need roofing work, and building an outreach campaign around those opportunities.
                   </p>
                   <div className="mt-3 flex gap-2">
-                    {["grok", "muse", "dots"].map((id) => {
+                    {["lookout", "beacon", "helm"].map((id) => {
                       const a = agentOrFallback(id);
                       return (
                         <span key={id} className="flex h-7 items-center gap-2 rounded-[8px] px-2.5 font-mono text-[10px] uppercase tracking-[0.1em] hairline" style={{ color: a.accent.tint }}>
@@ -86,9 +86,9 @@ export function CommandCenterPreview() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <AgentGlyph agent={agentOrFallback("grok")} size={26} />
+                  <AgentGlyph agent={agentOrFallback("lookout")} size={26} />
                   <div>
-                    <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-grok">Grok Bot</div>
+                    <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-lookout">Lookout</div>
                     <p className="mt-1 text-[14px] text-fg-1">Found 81 potential accounts.</p>
                   </div>
                 </div>

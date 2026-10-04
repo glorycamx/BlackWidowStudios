@@ -67,7 +67,7 @@ export interface WorkspaceState {
   thinking: boolean;
 }
 
-const STORAGE_KEY = "z80.workspace.v1";
+const STORAGE_KEY = "z80.workspace.v2";
 const ACTIVITY_CAP = 600;
 const CHAT_CAP = 300;
 

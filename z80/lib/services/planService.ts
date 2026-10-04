@@ -93,11 +93,11 @@ function resultKindFor(e: ObjectiveEntities): ResultKind {
 
 function chooseAgents(e: ObjectiveEntities, kind: ResultKind): AgentId[] {
   const set = new Set<AgentId>();
-  if (kind === "prospects" || e.intents.includes("research") || e.intents.includes("sales")) set.add("grok");
-  if (e.intents.includes("creative") || (kind === "prospects" && e.outbound) || kind === "campaign") set.add("muse");
-  if (set.size !== 1 || e.intents.includes("operations") || kind === "prospects") set.add("dots");
+  if (kind === "prospects" || e.intents.includes("research") || e.intents.includes("sales")) set.add("lookout");
+  if (e.intents.includes("creative") || (kind === "prospects" && e.outbound) || kind === "campaign") set.add("beacon");
+  if (set.size !== 1 || e.intents.includes("operations") || kind === "prospects") set.add("helm");
   // Coordinator always reads first.
-  return ["dots", "grok", "muse"].filter((id) => set.has(id));
+  return ["helm", "lookout", "beacon"].filter((id) => set.has(id));
 }
 
 interface Ctx {
@@ -117,7 +117,7 @@ function prospectTasks(c: Ctx): PlannedTask[] {
     tasks.push({
       id: "crm",
       label: "CRM access",
-      agentId: "grok",
+      agentId: "lookout",
       kind: "approval",
       dependsOn: [],
       steps: [step("Requesting read access to CRM contact records.", 1200)],
@@ -133,7 +133,7 @@ function prospectTasks(c: Ctx): PlannedTask[] {
     {
       id: "discover",
       label: `Find ${c.target}`,
-      agentId: "grok",
+      agentId: "lookout",
       kind: "discover",
       dependsOn: [],
       steps: [
@@ -146,7 +146,7 @@ function prospectTasks(c: Ctx): PlannedTask[] {
     {
       id: "qualify",
       label: "Qualify companies",
-      agentId: "grok",
+      agentId: "lookout",
       kind: "qualify",
       dependsOn: ["discover"],
       steps: [
@@ -154,13 +154,13 @@ function prospectTasks(c: Ctx): PlannedTask[] {
         step(`Detected outdated mobile layout on ${outdated} sites.`, 1900, ["Signals: no responsive layout, copyright older than 3 years, no online booking, load time over 4s"]),
         step(`${qualified} passed initial qualification.`, 1800),
       ],
-      handoff: { to: "muse", message: `${qualified} companies qualified. Sending website weaknesses and owner data.` },
+      handoff: { to: "beacon", message: `${qualified} companies qualified. Sending website weaknesses and owner data.` },
       output: `${qualified} qualified`,
     },
     {
       id: "enrich",
       label: "Identify decision makers",
-      agentId: "grok",
+      agentId: "lookout",
       kind: "enrich",
       dependsOn: ["qualify"],
       steps: [
@@ -175,7 +175,7 @@ function prospectTasks(c: Ctx): PlannedTask[] {
       {
         id: "analyze",
         label: "Analyze positioning",
-        agentId: "muse",
+        agentId: "beacon",
         kind: "analyze",
         dependsOn: ["qualify"],
         steps: [
@@ -186,7 +186,7 @@ function prospectTasks(c: Ctx): PlannedTask[] {
       {
         id: "create",
         label: "Write personalized outreach",
-        agentId: "muse",
+        agentId: "beacon",
         kind: "create",
         dependsOn: ["analyze", "enrich"],
         steps: [
@@ -194,7 +194,7 @@ function prospectTasks(c: Ctx): PlannedTask[] {
           step("Drafting a 3-touch sequence in your brand voice.", 2000, ["Touch 1: specific observation", "Touch 2: proof from a similar business", "Touch 3: short, direct ask"]),
           step(`${c.n} personalized messages written.`, 1800),
         ],
-        handoff: { to: "dots", message: "Personalized outreach generated. Ready for approval." },
+        handoff: { to: "helm", message: "Personalized outreach generated. Ready for approval." },
         output: `${c.n} messages`,
       },
     );
@@ -202,7 +202,7 @@ function prospectTasks(c: Ctx): PlannedTask[] {
   tasks.push({
     id: "organize",
     label: "Prepare lead list",
-    agentId: "dots",
+    agentId: "helm",
     kind: "organize",
     dependsOn: tasks.some((t) => t.id === "create") ? ["create"] : ["enrich"],
     steps: [
@@ -217,7 +217,7 @@ function prospectTasks(c: Ctx): PlannedTask[] {
       {
         id: "approval",
         label: "Human approval",
-        agentId: "dots",
+        agentId: "helm",
         kind: "approval",
         dependsOn: ["organize"],
         steps: [step("Campaign prepared. Requesting approval before anything is sent.", 1200)],
@@ -232,7 +232,7 @@ function prospectTasks(c: Ctx): PlannedTask[] {
       {
         id: "launch",
         label: "Launch",
-        agentId: "dots",
+        agentId: "helm",
         kind: "launch",
         dependsOn: ["approval"],
         steps: [
@@ -246,7 +246,7 @@ function prospectTasks(c: Ctx): PlannedTask[] {
 }
 
 function campaignTasks(c: Ctx, agents: AgentId[]): PlannedTask[] {
-  const researcher = agents.includes("grok") ? "grok" : "muse";
+  const researcher = agents.includes("lookout") ? "lookout" : "beacon";
   return [
     {
       id: "research",
@@ -259,12 +259,12 @@ function campaignTasks(c: Ctx, agents: AgentId[]): PlannedTask[] {
         step("Mapping audience motivations and competitor messaging.", 2100),
         step("4 messaging gaps identified.", 1700),
       ],
-      handoff: researcher === "grok" ? { to: "muse", message: "Audience map ready. Competitors all lead with price — nobody owns speed." } : undefined,
+      handoff: researcher === "lookout" ? { to: "beacon", message: "Audience map ready. Competitors all lead with price — nobody owns speed." } : undefined,
     },
     {
       id: "concepts",
       label: "Generate concepts",
-      agentId: "muse",
+      agentId: "beacon",
       kind: "create",
       dependsOn: ["research"],
       steps: [
@@ -276,20 +276,20 @@ function campaignTasks(c: Ctx, agents: AgentId[]): PlannedTask[] {
     {
       id: "assets",
       label: "Create campaign",
-      agentId: "muse",
+      agentId: "beacon",
       kind: "create",
       dependsOn: ["concepts"],
       steps: [
         step("Writing headlines, ad copy and email variants.", 2000),
         step("12 assets drafted across 3 channels.", 1800),
       ],
-      handoff: { to: "dots", message: "Campaign assets drafted. Ready to schedule." },
+      handoff: { to: "helm", message: "Campaign assets drafted. Ready to schedule." },
       output: "12 assets",
     },
     {
       id: "schedule",
       label: "Plan schedule",
-      agentId: agents.includes("dots") ? "dots" : "muse",
+      agentId: agents.includes("helm") ? "helm" : "beacon",
       kind: "organize",
       dependsOn: ["assets"],
       steps: [step("Building a 4-week launch calendar.", 1600), step("Calendar prepared.", 1200)],
@@ -297,7 +297,7 @@ function campaignTasks(c: Ctx, agents: AgentId[]): PlannedTask[] {
     {
       id: "approval",
       label: "Human approval",
-      agentId: "muse",
+      agentId: "beacon",
       kind: "approval",
       dependsOn: ["schedule"],
       steps: [step("Requesting approval before anything is published.", 1200)],
@@ -312,7 +312,7 @@ function campaignTasks(c: Ctx, agents: AgentId[]): PlannedTask[] {
     {
       id: "launch",
       label: "Launch",
-      agentId: agents.includes("dots") ? "dots" : "muse",
+      agentId: agents.includes("helm") ? "helm" : "beacon",
       kind: "launch",
       dependsOn: ["approval"],
       steps: [step("Campaign queued for Monday, 8:00 AM.", 1400)],
@@ -321,12 +321,12 @@ function campaignTasks(c: Ctx, agents: AgentId[]): PlannedTask[] {
 }
 
 function briefTasks(c: Ctx, agents: AgentId[]): PlannedTask[] {
-  const writer = agents.includes("muse") ? "muse" : "dots";
+  const writer = agents.includes("beacon") ? "beacon" : "helm";
   return [
     {
       id: "map",
       label: "Map the market",
-      agentId: "grok",
+      agentId: "lookout",
       kind: "research",
       dependsOn: [],
       steps: [
@@ -337,7 +337,7 @@ function briefTasks(c: Ctx, agents: AgentId[]): PlannedTask[] {
     {
       id: "analyze",
       label: "Analyze positioning",
-      agentId: "grok",
+      agentId: "lookout",
       kind: "analyze",
       dependsOn: ["map"],
       steps: [
@@ -348,7 +348,7 @@ function briefTasks(c: Ctx, agents: AgentId[]): PlannedTask[] {
     {
       id: "gaps",
       label: "Find gaps",
-      agentId: "grok",
+      agentId: "lookout",
       kind: "analyze",
       dependsOn: ["analyze"],
       steps: [step("3 exploitable gaps found.", 1800)],
@@ -368,11 +368,11 @@ function briefTasks(c: Ctx, agents: AgentId[]): PlannedTask[] {
 function genericTasks(c: Ctx, agents: AgentId[], objective: string): PlannedTask[] {
   const tasks: PlannedTask[] = [];
   const short = objective.length > 60 ? `${objective.slice(0, 57).trim()}…` : objective;
-  if (agents.includes("grok")) {
+  if (agents.includes("lookout")) {
     tasks.push({
       id: "gather",
       label: "Gather context",
-      agentId: "grok",
+      agentId: "lookout",
       kind: "research",
       dependsOn: [],
       steps: [step("Collecting relevant information.", 1600), step("Context assembled.", 1500)],
@@ -381,16 +381,16 @@ function genericTasks(c: Ctx, agents: AgentId[], objective: string): PlannedTask
   tasks.push({
     id: "organize",
     label: "Organize the work",
-    agentId: "dots",
+    agentId: "helm",
     kind: "organize",
     dependsOn: tasks.length ? ["gather"] : [],
     steps: [step(`Working on: ${short}`, 1600), step("Work items structured and assigned.", 1700)],
   });
-  if (agents.includes("muse")) {
+  if (agents.includes("beacon")) {
     tasks.push({
       id: "draft",
       label: "Draft deliverables",
-      agentId: "muse",
+      agentId: "beacon",
       kind: "create",
       dependsOn: ["organize"],
       steps: [step("Drafting deliverables in your brand voice.", 1900), step("Drafts complete.", 1500)],
@@ -400,7 +400,7 @@ function genericTasks(c: Ctx, agents: AgentId[], objective: string): PlannedTask
     tasks.push({
       id: "approval",
       label: "Human approval",
-      agentId: "dots",
+      agentId: "helm",
       kind: "approval",
       dependsOn: [tasks[tasks.length - 1].id],
       steps: [step("Requesting approval before anything leaves the company.", 1200)],
@@ -411,7 +411,7 @@ function genericTasks(c: Ctx, agents: AgentId[], objective: string): PlannedTask
   tasks.push({
     id: "report",
     label: "Report",
-    agentId: "dots",
+    agentId: "helm",
     kind: "report",
     dependsOn: [tasks[tasks.length - 1].id],
     steps: [step("Summarizing results.", 1400)],
@@ -420,30 +420,30 @@ function genericTasks(c: Ctx, agents: AgentId[], objective: string): PlannedTask
 }
 
 const WHY: Record<string, Partial<Record<ResultKind, string>> & { default: string }> = {
-  dots: {
-    prospects: "Multi-step mission with handoffs and an approval gate. Dots keeps it coordinated and validates the final list.",
-    campaign: "Campaigns need a schedule and a human checkpoint. Dots owns both.",
-    brief: "Dots structures findings into a brief you can act on.",
+  helm: {
+    prospects: "Multi-step mission with handoffs and an approval gate. Helm keeps it coordinated and validates the final list.",
+    campaign: "Campaigns need a schedule and a human checkpoint. Helm owns both.",
+    brief: "Helm structures findings into a brief you can act on.",
     default: "Breaks the objective into tasks and keeps the work moving.",
   },
-  grok: {
-    prospects: "Finding and qualifying companies is research-heavy. Grok Bot is the fastest researcher in the workforce.",
+  lookout: {
+    prospects: "Finding and qualifying companies is research-heavy. Lookout is the fastest researcher in the workforce.",
     campaign: "Strong creative starts with knowing the audience and the competition.",
-    brief: "Competitive research is Grok Bot's core specialty.",
+    brief: "Competitive research is Lookout's core specialty.",
     default: "Gathers the information the rest of the team needs.",
   },
-  muse: {
-    prospects: "Personalized outreach converts. Muse writes a specific reason to reply for every company.",
-    campaign: "Creative direction and copy are Muse's core specialty.",
-    brief: "Muse turns research into a clear, persuasive brief.",
+  beacon: {
+    prospects: "Personalized outreach converts. Beacon writes a specific reason to reply for every company.",
+    campaign: "Creative direction and copy are Beacon's core specialty.",
+    brief: "Beacon turns research into a clear, persuasive brief.",
     default: "Produces the writing and creative work.",
   },
 };
 
 const OUTPUT: Record<string, (c: Ctx, kind: ResultKind) => string> = {
-  dots: (c, k) => (k === "prospects" ? `Validated list of ${c.n} prospects, CRM-ready` : k === "brief" ? "Structured brief and next steps" : "Coordinated plan, schedule and status reports"),
-  grok: (c, k) => (k === "prospects" ? `${c.n} qualified companies with decision makers` : k === "brief" ? "Competitor map and 3 gaps" : "Audience and competitor research"),
-  muse: (c, k) => (k === "prospects" ? `${c.n} personalized openers + 3-touch sequence` : k === "brief" ? "Readable recommendations" : "3 directions, 12 campaign assets"),
+  helm: (c, k) => (k === "prospects" ? `Validated list of ${c.n} prospects, CRM-ready` : k === "brief" ? "Structured brief and next steps" : "Coordinated plan, schedule and status reports"),
+  lookout: (c, k) => (k === "prospects" ? `${c.n} qualified companies with decision makers` : k === "brief" ? "Competitor map and 3 gaps" : "Audience and competitor research"),
+  beacon: (c, k) => (k === "prospects" ? `${c.n} personalized openers + 3-touch sequence` : k === "brief" ? "Readable recommendations" : "3 directions, 12 campaign assets"),
 };
 
 const TOOL_RELEVANCE: Record<ResultKind, string[]> = {
@@ -457,8 +457,8 @@ function assignmentFor(agentId: AgentId, tasks: PlannedTask[], c: Ctx, kind: Res
   const agent = getAgent(agentId);
   const own = tasks.filter((t) => t.agentId === agentId);
   const objectives = own.filter((t) => t.kind !== "approval").map((t) => t.label);
-  if (agentId === "dots") objectives.unshift("Coordinate the operation");
-  if (agentId === "dots" && own.some((t) => t.kind === "approval")) objectives.push("Request your approval");
+  if (agentId === "helm") objectives.unshift("Coordinate the operation");
+  if (agentId === "helm" && own.some((t) => t.kind === "approval")) objectives.push("Request your approval");
   if (!objectives.length) objectives.push("Support the mission on request");
   const relevant = TOOL_RELEVANCE[kind];
   const tools = (agent?.tools ?? []).filter((t) => relevant.includes(t)).slice(0, 3);
@@ -522,11 +522,11 @@ export function createPlan(objective: string, org?: Organization | null): Plan {
   body = body.filter((t) => agents.includes(t.agentId));
 
   const tasks: PlannedTask[] = [];
-  if (agents.includes("dots")) {
+  if (agents.includes("helm")) {
     tasks.push({
       id: "decompose",
       label: "Decompose objective",
-      agentId: "dots",
+      agentId: "helm",
       kind: "decompose",
       dependsOn: [],
       steps: [step(`Mission decomposed into ${body.length + 1} tasks.`, 900)],
@@ -562,7 +562,7 @@ export function retargetPlan(plan: Plan, agentIds: AgentId[], roles: Record<Agen
   let tasks = fresh.tasks;
   // Reassign orphaned tasks to the first remaining agent so the mission still completes.
   if (keep.length) {
-    tasks = tasks.map((t) => (keep.includes(t.agentId) ? t : { ...t, agentId: keep.includes("dots") ? "dots" : keep[0] }));
+    tasks = tasks.map((t) => (keep.includes(t.agentId) ? t : { ...t, agentId: keep.includes("helm") ? "helm" : keep[0] }));
   }
   const c: Ctx = {
     e: fresh.entities,

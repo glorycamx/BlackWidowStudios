@@ -17,9 +17,9 @@ import { EASE } from "@/lib/motion";
 import type { Agent } from "@/types";
 
 const PROMPTS: Record<string, string> = {
-  muse: "Have Muse develop a campaign for…",
-  grok: "Have Grok Bot find companies that…",
-  dots: "Have Dots organize…",
+  beacon: "Have Beacon develop a campaign for…",
+  lookout: "Have Lookout find companies that…",
+  helm: "Have Helm organize…",
 };
 
 /** Public profile of an artificial employee. */

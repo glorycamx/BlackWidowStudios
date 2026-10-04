@@ -2,7 +2,7 @@
 
 **Describe the outcome. Deploy the team.**
 
-A product demo of Z80: a homepage experience and working product where you describe an objective, Z80 assembles a team of intelligences (Dots, Grok Bot, Muse), and you watch them work, approve their output, and inspect the results.
+A product demo of Z80: a homepage experience and working product where you describe an objective, Z80 assembles a team of intelligences (Helm, Lookout, Beacon), and you watch them work, approve their output, and inspect the results.
 
 Everything runs without a backend or API keys. Planning and agent work are **simulated** by a mock service layer that you can replace with real implementations.
 
@@ -23,7 +23,7 @@ Node 20+. No environment variables are required. See `.env.example` for the slot
 1. Go to `/`. Type an objective into the hero console, or press **Deploy your team** to type the demo mission for you.
 2. Z80 analyzes the objective and the sphere fragments into the recommended team.
 3. Inspect each intelligence, change its role, add or remove agents, then press **Deploy**.
-4. You land in mission control (`/missions/m248`). Agents work, activity streams in, and Dots asks for approval.
+4. You land in mission control (`/missions/m248`). Agents work, activity streams in, and Helm asks for approval.
 5. Approve (or hold). The mission completes and shows its results: prospects with personalized openers, which you can export as CSV.
 
 Use **4×** in the mission header to speed things up. Use **Settings → Reset demo workspace** to start over.
@@ -73,7 +73,7 @@ types/                  the domain model
 
 ### The particle engine
 
-One `Points` draw call and one `LineSegments` draw call. Each particle carries six precomputed formations: sphere, team clusters, the Dots lattice, the Grok scanner, Muse ribbons and the ambient field. The vertex shader blends between them by weights, so morphs cost nothing on the CPU. The DOM steers the engine through a small `SceneDirector`; the engine eases toward its targets every frame.
+One `Points` draw call and one `LineSegments` draw call. Each particle carries six precomputed formations: sphere, team clusters, a lattice (Helm), a scanner (Lookout), flowing ribbons (Beacon) and the ambient field. The vertex shader blends between them by weights, so morphs cost nothing on the CPU. The DOM steers the engine through a small `SceneDirector`; the engine eases toward its targets every frame.
 
 It is loaded with a dynamic import, so Three.js never ships in the initial bundle or on pages that don't use it. It pauses when the tab is hidden or the canvas is offscreen. It uses fewer particles on phones and low-core devices, and lowers its resolution if frames run slow. With `prefers-reduced-motion`, it renders still frames only when the scene changes.
 

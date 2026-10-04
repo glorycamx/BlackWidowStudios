@@ -6,9 +6,9 @@ import { createDirector, FORMS } from "@/lib/scene/director";
 import type { AgentVisual } from "@/types";
 
 const FORM_FOR: Record<AgentVisual, keyof typeof FORMS> = {
-  lattice: "dots",
-  scanner: "grok",
-  fluid: "muse",
+  lattice: "lattice",
+  scanner: "scanner",
+  fluid: "fluid",
   orbit: "sphere",
 };
 
