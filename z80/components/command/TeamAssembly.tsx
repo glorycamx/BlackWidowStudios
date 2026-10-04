@@ -342,7 +342,7 @@ export function TeamAssembly({ plan: initial, onDeployed, onBack, backLabel = "E
                           <span className={cn("block text-[13.5px]", soon ? "text-fg-3" : "text-white")}>{a.name}</span>
                           <span className="block truncate text-[11.5px] text-fg-3">{a.role}</span>
                         </span>
-                        {soon && <span className="label text-[9px]">Soon</span>}
+                        {soon && <span className="label">Soon</span>}
                       </button>
                     </li>
                   );
@@ -371,8 +371,8 @@ function MissionCore({ deploying }: { deploying: boolean }) {
         transition={deploying ? { duration: 0.9, ease: EASE } : { duration: 4, repeat: Infinity, ease: "easeInOut" }}
       />
       <div className="relative text-center">
-        <div className="label text-[10px] text-fg-1">Mission</div>
-        <div className="mt-1.5 font-mono text-[10px] text-fg-3">{deploying ? "Deploying" : "Objective"}</div>
+        <div className="label text-fg-1">Mission</div>
+        <div className="mt-1.5 text-[12px] tabular-nums text-fg-3">{deploying ? "Deploying" : "Objective"}</div>
       </div>
     </div>
   );
@@ -405,9 +405,9 @@ const AgentNode = forwardRef<HTMLButtonElement, { assignment: AgentAssignment; s
         <AgentGlyph agent={agent} size={58} className="relative" />
       </span>
       <span>
-        <span className="block text-[13px] font-semibold uppercase tracking-[0.14em] text-white">{agent.name}</span>
-        <span className="mt-1 block font-mono text-[10.5px] uppercase tracking-[0.1em] text-fg-3">{role?.label}</span>
-        <span className="mt-2 flex items-center justify-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em]" style={{ color: status === "ready" ? "var(--color-fg-2)" : agent.accent.tint }}>
+        <span className="block text-[13px] font-semibold text-white">{agent.name}</span>
+        <span className="mt-1 block text-[12px] text-fg-3">{role?.label}</span>
+        <span className="mt-2 flex items-center justify-center gap-1.5 text-[12px]" style={{ color: status === "ready" ? "var(--color-fg-2)" : agent.accent.tint }}>
           <StatusDot color={status === "ready" ? "#a3a3aa" : agent.accent.hex} size={4} live={status !== "ready"} />
           {STATUS_LABEL[status]}
         </span>
@@ -433,11 +433,11 @@ function AgentDetail({
 }) {
   const agent = agentOrFallback(assignment.agentId);
   return (
-    <div className="panel p-5">
+    <div className="rounded-[24px] bg-white/[0.035] p-6">
       <div className="flex items-start gap-4">
         <AgentGlyph agent={agent} size={44} />
         <div className="min-w-0 flex-1">
-          <div className="text-[17px] font-semibold uppercase tracking-[0.1em] text-white">{agent.name}</div>
+          <div className="text-[17px] font-semibold text-white">{agent.name}</div>
           <div className="mt-1 text-[12.5px] text-fg-3">{agent.role}</div>
         </div>
         <span className="label flex items-center gap-1.5 text-[10px]" style={{ color: status === "ready" ? undefined : agent.accent.tint }}>
@@ -448,50 +448,46 @@ function AgentDetail({
 
       <RoleSelect agentId={agent.id} value={assignment.roleId} onChange={onChangeRole} disabled={locked} />
 
-      <Section title="Why Z80 selected it">
-        <p className="text-[13.5px] leading-relaxed text-fg-2">{assignment.why}</p>
-      </Section>
-      <Section title="Assigned">
-        <ul className="space-y-1.5">
-          {assignment.objectives.map((o) => (
-            <li key={o} className="flex gap-2.5 text-[13.5px] text-fg-1">
-              <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full" style={{ background: agent.accent.hex }} />
-              {o}
-            </li>
-          ))}
-        </ul>
-      </Section>
-      {assignment.tools.length > 0 && (
-        <Section title="Tools">
-          <div className="flex flex-wrap gap-1.5">
-            {assignment.tools.map((t) => {
-              const i = getIntegration(t);
-              return (
-                <span key={t} className="flex h-7 items-center gap-2 rounded-[7px] px-2.5 text-[12px] text-fg-2 hairline">
-                  {i?.name ?? t}
-                  {i && i.status !== "live" && <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-fg-3">{integrationStatusLabel[i.status]}</span>}
-                </span>
-              );
-            })}
-          </div>
-        </Section>
-      )}
-      {assignment.permissions.length > 0 && (
-        <Section title="Permissions">
-          <ul className="space-y-1">
+      <p className="mt-4 text-[14px] leading-relaxed text-fg-2">{assignment.why}</p>
+
+      <ul className="mt-5 divide-y divide-white/[0.06] overflow-hidden rounded-[16px] bg-white/[0.04]">
+        {assignment.objectives.map((o) => (
+          <li key={o} className="flex items-center gap-3 px-4 py-2.5 text-[14px] text-white">
+            <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: agent.accent.hex }} />
+            {o}
+          </li>
+        ))}
+      </ul>
+
+      <p className="mt-4 text-[14px] text-fg-1">
+        <span className="text-fg-3">Delivers </span>
+        {assignment.estimatedOutput}
+      </p>
+
+      {(assignment.tools.length > 0 || assignment.permissions.length > 0) && (
+        <details className="group mt-4">
+          <summary className="cursor-pointer list-none text-[14px] text-[#9aa5ff] hover:text-white">
+            Tools and permissions <span className="inline-block transition-transform group-open:rotate-90">›</span>
+          </summary>
+          <div className="mt-3 space-y-2 text-[13px] text-fg-2">
+            {assignment.tools.length > 0 && (
+              <p>
+                {assignment.tools
+                  .map((t) => {
+                    const i = getIntegration(t);
+                    return i ? `${i.name}${i.status !== "live" ? ` (${integrationStatusLabel[i.status].toLowerCase()})` : ""}` : t;
+                  })
+                  .join(", ")}
+              </p>
+            )}
             {assignment.permissions.map((p) => (
-              <li key={p} className="text-[12.5px] text-fg-2">
-                {p}
-              </li>
+              <p key={p}>{p}</p>
             ))}
-          </ul>
-        </Section>
+          </div>
+        </details>
       )}
-      <Section title="Estimated output">
-        <p className="text-[13.5px] text-fg-1">{assignment.estimatedOutput}</p>
-      </Section>
       {canRemove && (
-        <button onClick={onRemove} className="label mt-5 flex items-center gap-1.5 text-[10px] text-fg-3 transition-colors hover:text-[#ff8ca0]">
+        <button onClick={onRemove} className="mt-5 flex items-center gap-1.5 text-[13px] text-fg-3 transition-colors hover:text-[#ff8ca0]">
           <X size={12} /> Remove from team
         </button>
       )}
@@ -508,7 +504,7 @@ function RoleSelect({ agentId, value, onChange, disabled }: { agentId: AgentId; 
         value={value}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
-        className="h-9 w-full appearance-none rounded-[9px] bg-white/[0.03] pl-3 pr-8 font-mono text-[11px] uppercase tracking-[0.12em] text-fg-1 hairline focus:outline-none"
+        className="h-9 w-full appearance-none rounded-[9px] bg-white/[0.03] pl-3 pr-8 text-[12px] text-fg-1 hairline focus:outline-none"
       >
         {agent.roles.map((r) => (
           <option key={r.id} value={r.id} className="bg-black">
@@ -553,7 +549,7 @@ function MobileNetwork({
       <div className="relative mb-4 flex items-center gap-3">
         <span className="absolute -left-[22px] flex h-3 w-3 items-center justify-center rounded-full bg-indigo shadow-[0_0_14px_#645bff]" />
         <span className="label text-fg-1">Mission</span>
-        <span className="font-mono text-[10px] text-fg-3">{deploying ? "Deploying" : "Objective set"}</span>
+        <span className="text-[12px] tabular-nums text-fg-3">{deploying ? "Deploying" : "Objective set"}</span>
       </div>
       <ul className="space-y-3">
         {team.map((a, i) => {
@@ -573,7 +569,7 @@ function MobileNetwork({
                 <button className="flex w-full items-center gap-3 p-3.5 text-left" onClick={() => onSelect(open ? null : a.agentId)} aria-expanded={open}>
                   <AgentGlyph agent={agent} size={40} />
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[14px] font-semibold uppercase tracking-[0.1em] text-white">{agent.name}</span>
+                    <span className="block text-[14px] font-semibold text-white">{agent.name}</span>
                     <span className="block truncate text-[12px] text-fg-3">{agent.domain}</span>
                   </span>
                   <span className="label flex items-center gap-1.5 text-[9.5px]" style={{ color: st === "ready" ? undefined : agent.accent.tint }}>

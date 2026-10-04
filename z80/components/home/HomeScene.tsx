@@ -43,7 +43,6 @@ export function HomeScene() {
       const fragScale = desktop ? FRAGMENT_SCALE.desktop : FRAGMENT_SCALE.mobile;
 
       const fragment = rect("fragment");
-      const how = rect("how");
       const intel = rect("intelligences");
       const final = rect("final");
 
@@ -95,7 +94,7 @@ export function HomeScene() {
         const h = smooth(0, fragment.top, y);
         offset = [heroOffset[0] + (fragOffset[0] - heroOffset[0]) * h, heroOffset[1] + (fragOffset[1] - heroOffset[1]) * h];
         scale = heroScale + (fragScale - heroScale) * h;
-      } else if (fragment && how && y < fragment.top + fragment.height - vh) {
+      } else if (fragment && y < fragment.top + fragment.height - vh) {
         // Sphere fragments into three intelligences.
         const p = clamp((y - fragment.top) / Math.max(1, fragment.height - vh));
         const s = smooth(0.08, 0.5, p);
@@ -104,13 +103,14 @@ export function HomeScene() {
         scale = fragScale;
         lines = 1 - s * 0.4;
       } else if (fragment && intel && y < intel.top) {
-        // Collaboration diagram: clusters dissolve into the ambient field, then gather into the lattice.
+        // The team regroups into the first intelligence.
         const start = fragment.top + fragment.height - vh;
         const q = clamp((y - start) / Math.max(1, intel.top - start));
-        weights = q < 0.5 ? blend(FORMS.cluster, FORMS.field, smooth(0, 0.3, q)) : blend(FORMS.field, FORMS.lattice, smooth(0.72, 1, q));
-        offset = q < 0.5 ? fragOffset : stageOffset;
-        scale = q < 0.5 ? fragScale : stageScale;
-        opacity = q < 0.5 ? 1 - smooth(0, 0.3, q) * 0.55 : 0.45 + smooth(0.72, 1, q) * 0.55;
+        const k = smooth(0.1, 0.9, q);
+        weights = blend(FORMS.cluster, FORMS.lattice, k);
+        offset = [fragOffset[0] + (stageOffset[0] - fragOffset[0]) * k, fragOffset[1] + (stageOffset[1] - fragOffset[1]) * k];
+        scale = fragScale + (stageScale - fragScale) * k;
+        opacity = 1;
         lines = 0.6;
       } else if (intel && y < intel.top + intel.height - vh) {
         // Meet the intelligences: lattice → scanner → fluid.

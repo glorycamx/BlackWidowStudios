@@ -45,7 +45,7 @@ export function ActivityFeed({ events, showMission = true, dense, limit }: { eve
                   expandable && "hover:bg-white/[0.025]",
                 )}
               >
-                <span className="font-mono text-[11px] text-fg-3">{clockTime(e.at)}</span>
+                <span className="text-[13px] tabular-nums text-fg-3">{clockTime(e.at)}</span>
                 <span className="truncate">
                   <ActorTag actor={e.actor} />
                   {e.to && (
@@ -82,9 +82,9 @@ export function ActivityFeed({ events, showMission = true, dense, limit }: { eve
                           {d}
                         </p>
                       ))}
-                      <p className="font-mono text-[10.5px] text-fg-3">{new Date(e.at).toLocaleString()}</p>
+                      <p className="text-[12px] tabular-nums text-fg-3">{new Date(e.at).toLocaleString()}</p>
                       {showMission && m && (
-                        <Link href={`/missions/${m.id}`} className="inline-block font-mono text-[10.5px] uppercase tracking-[0.1em] text-fg-2 hover:text-white">
+                        <Link href={`/missions/${m.id}`} className="inline-block text-[12px] text-fg-2 hover:text-white">
                           Mission {missionCode(m.number)} · {m.title} →
                         </Link>
                       )}

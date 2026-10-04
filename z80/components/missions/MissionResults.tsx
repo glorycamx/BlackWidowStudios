@@ -24,7 +24,7 @@ export function MissionResults({ results, missionNumber }: { results: Results; m
           <h2 className="mt-3 text-[28px] font-semibold tracking-[-0.035em] text-white">{results.headline}</h2>
           <p className="mt-1.5 text-[14.5px] text-fg-2">{results.summary}</p>
         </div>
-        <span className="label text-[9.5px] text-fg-4">Simulated demo data</span>
+        <span className="label text-fg-4">Simulated demo data</span>
       </div>
       <div className="mt-8">
         {results.prospects && <Prospects rows={results.prospects} missionNumber={missionNumber} />}
@@ -32,13 +32,13 @@ export function MissionResults({ results, missionNumber }: { results: Results; m
           <div className="grid gap-4 md:grid-cols-3">
             {results.concepts.map((c, i) => (
               <div key={c.id} className="panel p-5">
-                <div className="font-mono text-[10.5px] text-fg-3">Direction {String.fromCharCode(65 + i)}</div>
+                <div className="text-[12px] tabular-nums text-fg-3">Direction {String.fromCharCode(65 + i)}</div>
                 <div className="mt-3 text-[18px] font-medium tracking-[-0.02em] text-white">{c.name}</div>
                 <p className="mt-3 text-[15px] italic text-fg-1">“{c.hook}”</p>
                 <p className="mt-3 text-[13.5px] leading-relaxed text-fg-2">{c.body}</p>
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {c.channels.map((ch) => (
-                    <span key={ch} className="rounded-[6px] px-2 py-1 font-mono text-[9.5px] uppercase tracking-[0.1em] text-fg-3 hairline">
+                    <span key={ch} className="rounded-[6px] px-2 py-1 text-[12px] text-fg-3 hairline">
                       {ch}
                     </span>
                   ))}
@@ -49,7 +49,7 @@ export function MissionResults({ results, missionNumber }: { results: Results; m
         )}
         {results.outreach && (
           <div className="panel p-5 md:p-6">
-            <div className="label text-[10px]">
+            <div className="label">
               To {results.outreach.to} · {results.outreach.business}
             </div>
             <blockquote className="mt-4 text-[16px] leading-[1.65] text-white">“{results.outreach.script}”</blockquote>
@@ -59,7 +59,7 @@ export function MissionResults({ results, missionNumber }: { results: Results; m
           <ul className="divide-y divide-white/[0.07] border-y border-line">
             {results.findings.map((f) => (
               <li key={f.id} className="grid gap-2 py-5 md:grid-cols-[160px_1fr_1fr] md:gap-6">
-                <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-fg-3">{f.subject}</span>
+                <span className="text-[12px] text-fg-3">{f.subject}</span>
                 <span className="text-[14.5px] text-white">{f.finding}</span>
                 <span className="text-[14px] text-fg-2">→ {f.implication}</span>
               </li>
@@ -89,12 +89,12 @@ function Prospects({ rows, missionNumber }: { rows: Prospect[]; missionNumber: n
   return (
     <div className="panel overflow-hidden">
       <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
-        <span className="label text-[10px]">{rows.length} prospects</span>
+        <span className="label">{rows.length} prospects</span>
         <Button variant="ghost" size="sm" icon={<Download size={13} />} onClick={download}>
           Export CSV
         </Button>
       </div>
-      <div className="hidden grid-cols-[1.4fr_1fr_1.2fr_70px_20px] gap-4 border-b border-line px-5 py-3 font-mono text-[10px] uppercase tracking-[0.12em] text-fg-3 md:grid">
+      <div className="hidden grid-cols-[1.4fr_1fr_1.2fr_70px_20px] gap-4 border-b border-line px-5 py-3 text-[12px] text-fg-3 md:grid">
         <span>Company</span>
         <span>Decision maker</span>
         <span>Signal</span>
@@ -124,7 +124,7 @@ function Prospects({ rows, missionNumber }: { rows: Prospect[]; missionNumber: n
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: EASE }} className="overflow-hidden">
                     <div className="px-5 pb-5">
                       <div className="rounded-[12px] bg-white/[0.025] p-4">
-                        <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-beacon">Beacon · opening line</div>
+                        <div className="text-[12px] text-beacon">Beacon · opening line</div>
                         <p className="mt-2 text-[14.5px] leading-relaxed text-fg-1">“{p.opener}”</p>
                       </div>
                     </div>
@@ -137,7 +137,7 @@ function Prospects({ rows, missionNumber }: { rows: Prospect[]; missionNumber: n
       </ul>
       {rows.length > 10 && (
         <div className="border-t border-line px-5 py-3">
-          <button onClick={() => setAll((a) => !a)} className="font-mono text-[11px] uppercase tracking-[0.12em] text-fg-2 hover:text-white">
+          <button onClick={() => setAll((a) => !a)} className="text-[12px] text-fg-2 hover:text-white">
             {all ? "Show fewer" : `Show all ${rows.length}`}
           </button>
         </div>

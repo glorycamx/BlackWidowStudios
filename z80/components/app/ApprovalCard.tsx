@@ -42,12 +42,12 @@ export function ApprovalCard({ approvalId, compact, showMission = true }: { appr
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <ActorTag actor={approval.agentId} />
-            <span className="font-mono text-[10.5px] text-fg-3">{relativeTime(approval.createdAt, now)}</span>
+            <span className="text-[12px] tabular-nums text-fg-3">{relativeTime(approval.createdAt, now)}</span>
           </div>
           <p className={cn("mt-2 text-white", compact ? "text-[14px]" : "text-[15.5px]")}>{approval.title}</p>
           <p className="mt-1 text-[13px] leading-relaxed text-fg-2">{approval.detail}</p>
           {showMission && mission && (
-            <Link href={`/missions/${mission.id}`} className="mt-2 inline-block font-mono text-[10.5px] uppercase tracking-[0.1em] text-fg-3 hover:text-fg-1">
+            <Link href={`/missions/${mission.id}`} className="mt-2 inline-block text-[12px] text-fg-3 hover:text-fg-1">
               Mission {missionCode(mission.number)} · {mission.title}
             </Link>
           )}
@@ -56,7 +56,7 @@ export function ApprovalCard({ approvalId, compact, showMission = true }: { appr
             {preview && (
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.35, ease: EASE }}>
                 <div className="mt-4 space-y-2 border-t border-line pt-4">
-                  <div className="label text-[9.5px]">Preview · simulated</div>
+                  <div className="label">Preview · simulated</div>
                   {preview.prospects?.slice(0, 3).map((p) => (
                     <div key={p.id} className="rounded-[10px] bg-white/[0.025] p-3">
                       <div className="flex justify-between text-[12.5px]">
@@ -72,7 +72,7 @@ export function ApprovalCard({ approvalId, compact, showMission = true }: { appr
                       <p className="mt-1 text-[12.5px] text-fg-2">{c.hook}</p>
                     </div>
                   ))}
-                  {preview.prospects && preview.prospects.length > 3 && <p className="font-mono text-[10.5px] text-fg-3">+ {preview.prospects.length - 3} more</p>}
+                  {preview.prospects && preview.prospects.length > 3 && <p className="text-[12px] tabular-nums text-fg-3">+ {preview.prospects.length - 3} more</p>}
                 </div>
               </motion.div>
             )}

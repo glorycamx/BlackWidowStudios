@@ -144,8 +144,8 @@ export const CommandConsole = forwardRef<CommandConsoleHandle, Props>(function C
       />
       <div
         className={cn(
-          "relative overflow-hidden rounded-[18px] bg-[#060609]/90 backdrop-blur-md transition-shadow duration-500",
-          size === "compact" && "rounded-[16px]",
+          "relative overflow-hidden rounded-[26px] bg-[#0a0a10]/90 backdrop-blur-md transition-shadow duration-500",
+          size === "compact" && "rounded-[22px]",
         )}
         style={{
           boxShadow: `inset 0 0 0 1px rgba(255,255,255,${charged ? 0.1 : 0.08}), inset 0 1px 0 rgba(255,255,255,0.06), 0 40px 100px -30px rgba(0,0,0,0.9)`,
@@ -165,17 +165,11 @@ export const CommandConsole = forwardRef<CommandConsoleHandle, Props>(function C
           />
         </div>
 
-        <div className={cn("flex items-center justify-between px-5 pt-4", size === "compact" && "px-4 pt-3")}>
-          <label htmlFor={id} className="label flex items-center gap-2 text-fg-2">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className={cn("absolute inset-0 rounded-full bg-indigo", charged && "motion-safe:animate-breathe")} />
-            </span>
-            {label}
-          </label>
-          <span className="label hidden text-[10px] sm:inline">{value ? "↵ deploy · ⇧↵ new line" : hint}</span>
-        </div>
+        <label htmlFor={id} className="sr-only">
+          {label}
+        </label>
 
-        <div className={cn("relative px-5 pb-2 pt-2.5", size === "compact" && "px-4")}>
+        <div className={cn("relative px-5 pb-2 pt-5", size === "compact" && "px-4 pt-3.5")}>
           <textarea
             ref={taRef}
             id={id}
@@ -203,7 +197,7 @@ export const CommandConsole = forwardRef<CommandConsoleHandle, Props>(function C
               <motion.span
                 key={ex}
                 aria-hidden
-                className={cn("pointer-events-none absolute left-5 top-2.5 text-fg-3", textSize, size === "compact" && "left-4")}
+                className={cn("pointer-events-none absolute left-5 top-5 text-fg-3", textSize, size === "compact" && "left-4 top-3.5")}
                 initial={{ opacity: 0, y: 6, filter: "blur(4px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 exit={{ opacity: 0, y: -6, filter: "blur(4px)" }}
@@ -218,7 +212,7 @@ export const CommandConsole = forwardRef<CommandConsoleHandle, Props>(function C
         {files.length > 0 && (
           <div className="flex flex-wrap gap-2 px-5 pb-1">
             {files.map((f) => (
-              <span key={f} className="flex h-7 items-center gap-2 rounded-[8px] bg-white/[0.04] pl-2.5 pr-1.5 font-mono text-[11px] text-fg-2 hairline">
+              <span key={f} className="flex h-7 items-center gap-2 rounded-[8px] bg-white/[0.04] pl-2.5 pr-1.5 text-[13px] tabular-nums text-fg-2 hairline">
                 {f}
                 <button aria-label={`Remove ${f}`} onClick={() => setFiles((fs) => fs.filter((x) => x !== f))} className="text-fg-3 hover:text-white">
                   <X size={12} />
@@ -267,10 +261,10 @@ export const CommandConsole = forwardRef<CommandConsoleHandle, Props>(function C
                       {integrations.slice(0, 8).map((i) => (
                         <li key={i.id} className="flex items-center justify-between rounded-md px-2 py-1.5 text-[13px] text-fg-2">
                           <span className="flex items-center gap-2.5">
-                            <span className="flex h-6 w-6 items-center justify-center rounded-[6px] font-mono text-[9px] text-fg-1 hairline">{i.mono}</span>
+                            <span className="flex h-6 w-6 items-center justify-center rounded-[6px] text-[12px] tabular-nums text-fg-1 hairline">{i.mono}</span>
                             {i.name}
                           </span>
-                          <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-fg-3">{integrationStatusLabel[i.status]}</span>
+                          <span className="text-[12px] text-fg-3">{integrationStatusLabel[i.status]}</span>
                         </li>
                       ))}
                     </ul>
@@ -311,7 +305,7 @@ function ToolButton({ children, label, onClick, active, expanded }: { children: 
       aria-expanded={expanded}
       onClick={onClick}
       className={cn(
-        "flex h-9 w-9 items-center justify-center rounded-[10px] text-fg-3 transition-colors duration-150 hover:bg-white/[0.05] hover:text-fg-1",
+        "flex h-9 w-9 items-center justify-center rounded-full text-fg-3 transition-colors duration-150 hover:bg-white/[0.05] hover:text-fg-1",
         active && "bg-white/[0.06] text-white",
       )}
     >
@@ -328,7 +322,7 @@ function SubmitButton({ enabled, onClick, energy }: { enabled: boolean; onClick(
       disabled={!enabled}
       aria-label="Submit mission"
       className={cn(
-        "group relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-[11px] transition-all duration-300 ease-[var(--ease-z)]",
+        "group relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full transition-all duration-300 ease-[var(--ease-z)]",
         enabled ? "bg-white text-black shadow-[0_0_28px_-4px_rgba(130,120,255,0.8)]" : "bg-white/[0.06] text-fg-3",
       )}
       style={{ opacity: enabled ? 1 : 0.6 + energy * 0.4 }}

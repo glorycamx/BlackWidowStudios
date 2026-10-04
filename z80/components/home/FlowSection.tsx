@@ -146,8 +146,8 @@ export function FlowSection() {
                       <span className={cn("h-2 w-2 rounded-full", id === "result" ? "bg-white" : "bg-fg-2")} />
                     )}
                   </div>
-                  <div className="mt-3 text-[11.5px] font-semibold uppercase tracking-[0.14em] text-white">{n.label}</div>
-                  <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.1em] text-fg-3">{n.sub}</div>
+                  <div className="mt-3 text-[11.5px] font-semibold text-white">{n.label}</div>
+                  <div className="mt-1 text-[12px] text-fg-3">{n.sub}</div>
                 </div>
               );
             })}
@@ -191,7 +191,7 @@ function Message({ link }: { link: Link }) {
   const from = getAgent(link.from);
   return (
     <div className="panel-solid px-4 py-3.5">
-      <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em]">
+      <div className="flex items-center gap-2 text-[12px]">
         <span style={{ color: from?.accent.tint ?? "#fff" }}>{actorName(link.from)}</span>
         <span className="text-fg-4">→</span>
         <span className="text-fg-2">{actorName(link.to)}</span>

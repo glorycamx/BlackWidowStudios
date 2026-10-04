@@ -15,7 +15,7 @@ export function TempChip({ temp, className }: { temp: LeadTemperature; className
   const c = TEMP_COLOR[temp];
   return (
     <span
-      className={cn("inline-flex h-5 items-center gap-1.5 rounded-[6px] px-1.5 font-mono text-[9.5px] uppercase tracking-[0.14em]", className)}
+      className={cn("inline-flex h-5 items-center gap-1.5 rounded-full px-2 text-[12px] capitalize", className)}
       style={{ color: c, background: `${c}14`, boxShadow: `inset 0 0 0 1px ${c}40` }}
     >
       <span className={cn("h-1 w-1 rounded-full", temp === "hot" && "motion-safe:animate-breathe")} style={{ background: c }} />
@@ -27,7 +27,7 @@ export function TempChip({ temp, className }: { temp: LeadTemperature; className
 export function KindChip({ signal }: { signal: Signal }) {
   if (signal.lead) return <TempChip temp={signal.lead.temperature} />;
   const label = signal.kind === "news" ? "Briefing" : "Reminder";
-  return <span className="inline-flex h-5 items-center rounded-[6px] px-1.5 font-mono text-[9.5px] uppercase tracking-[0.14em] text-fg-2 hairline">{label}</span>;
+  return <span className="inline-flex h-5 items-center rounded-full px-2 text-[12px] text-fg-2 bg-white/[0.06]">{label}</span>;
 }
 
 /** Copy to clipboard with a quiet confirmation; falls back to selecting nothing. */
@@ -45,7 +45,7 @@ export function CopyButton({ text, label = "Copy", className }: { text: string; 
           /* clipboard unavailable */
         }
       }}
-      className={cn("inline-flex h-7 items-center gap-1.5 rounded-[8px] px-2.5 font-mono text-[10px] uppercase tracking-[0.12em] text-fg-2 transition-colors hairline hover:text-white", className)}
+      className={cn("inline-flex h-7 items-center gap-1.5 rounded-[8px] px-2.5 text-[12px] text-fg-2 transition-colors hairline hover:text-white", className)}
     >
       {done ? <Check size={12} /> : <Copy size={12} />}
       {done ? "Copied" : label}

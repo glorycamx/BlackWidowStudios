@@ -39,12 +39,12 @@ export function MissionTimeline({ mission }: { mission: Mission }) {
               <span className={cn("text-[15px]", s === "waiting" ? "text-fg-3" : s === "skipped" ? "text-fg-4 line-through" : "text-white")}>{t.label}</span>
               <ActorTag actor={t.agentId} />
             </div>
-            {t.output && <div className="mt-1 font-mono text-[11px] text-fg-3">{t.output}</div>}
+            {t.output && <div className="mt-1 text-[13px] tabular-nums text-fg-3">{t.output}</div>}
             {mine.length > 0 && (
               <ul className="mt-3 space-y-1.5">
                 {mine.map((e) => (
                   <li key={e.id} className="flex gap-3 text-[13px]">
-                    <span className="font-mono text-[10.5px] text-fg-4">{clockTime(e.at)}</span>
+                    <span className="text-[12px] tabular-nums text-fg-4">{clockTime(e.at)}</span>
                     <span className="text-fg-2">{e.message}</span>
                   </li>
                 ))}

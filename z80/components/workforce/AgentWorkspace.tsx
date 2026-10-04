@@ -75,7 +75,7 @@ export function AgentWorkspace({ slug }: { slug: string }) {
           </div>
           <div>
             <div className="label">{agent.designation}</div>
-            <h1 className="mt-3 text-[clamp(40px,5vw,64px)] font-semibold uppercase leading-[0.95] tracking-[-0.03em] text-white">{agent.name}</h1>
+            <h1 className="mt-3 text-[clamp(40px,5vw,64px)] font-semibold leading-[0.95] tracking-[-0.03em] text-white">{agent.name}</h1>
             <div className="mt-3 flex flex-wrap items-center gap-4">
               <span className="text-[14px] text-fg-2">{agent.role}</span>
               <span className="label flex items-center gap-2 text-[10px]" style={{ color }}>
@@ -114,7 +114,7 @@ export function AgentWorkspace({ slug }: { slug: string }) {
         <Panel title="Current objective" className="lg:col-span-2">
           {current ? (
             <div>
-              <Link href={`/missions/${current.id}`} className="font-mono text-[11px] uppercase tracking-[0.1em] text-fg-3 hover:text-white">
+              <Link href={`/missions/${current.id}`} className="text-[12px] text-fg-3 hover:text-white">
                 Mission {missionCode(current.number)}
               </Link>
               <div className="mt-2 text-[22px] font-medium tracking-[-0.02em] text-white">{current.title}</div>
@@ -145,7 +145,7 @@ export function AgentWorkspace({ slug }: { slug: string }) {
                   <Link href={`/workforce/${c.slug}`} className="flex items-center gap-3 hover:opacity-80">
                     <AgentGlyph agent={c} size={32} animated={false} />
                     <span>
-                      <span className="block text-[13px] font-semibold uppercase tracking-[0.12em] text-white">{c.name}</span>
+                      <span className="block text-[13px] font-semibold text-white">{c.name}</span>
                       <span className="block text-[12.5px] text-fg-3">{c.role}</span>
                     </span>
                   </Link>
@@ -155,7 +155,7 @@ export function AgentWorkspace({ slug }: { slug: string }) {
           </ul>
         </Panel>
 
-        <Panel title="Current actions" className="lg:col-span-2" action={<Link href="/activity" className="font-mono text-[10px] uppercase tracking-[0.12em] text-fg-3 hover:text-white">All activity →</Link>}>
+        <Panel title="Current actions" className="lg:col-span-2" action={<Link href="/activity" className="text-[12px] text-fg-3 hover:text-white">All activity →</Link>}>
           <ActivityFeed events={events} limit={8} dense />
         </Panel>
 
@@ -181,9 +181,9 @@ export function AgentWorkspace({ slug }: { slug: string }) {
               {outputs.map(({ m, t }) => (
                 <li key={`${m.id}-${t.id}`} className="flex flex-wrap items-baseline justify-between gap-2 py-3">
                   <span className="text-[14px] text-white">
-                    {t.label} <span className="ml-2 font-mono text-[11.5px] text-fg-2">{t.output}</span>
+                    {t.label} <span className="ml-2 text-[13px] tabular-nums text-fg-2">{t.output}</span>
                   </span>
-                  <Link href={`/missions/${m.id}`} className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-fg-3 hover:text-white">
+                  <Link href={`/missions/${m.id}`} className="text-[12px] text-fg-3 hover:text-white">
                     Mission {missionCode(m.number)}
                   </Link>
                 </li>
@@ -202,17 +202,17 @@ export function AgentWorkspace({ slug }: { slug: string }) {
               return (
                 <li key={t} className="flex items-center justify-between text-[13.5px]">
                   <span className="flex items-center gap-2.5 text-fg-1">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-[6px] font-mono text-[9px] hairline">{i?.mono}</span>
+                    <span className="flex h-6 w-6 items-center justify-center rounded-[6px] text-[12px] tabular-nums hairline">{i?.mono}</span>
                     {i?.name ?? t}
                   </span>
-                  <span className="font-mono text-[9.5px] uppercase tracking-[0.1em] text-fg-3">{on ? "Connected" : i ? integrationStatusLabel[i.status] : ""}</span>
+                  <span className="text-[12px] text-fg-3">{on ? "Connected" : i ? integrationStatusLabel[i.status] : ""}</span>
                 </li>
               );
             })}
           </ul>
         </Panel>
 
-        <Panel title="Permissions" className="lg:col-span-3" action={<span className="font-mono text-[10px] text-fg-4">Workspace policy · applies to all intelligences</span>}>
+        <Panel title="Permissions" className="lg:col-span-3" action={<span className="text-[12px] tabular-nums text-fg-4">Workspace policy · applies to all intelligences</span>}>
           <ul className="grid gap-x-10 md:grid-cols-2">
             {permissions.map((p) => (
               <li key={p.id} className="flex items-center justify-between gap-4 border-b border-white/[0.04] py-3">
@@ -224,7 +224,7 @@ export function AgentWorkspace({ slug }: { slug: string }) {
         </Panel>
 
         <section ref={threadRef} className="panel p-5 lg:col-span-3" aria-label={`Message ${agent.name}`}>
-          <h2 className="label text-[10px]">Direct line · {agent.name}</h2>
+          <h2 className="label">Direct line · {agent.name}</h2>
           <div className="mt-5 space-y-4">
             {thread.length === 0 && <p className="text-[14px] text-fg-3">Talk to {agent.name} directly. For new objectives, Command assembles the right team.</p>}
             {thread.map((m) => (
@@ -235,7 +235,7 @@ export function AgentWorkspace({ slug }: { slug: string }) {
                   <div className="max-w-[80%]">
                     <div className="flex items-center gap-2">
                       <ActorTag actor={m.author} />
-                      <span className="font-mono text-[10px] text-fg-4">{clockTime(m.at)}</span>
+                      <span className="text-[12px] tabular-nums text-fg-4">{clockTime(m.at)}</span>
                     </div>
                     <p className="mt-1.5 text-[14.5px] leading-relaxed text-fg-1">{m.text}</p>
                   </div>

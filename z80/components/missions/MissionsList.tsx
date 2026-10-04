@@ -48,7 +48,7 @@ export function MissionsList() {
       <PageHeader
         label={`${missions.length} missions`}
         title="Missions"
-        sub="Every objective you deploy becomes a mission. Open one to watch the work."
+        sub="Every objective you deploy."
         actions={
           <Button variant="solid" icon={<Plus size={14} />} href="/command?focus=1">
             New mission
@@ -63,7 +63,7 @@ export function MissionsList() {
               role="tab"
               aria-selected={filter === f.id}
               onClick={() => setFilter(f.id)}
-              className={cn("h-8 rounded-[9px] px-3 font-mono text-[10.5px] uppercase tracking-[0.12em] transition-colors", filter === f.id ? "bg-white/[0.08] text-white" : "text-fg-3 hover:text-fg-1")}
+              className={cn("h-8 rounded-[9px] px-3 text-[12px] transition-colors", filter === f.id ? "bg-white/[0.08] text-white" : "text-fg-3 hover:text-fg-1")}
             >
               {f.label}
             </button>
@@ -85,7 +85,7 @@ export function MissionsList() {
         {list.map((m, i) => (
           <motion.li key={m.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.03, ease: EASE }} className="border-b border-line">
             <Link href={`/missions/${m.id}`} className="group grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-3 px-1 py-5 transition-colors hover:bg-white/[0.015] md:grid-cols-[70px_1fr_180px_150px_90px]">
-              <span className="hidden font-mono text-[12px] text-fg-3 md:block">{missionCode(m.number)}</span>
+              <span className="hidden text-[13px] tabular-nums text-fg-3 md:block">{missionCode(m.number)}</span>
               <span className="min-w-0">
                 <span className="block truncate text-[15.5px] text-white">{m.title}</span>
                 <span className="mt-1 block truncate text-[12.5px] text-fg-3">{m.objective}</span>
@@ -97,7 +97,7 @@ export function MissionsList() {
               <span className="hidden md:block">
                 <AgentStack ids={m.agents.map((a) => a.agentId)} size={22} />
               </span>
-              <span className="text-right font-mono text-[11px] text-fg-3">
+              <span className="text-right text-[13px] tabular-nums text-fg-3">
                 <span className="md:hidden">
                   <MissionStatusBadge status={m.status} />
                 </span>

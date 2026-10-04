@@ -29,7 +29,7 @@ export function WorkforceRoster() {
       <PageHeader
         label={`${plural(deployed.length, "intelligence")} · ${working} working`}
         title="Your workforce"
-        sub="Every intelligence on your team, what it is doing right now, and what it has done today."
+        sub="Who is working, and on what."
       />
       <ul className="mt-12 border-t border-line">
         {states.map(({ a, st }, i) => {
@@ -39,7 +39,7 @@ export function WorkforceRoster() {
             <div className={cn("grid grid-cols-[auto_1fr_auto] items-center gap-x-5 gap-y-2 py-6 md:grid-cols-[64px_minmax(0,1.1fr)_minmax(0,1.3fr)_150px_24px] md:gap-x-8", soon && "opacity-50")}>
               <AgentGlyph agent={a} size={52} animated={!soon} muted={soon} />
               <div className="min-w-0">
-                <div className="text-[17px] font-semibold uppercase tracking-[0.12em] text-white">{a.name}</div>
+                <div className="text-[17px] font-semibold text-white">{a.name}</div>
                 <div className="mt-1 text-[13px] text-fg-3">{a.role}</div>
               </div>
               <div className="col-span-3 min-w-0 md:col-span-1">
@@ -49,7 +49,7 @@ export function WorkforceRoster() {
                 </div>
                 <div className="mt-2 truncate text-[14px] text-fg-1">{soon ? a.shortDescription : st.doing}</div>
               </div>
-              <div className="hidden font-mono text-[11.5px] text-fg-3 md:block">
+              <div className="hidden text-[13px] tabular-nums text-fg-3 md:block">
                 {!soon && (
                   <>
                     <div>{plural(st.activeMissions.length, "mission")}</div>

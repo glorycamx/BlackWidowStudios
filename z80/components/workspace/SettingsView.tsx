@@ -111,7 +111,7 @@ export function SettingsView() {
                   role="radio"
                   aria-checked={settings.demoSpeed === sp}
                   onClick={() => workspace.setSettings({ demoSpeed: sp })}
-                  className={cn("h-7 rounded-[7px] px-3 font-mono text-[11px]", settings.demoSpeed === sp ? "bg-white/[0.08] text-white" : "text-fg-3")}
+                  className={cn("h-7 rounded-[7px] px-3 text-[13px] tabular-nums", settings.demoSpeed === sp ? "bg-white/[0.08] text-white" : "text-fg-3")}
                 >
                   {sp}×
                 </button>

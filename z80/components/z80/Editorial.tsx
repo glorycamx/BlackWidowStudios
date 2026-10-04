@@ -20,5 +20,5 @@ export function Editorial({ label, title, intro, children }: { label: string; ti
 }
 
 export function Prose({ children }: { children: ReactNode }) {
-  return <div className="max-w-[680px] space-y-6 text-[15.5px] leading-[1.75] text-fg-2 [&_h2]:mt-14 [&_h2]:text-[13px] [&_h2]:font-semibold [&_h2]:uppercase [&_h2]:tracking-[0.16em] [&_h2]:text-white [&_strong]:text-white">{children}</div>;
+  return <div className="max-w-[680px] space-y-6 text-[15.5px] leading-[1.75] text-fg-2 [&_h2]:mt-14 [&_h2]:text-[13px] [&_h2]:font-semibold [&_h2]:[&_h2]:tracking-[0.16em] [&_h2]:text-white [&_strong]:text-white">{children}</div>;
 }

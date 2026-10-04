@@ -21,8 +21,8 @@ export default function PricingPage() {
           return (
             <section key={t.id} aria-label={t.name} className={cn("panel flex flex-col p-7", t.highlighted && "energy-border")}>
               <div className="flex items-center justify-between">
-                <h2 className="text-[13px] font-semibold uppercase tracking-[0.18em] text-white">{t.name}</h2>
-                {t.highlighted && <span className="label text-[9.5px] text-fg-1">Recommended</span>}
+                <h2 className="text-[13px] font-semibold text-white">{t.name}</h2>
+                {t.highlighted && <span className="label text-fg-1">Recommended</span>}
               </div>
               <p className="mt-3 text-[14.5px] text-fg-2">{t.audience}</p>
               <div className="mt-8">

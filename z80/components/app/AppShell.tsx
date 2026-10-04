@@ -53,7 +53,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Link href="/" className="text-[19px]" aria-label="Z80.si home">
             <Wordmark />
           </Link>
-          <span className="label text-[9px] text-fg-4">Demo</span>
+          <span className="label text-fg-4">Demo</span>
         </div>
         <button
           onClick={openCommandPalette}
@@ -158,10 +158,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <span className="relative">
                     <n.icon size={18} />
                     {n.href === "/signals" && hydrated && hot > 0 && (
-                      <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#ff6f91] px-1 font-mono text-[9px] text-black">{hot}</span>
+                      <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#ff6f91] px-1 text-[12px] tabular-nums text-black">{hot}</span>
                     )}
                     {n.href === "/approvals" && hydrated && pending > 0 && (
-                      <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-attn px-1 font-mono text-[9px] text-black">{pending}</span>
+                      <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-attn px-1 text-[12px] tabular-nums text-black">{pending}</span>
                     )}
                   </span>
                   {n.label}
@@ -191,7 +191,7 @@ function NavLink({ href, label, icon, active, badge, badgeTone }: { href: string
       <span className="flex-1">{label}</span>
       {badge !== undefined && (
         <span
-          className="flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 font-mono text-[10px]"
+          className="flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[12px] tabular-nums"
           style={
             badgeTone === "hot"
               ? { color: "#ff6f91", background: "rgba(255,111,145,0.14)", boxShadow: "inset 0 0 0 1px rgba(255,111,145,0.35)" }

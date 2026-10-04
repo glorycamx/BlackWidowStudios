@@ -30,7 +30,7 @@ export function ConnectionsView() {
       <PageHeader
         label={`${connected.length} connected`}
         title="Connections"
-        sub="The software your business runs on becomes your workforce's toolkit — always within the permissions you set."
+        sub="The tools your workforce can use."
       />
       {connected.length === 0 && (
         <div className="mt-6 panel">
@@ -51,20 +51,20 @@ export function ConnectionsView() {
                   return (
                     <li key={i.id} className="flex flex-wrap items-center justify-between gap-4 border-b border-line py-4">
                       <div className="flex items-center gap-4">
-                        <span className={cn("flex h-10 w-10 items-center justify-center rounded-[11px] font-mono text-[11px]", on ? "bg-white text-black" : "text-fg-1 hairline")}>{i.mono}</span>
+                        <span className={cn("flex h-10 w-10 items-center justify-center rounded-[11px] text-[13px] tabular-nums", on ? "bg-white text-black" : "text-fg-1 hairline")}>{i.mono}</span>
                         <div>
                           <div className="text-[15px] text-white">{i.name}</div>
                           <div className="text-[13px] text-fg-3">{i.description}</div>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <span className={cn("font-mono text-[10px] uppercase tracking-[0.12em]", on ? "text-white" : i.status === "preview" ? "text-run" : "text-fg-3")}>
+                        <span className={cn("text-[12px]", on ? "text-white" : i.status === "preview" ? "text-run" : "text-fg-3")}>
                           {on ? "Connected" : integrationStatusLabel[i.status]}
                         </span>
                         {connectable ? (
                           <button
                             onClick={() => workspace.toggleConnection(i.id)}
-                            className={cn("flex h-8 items-center gap-1.5 rounded-[9px] px-3 font-mono text-[10.5px] uppercase tracking-[0.1em] transition-colors", on ? "text-fg-2 hairline hover:text-white" : "bg-white text-black hover:bg-[#e9e9ee]")}
+                            className={cn("flex h-8 items-center gap-1.5 rounded-[9px] px-3 text-[12px] transition-colors", on ? "text-fg-2 hairline hover:text-white" : "bg-white text-black hover:bg-[#e9e9ee]")}
                           >
                             {on ? "Disconnect" : (<><Check size={12} /> Connect</>)}
                           </button>
@@ -72,7 +72,7 @@ export function ConnectionsView() {
                           <button
                             onClick={() => workspace.toggleInterest(i.id)}
                             aria-pressed={watching}
-                            className="flex h-8 items-center gap-1.5 rounded-[9px] px-3 font-mono text-[10.5px] uppercase tracking-[0.1em] text-fg-2 hairline hover:text-white"
+                            className="flex h-8 items-center gap-1.5 rounded-[9px] px-3 text-[12px] text-fg-2 hairline hover:text-white"
                           >
                             {watching ? <BellOff size={12} /> : <Bell size={12} />}
                             {watching ? "Watching" : "Notify me"}

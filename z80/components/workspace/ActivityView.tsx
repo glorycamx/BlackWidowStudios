@@ -46,7 +46,7 @@ export function ActivityView() {
 
   return (
     <PageWrap className="max-w-[1000px]">
-      <PageHeader label="Audit trail" title="Activity" sub="Every meaningful action your workforce takes — what, who and when. Expand an entry for detail." />
+      <PageHeader title="Activity" sub="Every action, as it happened." />
       <div role="tablist" aria-label="Filter activity" className="no-scrollbar -mx-5 mt-10 flex gap-1 overflow-x-auto px-5 md:mx-0 md:px-0">
         {filters.map((f) => (
           <button
@@ -54,7 +54,7 @@ export function ActivityView() {
             role="tab"
             aria-selected={filter === f.id}
             onClick={() => setFilter(f.id)}
-            className={cn("h-8 shrink-0 rounded-[9px] px-3 font-mono text-[10.5px] uppercase tracking-[0.12em] transition-colors", filter === f.id ? "bg-white/[0.08] text-white" : "text-fg-3 hover:text-fg-1")}
+            className={cn("h-8 shrink-0 rounded-[9px] px-3 text-[12px] transition-colors", filter === f.id ? "bg-white/[0.08] text-white" : "text-fg-3 hover:text-fg-1")}
           >
             {f.label}
           </button>

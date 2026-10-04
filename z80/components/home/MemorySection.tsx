@@ -29,21 +29,12 @@ export function MemorySection() {
   const sel = pts.find((p) => p.id === active);
 
   return (
-    <Section id="memory" index="08" label="Memory" className="py-[16vh]">
+    <Section id="memory" index="08" label="Memory" className="py-[18vh]">
       <div className="mt-8 grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,620px)] lg:gap-16">
         <div>
-          <Display lines={["Your team", "actually knows", "your business."]} className="text-[clamp(40px,5.6vw,92px)]" />
+          <Display lines={["It knows", "your business."]} className="text-[clamp(44px,6vw,96px)]" />
           <Reveal delay={0.1}>
-            <p className="mt-8 max-w-[440px] text-[16px] leading-relaxed text-fg-2">
-              Stop re-explaining your company to every new tool. Z80 builds organization memory — brand, offers, customers, voice, processes, past work — and every intelligence draws from it.
-            </p>
-          </Reveal>
-          <Reveal delay={0.15}>
-            <p className="mt-8 text-[22px] font-medium leading-[1.2] tracking-[-0.02em] text-white">
-              One memory layer.
-              <br />
-              <span className="text-fg-3">Every agent gets smarter.</span>
-            </p>
+            <p className="mt-6 max-w-[420px] text-[clamp(18px,1.6vw,22px)] leading-[1.4] text-fg-2">One memory. Every agent gets smarter.</p>
           </Reveal>
         </div>
 
@@ -80,8 +71,8 @@ export function MemorySection() {
             {/* Center */}
             <div className="absolute left-1/2 top-1/2 flex h-[26%] w-[26%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-center" style={{ background: "radial-gradient(circle, rgba(100,91,255,0.28), rgba(0,0,0,0.9) 70%)", boxShadow: "0 0 0 1px rgba(255,255,255,0.12), 0 0 80px -10px rgba(100,91,255,0.5)" }}>
               <div>
-                <div className="label text-[9.5px] text-fg-2">Organization</div>
-                <div className="mt-1.5 text-[clamp(11px,1.4vw,15px)] font-semibold uppercase tracking-[0.12em] text-white">Your company</div>
+                <div className="label text-fg-2">Organization</div>
+                <div className="mt-1.5 text-[clamp(11px,1.4vw,15px)] font-semibold text-white">Your company</div>
               </div>
             </div>
 
@@ -91,7 +82,7 @@ export function MemorySection() {
                 <button
                   key={p.id}
                   className={cn(
-                    "absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3.5 py-2 font-mono text-[10.5px] uppercase tracking-[0.14em] transition-all duration-300",
+                    "absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3.5 py-2 text-[12px] transition-all duration-300",
                     on ? "bg-white text-black" : "bg-black text-fg-1 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.4)]",
                   )}
                   style={{ left: `${((p.x / W) * 100).toFixed(3)}%`, top: `${((p.y / H) * 100).toFixed(3)}%` }}
@@ -110,7 +101,7 @@ export function MemorySection() {
             {agentPts.map(({ a, x, y }) => (
               <div key={a.id} className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 text-center" style={{ left: `${((x / W) * 100).toFixed(3)}%`, top: `${((y / H) * 100).toFixed(3)}%` }}>
                 <span className="mx-auto block h-2 w-2 rounded-full" style={{ background: a.accent.hex, boxShadow: `0 0 12px ${a.accent.hex}` }} />
-                <span className="mt-2 block font-mono text-[9.5px] uppercase tracking-[0.14em]" style={{ color: a.accent.tint }}>
+                <span className="mt-2 block text-[12px]" style={{ color: a.accent.tint }}>
                   {a.name}
                 </span>
               </div>
@@ -125,9 +116,9 @@ export function MemorySection() {
                   exit={{ opacity: 0, y: 6 }}
                   transition={{ duration: 0.3, ease: EASE }}
                 >
-                  <div className="label text-[10px] text-fg-1">{sel.label}</div>
+                  <div className="label text-fg-1">{sel.label}</div>
                   <p className="mt-2 text-[13.5px] text-fg-2">{sel.summary}</p>
-                  <p className="mt-2 font-mono text-[10.5px] text-fg-3">
+                  <p className="mt-2 text-[12px] tabular-nums text-fg-3">
                     Used by {agents.filter((a) => a.memory.includes(sel.id)).map((a) => a.name).join(", ") || "Z80"}
                   </p>
                 </motion.div>

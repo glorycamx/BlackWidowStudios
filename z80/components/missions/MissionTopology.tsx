@@ -143,7 +143,7 @@ export function MissionTopology({ mission, entering }: { mission: Mission; enter
 
       {/* center label */}
       <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-        <div className="label text-[9px] text-fg-2">Objective</div>
+        <div className="label text-fg-2">Objective</div>
         <div className="mt-1.5 font-mono text-[20px] text-white">{Math.round(progress * 100)}%</div>
       </div>
 
@@ -177,7 +177,7 @@ export function MissionTopology({ mission, entering }: { mission: Mission; enter
               style={{ top: 0 }}
             >
               <div className={cn("text-[12.5px] leading-tight", s === "waiting" ? "text-fg-3" : s === "skipped" ? "text-fg-4 line-through" : "text-white")}>{n.t.label}</div>
-              <div className={cn("mt-1 flex items-center gap-1.5 font-mono text-[9.5px] uppercase tracking-[0.1em]", left && "justify-end")} style={{ color: s === "blocked" ? "#d77bff" : s === "running" ? agent.accent.tint : "#686872" }}>
+              <div className={cn("mt-1 flex items-center gap-1.5 text-[12px]", left && "justify-end")} style={{ color: s === "blocked" ? "#d77bff" : s === "running" ? agent.accent.tint : "#686872" }}>
                 {STATUS_TEXT[s]}
                 {n.t.output && s === "complete" && <span className="text-fg-3 normal-case tracking-normal">· {n.t.output}</span>}
               </div>
@@ -186,7 +186,7 @@ export function MissionTopology({ mission, entering }: { mission: Mission; enter
               <div className={cn("panel-solid absolute z-20 w-[200px] p-3", top ? "top-5" : "bottom-5", left ? "right-0" : "left-0")}>
                 <div className="flex items-center gap-2">
                   <AgentGlyph agent={agent} size={20} animated={false} />
-                  <span className="font-mono text-[10px] uppercase tracking-[0.12em]" style={{ color: agent.accent.tint }}>
+                  <span className="text-[12px]" style={{ color: agent.accent.tint }}>
                     {agent.name}
                   </span>
                 </div>

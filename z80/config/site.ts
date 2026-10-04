@@ -13,14 +13,14 @@ export const site = {
 } as const;
 
 export const publicNav = [
-  { label: "Product", href: "/#how" },
+  { label: "Product", href: "/#fragment" },
   { label: "Intelligences", href: "/#intelligences" },
   { label: "Solutions", href: "/#solutions" },
   { label: "Company", href: "/company" },
 ] as const;
 
 export const footerNav = [
-  { label: "Product", href: "/#how" },
+  { label: "Product", href: "/#fragment" },
   { label: "Intelligences", href: "/#intelligences" },
   { label: "Pricing", href: "/pricing" },
   { label: "Security", href: "/security" },

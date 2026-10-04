@@ -90,9 +90,9 @@ export function SignalsView() {
           </span>
         }
         title="Signals"
-        sub="Your crew watches the market around the clock and taps you the moment something happens: a site goes down, a business changes hands, reviews spike. Every lead arrives with a full dossier and an opener."
+        sub="Your crew watches the market and taps you when something happens."
         actions={
-          <div className="flex gap-6 font-mono text-[11px] text-fg-3">
+          <div className="flex gap-6 text-[13px] tabular-nums text-fg-3">
             <span>
               <span className="text-[20px] text-white">{today.filter((s) => s.kind === "lead").length}</span> leads today
             </span>
@@ -121,12 +121,12 @@ export function SignalsView() {
             role="tab"
             aria-selected={filter === f.id}
             onClick={() => setFilter(f.id)}
-            className={cn("h-8 shrink-0 rounded-[9px] px-3 font-mono text-[10.5px] uppercase tracking-[0.12em] transition-colors", filter === f.id ? "bg-white/[0.08] text-white" : "text-fg-3 hover:text-fg-1")}
+            className={cn("h-8 shrink-0 rounded-[9px] px-3 text-[12px] transition-colors", filter === f.id ? "bg-white/[0.08] text-white" : "text-fg-3 hover:text-fg-1")}
           >
             {f.label}
           </button>
         ))}
-        <button onClick={() => workspace.markAllSignalsRead()} className="ml-auto h-8 shrink-0 px-2 font-mono text-[10px] uppercase tracking-[0.12em] text-fg-4 hover:text-fg-2">
+        <button onClick={() => workspace.markAllSignalsRead()} className="ml-auto h-8 shrink-0 px-2 text-[12px] text-fg-4 hover:text-fg-2">
           Mark all read
         </button>
       </div>
@@ -154,13 +154,13 @@ export function SignalsView() {
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2">
                         <KindChip signal={s} />
-                        <span className="truncate font-mono text-[10px] uppercase tracking-[0.1em] text-fg-3">{s.trigger}</span>
+                        <span className="truncate text-[12px] text-fg-3">{s.trigger}</span>
                       </div>
-                      <span className="shrink-0 font-mono text-[10px] text-fg-4">{relativeTime(s.at, now)}</span>
+                      <span className="shrink-0 text-[12px] tabular-nums text-fg-4">{relativeTime(s.at, now)}</span>
                     </div>
                     <div className={cn("mt-2 truncate text-[15px]", s.read ? "text-fg-1" : "text-white")}>{s.title}</div>
                     <div className="mt-0.5 truncate text-[13px] text-fg-3">{s.lead ? `${s.lead.location} · ${s.lead.recommended.offer}` : s.summary}</div>
-                    {s.missionId && <div className="mt-2 font-mono text-[9.5px] uppercase tracking-[0.12em] text-run">Outreach mission running</div>}
+                    {s.missionId && <div className="mt-2 text-[12px] text-run">Outreach mission running</div>}
                   </button>
                 </motion.li>
               );
@@ -222,7 +222,7 @@ function WatchCard({ watch, count, now }: { watch: Watch; count: number; now: nu
           <AgentGlyph agent={agent} size={32} animated={live} />
           <div>
             <div className="text-[14px] font-medium text-white">{watch.name}</div>
-            <div className="mt-0.5 flex items-center gap-1.5 font-mono text-[9.5px] uppercase tracking-[0.12em]" style={{ color: live ? agent.accent.tint : undefined }}>
+            <div className="mt-0.5 flex items-center gap-1.5 text-[12px]" style={{ color: live ? agent.accent.tint : undefined }}>
               <StatusDot color={live ? agent.accent.hex : "#686872"} size={4} live={live} />
               {live ? watch.cadence : "Paused"}
             </div>
@@ -236,19 +236,18 @@ function WatchCard({ watch, count, now }: { watch: Watch; count: number; now: nu
           {live ? <Pause size={13} /> : <Play size={13} />}
         </button>
       </div>
-      <p className="mt-3 line-clamp-2 text-[12.5px] leading-snug text-fg-3">{watch.description}</p>
       <div className="mt-auto flex items-center justify-between gap-2 pt-4">
-        <span className="font-mono text-[10.5px] text-fg-2">
+        <span className="text-[12px] tabular-nums text-fg-2">
           {count} today{live && secs < 3600 ? <span className="text-fg-4"> · next scan {secs}s</span> : null}
         </span>
-        <button onClick={() => workspace.scanNow(watch.id)} className="flex items-center gap-1 font-mono text-[9.5px] uppercase tracking-[0.12em] text-fg-3 hover:text-white" title="Demo control">
+        <button onClick={() => workspace.scanNow(watch.id)} className="flex items-center gap-1 text-[12px] text-fg-3 hover:text-white" title="Demo control">
           <Radar size={11} /> Scan now
         </button>
       </div>
       {leadWatch && (
-        <label className="mt-3 flex cursor-pointer items-center justify-between gap-3 border-t border-line pt-3">
+        <label className="mt-3 flex cursor-pointer items-center justify-between gap-3 border-t border-white/[0.06] pt-3" title="Draft an outreach mission for every hot lead. Sending still needs your approval.">
           <span className="text-[12px] text-fg-2">
-            Autopilot <span className="text-fg-4">· draft outreach for hot leads</span>
+            Autopilot
           </span>
           <input
             type="checkbox"

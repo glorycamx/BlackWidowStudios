@@ -141,17 +141,9 @@ export function Hero() {
               transition={{ duration: 0.6, ease: EASE }}
             >
               <div className="max-w-[640px]">
-                <motion.p
-                  className="label flex items-center gap-2.5 text-fg-2"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1.1, duration: 1 }}
-                >
-                  <span className="h-px w-6 bg-gradient-to-r from-transparent to-white/50" />
-                  The AI workforce operating system
-                </motion.p>
+
                 <motion.h1
-                  className="mt-5 text-[clamp(76px,11.5vw,184px)] leading-[0.86]"
+                  className="text-[clamp(76px,11.5vw,184px)] leading-[0.86]"
                   initial={{ opacity: 0, y: 20, filter: "blur(14px)" }}
                   animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                   transition={{ delay: 0.45, duration: 1.4, ease: EASE }}
@@ -167,14 +159,7 @@ export function Hero() {
                 >
                   Super intelligence is here.
                 </motion.p>
-                <motion.p
-                  className="mt-2.5 text-[15px] leading-relaxed text-fg-3 md:text-[16px]"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1.2, duration: 1 }}
-                >
-                  Describe the outcome. Z80 deploys the team to do it.
-                </motion.p>
+
 
                 <motion.div
                   className="mt-9 md:mt-10"
@@ -204,7 +189,7 @@ export function Hero() {
                   <Button variant="primary" size="lg" onClick={deployCta} disabled={phase !== "idle"} data-deploy>
                     Deploy your team
                   </Button>
-                  <Button variant="ghost" size="lg" href="#how" iconRight={<ArrowDown size={14} />}>
+                  <Button variant="ghost" size="lg" href="#fragment" iconRight={<ArrowDown size={14} />}>
                     See how it works
                   </Button>
                 </motion.div>
@@ -245,7 +230,7 @@ export function Hero() {
           aria-hidden
         >
           <div className="flex flex-col items-center gap-3">
-            <span className="label text-[10px]">Scroll</span>
+            <span className="label">Scroll</span>
             <span className="relative h-10 w-px overflow-hidden bg-white/10">
               <motion.span className="absolute inset-x-0 top-0 h-3 bg-white/70" animate={{ y: [-12, 40] }} transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }} />
             </span>

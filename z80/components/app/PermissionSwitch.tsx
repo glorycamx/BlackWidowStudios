@@ -31,7 +31,7 @@ export function PermissionSwitch({ value, onChange, label }: { value: Permission
             role="radio"
             aria-checked={on}
             onClick={() => onChange(l.id)}
-            className={cn("relative z-10 h-7 rounded-[8px] px-3 font-mono text-[10px] uppercase tracking-[0.12em] transition-colors duration-200", on ? "text-white" : "text-fg-3 hover:text-fg-2")}
+            className={cn("relative z-10 h-7 rounded-[8px] px-3 text-[12px] transition-colors duration-200", on ? "text-white" : "text-fg-3 hover:text-fg-2")}
           >
             {on && (
               <motion.span

@@ -45,22 +45,14 @@ export function FragmentSection() {
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         <div className="mx-auto flex h-full max-w-[1440px] flex-col px-5 pt-24 md:justify-center md:px-10 md:pt-0">
           <div className="max-w-[560px]">
-            <p className="label flex items-center gap-3">
-              <span className="text-fg-2">02</span>
-              <span className="h-px w-8 bg-white/15" />
-              Orchestration
-            </p>
-            <h2 className="display mt-5 text-[clamp(42px,6.2vw,96px)]">
+            <h2 className="display text-[clamp(42px,6.2vw,96px)]">
               One request.
               <br />
               <span className="text-fg-2">An entire team.</span>
             </h2>
           </div>
-          <motion.div style={{ opacity: body }} className="mt-6 hidden max-w-[440px] space-y-4 text-[17px] leading-relaxed text-fg-2 md:block">
-            <p className="text-fg-1">Stop managing ten separate AI tools.</p>
-            <p>
-              Tell Z80 the outcome. Z80 decides which intelligences should work, assigns the mission, and coordinates the operation — start to finish.
-            </p>
+          <motion.div style={{ opacity: body }} className="mt-6 hidden max-w-[420px] text-[clamp(18px,1.6vw,22px)] leading-[1.4] text-fg-2 md:block">
+            <p>Tell Z80 the outcome. It picks the team and runs the work.</p>
           </motion.div>
         </div>
 
@@ -75,9 +67,9 @@ export function FragmentSection() {
               animate={{ opacity: labelsOn ? 1 : 0, y: labelsOn ? 0 : 8 }}
               transition={{ duration: 0.6, delay: labelsOn ? i * 0.08 : 0 }}
             >
-              <div className="text-[13px] font-semibold uppercase tracking-[0.16em] text-white">{a.name}</div>
-              <div className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.12em]" style={{ color: a.accent.tint }}>
-                {a.domain}
+              <div className="text-[17px] font-semibold tracking-[-0.02em] text-white">{a.name}</div>
+              <div className="mt-1.5 text-[12px]" style={{ color: a.accent.tint }}>
+                {a.role.replace(" Intelligence", "")}
               </div>
             </motion.div>
           ))}

@@ -10,10 +10,10 @@ export default function NotFound() {
       <p className="label mt-16">404 · Signal lost</p>
       <h1 className="mt-5 text-[clamp(36px,5vw,64px)] font-semibold leading-[1] tracking-[-0.045em] text-white">This page isn&apos;t part of the network.</h1>
       <div className="mt-10 flex gap-3">
-        <Link href="/" className="inline-flex h-10 items-center rounded-[11px] bg-white px-5 text-[11px] font-medium uppercase tracking-[0.14em] text-black">
+        <Link href="/" className="inline-flex h-10 items-center rounded-[11px] bg-white px-5 text-[11px] font-medium text-black">
           Return home
         </Link>
-        <Link href="/command" className="inline-flex h-10 items-center rounded-[11px] px-5 text-[11px] font-medium uppercase tracking-[0.14em] text-fg-1 hairline">
+        <Link href="/command" className="inline-flex h-10 items-center rounded-[11px] px-5 text-[11px] font-medium text-fg-1 hairline">
           Open command
         </Link>
       </div>

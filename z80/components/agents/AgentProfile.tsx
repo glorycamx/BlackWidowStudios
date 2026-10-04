@@ -44,7 +44,7 @@ export function AgentProfile({ agent }: { agent: Agent }) {
               {agent.designation}
             </div>
             <h1 className="display mt-5 text-[clamp(72px,12vw,180px)] uppercase">{agent.name}</h1>
-            <p className="mt-5 font-mono text-[13px] uppercase tracking-[0.2em] text-fg-1">{agent.role}</p>
+            <p className="mt-5 font-mono text-[13px] text-fg-1">{agent.role}</p>
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
               <span className="label flex items-center gap-2 text-[10px]">
                 Status
@@ -53,7 +53,7 @@ export function AgentProfile({ agent }: { agent: Agent }) {
                   {available ? "Active" : "Coming soon"}
                 </span>
               </span>
-              <span className="label text-[10px]">{agent.personality.join(" · ")}</span>
+              <span className="label">{agent.personality.join(" · ")}</span>
             </div>
             <p className="mt-8 max-w-[520px] text-[17px] leading-relaxed text-fg-2">{agent.description}</p>
             {available && (
@@ -85,7 +85,7 @@ export function AgentProfile({ agent }: { agent: Agent }) {
                 return (
                   <li key={t} className="flex items-baseline justify-between gap-3 text-[15px] text-white">
                     {i?.name ?? t}
-                    {i && <span className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-fg-3">{integrationStatusLabel[i.status]}</span>}
+                    {i && <span className="text-[12px] text-fg-3">{integrationStatusLabel[i.status]}</span>}
                   </li>
                 );
               })}
@@ -110,7 +110,7 @@ export function AgentProfile({ agent }: { agent: Agent }) {
                     <Link href={`/agents/${c.slug}`} className="flex items-center gap-3 hover:opacity-80">
                       <AgentGlyph agent={c} size={30} animated={false} />
                       <span>
-                        <span className="block text-[13px] font-semibold uppercase tracking-[0.12em] text-white">{c.name}</span>
+                        <span className="block text-[13px] font-semibold text-white">{c.name}</span>
                         <span className="block text-[12.5px] text-fg-3">{c.role}</span>
                       </span>
                     </Link>

@@ -65,7 +65,7 @@ export function AnalysisSequence({ objective, ready, onDone, className }: Props)
                 <span className={cn("h-1.5 w-1.5 rounded-full transition-colors duration-300", done ? "bg-white" : current ? "bg-indigo" : "bg-white/20")} />
                 {current && <span className="absolute inset-0 rounded-full border border-indigo/70 motion-safe:animate-ping-once" />}
               </span>
-              <span className={cn("font-mono text-[11.5px] uppercase tracking-[0.14em]", done ? "text-fg-2" : current ? "text-white" : "text-fg-3")}>{label}</span>
+              <span className={cn("text-[12px]", done ? "text-fg-2" : current ? "text-white" : "text-fg-3")}>{label}</span>
               {current && (
                 <span className="relative ml-auto h-px w-24 overflow-hidden bg-white/10">
                   <motion.span
@@ -76,7 +76,7 @@ export function AnalysisSequence({ objective, ready, onDone, className }: Props)
                   />
                 </span>
               )}
-              {done && <span className="ml-auto font-mono text-[10px] text-fg-3">done</span>}
+              {done && <span className="ml-auto text-[12px] tabular-nums text-fg-3">done</span>}
             </motion.li>
           );
         })}

@@ -89,7 +89,7 @@ export function PublicNav() {
                 >
                   <Link href={item.href} onClick={() => setOpen(false)} className="flex items-baseline justify-between border-b border-line py-4 text-[30px] font-medium tracking-[-0.03em] text-white">
                     {item.label}
-                    <span className="font-mono text-[11px] text-fg-3">0{i + 1}</span>
+                    <span className="text-[13px] tabular-nums text-fg-3">0{i + 1}</span>
                   </Link>
                 </motion.li>
               ))}

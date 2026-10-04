@@ -17,7 +17,7 @@ export function ApprovalsView() {
       <PageHeader
         label={pending.length ? `${pending.length} waiting on you` : "All clear"}
         title="Approvals"
-        sub="Your intelligences work autonomously within the permissions you set. Anything else waits here for a human decision."
+        sub="Decisions waiting on you."
       />
       <div className="mt-12 space-y-3">
         <AnimatePresence initial={false}>

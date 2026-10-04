@@ -16,9 +16,9 @@ export function MemoryView() {
   return (
     <PageWrap>
       <PageHeader
-        label="Organization memory"
+        label="Memory"
         title={org?.name ?? "Your company"}
-        sub="One memory layer. Every intelligence reads from it, so you never re-explain your business. In production this is built from onboarding, connected tools and past missions."
+        sub="Everything your workforce knows about the business."
       />
       {org?.description && <p className="mt-6 max-w-[560px] text-[15px] text-fg-1">{org.description}</p>}
       <div className="mt-12 grid gap-px overflow-hidden rounded-[16px] bg-line md:grid-cols-2 xl:grid-cols-3">
@@ -29,7 +29,7 @@ export function MemoryView() {
             <section key={d.id} className="bg-black p-6" aria-label={d.label}>
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-[13px] font-semibold uppercase tracking-[0.16em] text-white">{d.label}</h2>
+                  <h2 className="text-[13px] font-semibold text-white">{d.label}</h2>
                   <p className="mt-1.5 text-[13px] text-fg-3">{d.summary}</p>
                 </div>
                 <div className="flex gap-1.5 pt-1" aria-label={`Used by ${users.map((u) => u.name).join(", ")}`}>

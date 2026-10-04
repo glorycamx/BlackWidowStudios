@@ -219,15 +219,15 @@ export function CommandPalette() {
                     >
                       <span className={cn("text-fg-3", i === active && "text-fg-1")}>{item.icon}</span>
                       <span className="flex-1 truncate">{item.label}</span>
-                      {item.hint && <span className="truncate font-mono text-[11px] text-fg-3">{item.hint}</span>}
+                      {item.hint && <span className="truncate text-[13px] tabular-nums text-fg-3">{item.hint}</span>}
                     </div>
                   </li>
                 );
               })}
             </ul>
             <div className="flex items-center justify-between border-t border-line px-5 py-3">
-              <span className="label text-[10px]">Z80 command</span>
-              <span className="label text-[10px]">↑↓ navigate · ↵ run</span>
+              <span className="label">Z80 command</span>
+              <span className="label">↑↓ navigate · ↵ run</span>
             </div>
           </motion.div>
         </motion.div>

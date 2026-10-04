@@ -54,24 +54,19 @@ export function LiveWorkSection() {
   const currentTask = needsApproval ? 5 : shown.length ? shown[shown.length - 1].task : -1;
 
   return (
-    <Section id="live" index="05" label="Execution" className="py-[16vh]">
+    <Section id="live" index="05" label="Execution" className="py-[18vh]">
       <div className="mt-8 grid gap-12 lg:grid-cols-[1fr_minmax(0,600px)] lg:gap-20">
         <div>
           <Display lines={["Watch the", "work happen."]} />
           <Reveal delay={0.1}>
-            <p className="mt-8 max-w-[420px] text-[16px] leading-relaxed text-fg-2">
-              These aren&apos;t chatbots waiting for prompts. Deployed intelligences work through the mission on their own, and every step is visible as it happens.
-            </p>
-          </Reveal>
-          <Reveal delay={0.15}>
-            <p className="label mt-6 text-[10px]">Illustration — timings shortened</p>
+            <p className="mt-6 max-w-[400px] text-[clamp(18px,1.6vw,22px)] leading-[1.4] text-fg-2">Every step, live. Nothing hidden.</p>
           </Reveal>
         </div>
 
         <div ref={ref} className="panel-solid overflow-hidden">
           <div className="flex items-center justify-between border-b border-line px-5 py-4">
             <div>
-              <div className="label text-[10px]">Mission 0248</div>
+              <div className="label">Mission 0248 · illustration</div>
               <div className="mt-1.5 text-[14.5px] text-white">Generate qualified leads for a roofing company</div>
             </div>
             <span className="label flex items-center gap-2 text-[10px]" style={{ color: approved ? "#fff" : needsApproval ? "var(--color-attn)" : "var(--color-run)" }}>
@@ -95,7 +90,7 @@ export function LiveWorkSection() {
                       transition={{ duration: 0.8, ease: EASE }}
                     />
                   </div>
-                  <span className={cn("font-mono text-[9.5px] uppercase tracking-[0.12em]", done || now ? "text-fg-2" : "text-fg-4")}>{t}</span>
+                  <span className={cn("text-[12px]", done || now ? "text-fg-2" : "text-fg-4")}>{t}</span>
                 </div>
               );
             })}
@@ -114,8 +109,8 @@ export function LiveWorkSection() {
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.6, ease: EASE }}
                   >
-                    <span className="font-mono text-[11px] text-fg-3">{b.t}</span>
-                    <span className="flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.1em]" style={{ color: a.accent.tint }}>
+                    <span className="text-[13px] tabular-nums text-fg-3">{b.t}</span>
+                    <span className="flex items-center gap-1.5 text-[12px]" style={{ color: a.accent.tint }}>
                       <span className="h-1 w-1 rounded-full" style={{ background: a.accent.hex }} />
                       {a.name}
                     </span>
@@ -133,8 +128,8 @@ export function LiveWorkSection() {
                 transition={{ duration: 0.6, ease: EASE }}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[11px] text-fg-3">09:41:43</span>
-                  <span className="label text-[10px] text-attn">Approval required</span>
+                  <span className="text-[13px] tabular-nums text-fg-3">09:41:43</span>
+                  <span className="label text-attn">Approval required</span>
                 </div>
                 <p className="mt-2.5 text-[15px] text-white">{approved ? "Approved. Outreach scheduled for tomorrow, 9:00 AM." : "Review campaign before anything is sent?"}</p>
                 {!approved && (

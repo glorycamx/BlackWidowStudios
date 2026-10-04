@@ -30,7 +30,7 @@ export function AmbientRail() {
   return (
     <div className="space-y-10">
       <section>
-        <h2 className="label text-[10px]">Active intelligences</h2>
+        <h2 className="label">Active intelligences</h2>
         <ul className="mt-5 space-y-5">
           {availableAgents.map((a) => {
             const st = getAgentLiveState(a.id, missions, allApprovals, activity, paused, now);
@@ -41,7 +41,7 @@ export function AmbientRail() {
                 <Link href={`/workforce/${a.slug}`} className="group flex items-start gap-3">
                   <StatusDot color={color} size={6} live={st.state === "working" || st.state === "active" || st.state === "waiting"} className="mt-1.5" />
                   <span className="min-w-0">
-                    <span className="block text-[12px] font-semibold uppercase tracking-[0.14em] text-white group-hover:text-fg-1">{a.name}</span>
+                    <span className="block text-[12px] font-semibold text-white group-hover:text-fg-1">{a.name}</span>
                     <span className="mt-1 line-clamp-2 block text-[13px] leading-snug text-fg-3">{st.doing}</span>
                   </span>
                 </Link>
@@ -53,8 +53,8 @@ export function AmbientRail() {
 
       <section>
         <div className="flex items-center justify-between">
-          <h2 className="label text-[10px]">Live signals</h2>
-          <Link href="/signals" className="font-mono text-[10px] uppercase tracking-[0.12em] text-fg-3 hover:text-white">
+          <h2 className="label">Live signals</h2>
+          <Link href="/signals" className="text-[12px] text-fg-3 hover:text-white">
             All →
           </Link>
         </div>
@@ -64,7 +64,7 @@ export function AmbientRail() {
               <Link href={`/signals?id=${s.id}`} className="block rounded-[10px] p-2.5 transition-colors hover:bg-white/[0.03]" style={{ boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05)" }}>
                 <div className="flex items-center justify-between gap-2">
                   <KindChip signal={s} />
-                  <span className="font-mono text-[9.5px] text-fg-4">{relativeTime(s.at, now)}</span>
+                  <span className="text-[12px] tabular-nums text-fg-4">{relativeTime(s.at, now)}</span>
                 </div>
                 <div className="mt-1.5 truncate text-[13px] text-white">{s.title}</div>
                 <div className="truncate text-[11.5px] text-fg-3">{s.trigger}</div>
@@ -75,7 +75,7 @@ export function AmbientRail() {
       </section>
 
       <section>
-        <h2 className="label text-[10px]">Today</h2>
+        <h2 className="label">Today</h2>
         <dl className="mt-4 space-y-3 text-[13.5px]">
           <Row k="Missions completed" v={completedToday} />
           <Row k="Tasks executed" v={tasksToday} />
@@ -86,8 +86,8 @@ export function AmbientRail() {
       {pending.length > 0 && (
         <section>
           <div className="flex items-center justify-between">
-            <h2 className="label text-[10px]">Needs you</h2>
-            <Link href="/approvals" className="font-mono text-[10px] uppercase tracking-[0.12em] text-fg-3 hover:text-white">
+            <h2 className="label">Needs you</h2>
+            <Link href="/approvals" className="text-[12px] text-fg-3 hover:text-white">
               All →
             </Link>
           </div>

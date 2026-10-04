@@ -90,7 +90,7 @@ export function MissionView({ id }: { id: string }) {
       <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-y border-line py-3">
         <div className="flex min-w-[220px] flex-1 items-center gap-4">
           <ProgressBar value={mission.progress} status={mission.status} className="max-w-[360px] flex-1" />
-          <span className="font-mono text-[12px] text-fg-1">{Math.round(mission.progress * 100)}%</span>
+          <span className="text-[13px] tabular-nums text-fg-1">{Math.round(mission.progress * 100)}%</span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {running && (
@@ -101,7 +101,7 @@ export function MissionView({ id }: { id: string }) {
                   role="radio"
                   aria-checked={mission.speed === sp}
                   onClick={() => workspace.setMissionSpeed(mission.id, sp)}
-                  className={cn("flex h-7 items-center gap-1 rounded-[7px] px-2.5 font-mono text-[10.5px]", mission.speed === sp ? "bg-white/[0.08] text-white" : "text-fg-3 hover:text-fg-1")}
+                  className={cn("flex h-7 items-center gap-1 rounded-[7px] px-2.5 text-[12px] tabular-nums", mission.speed === sp ? "bg-white/[0.08] text-white" : "text-fg-3 hover:text-fg-1")}
                 >
                   {sp === 4 && <Zap size={11} />}
                   {sp}×
@@ -117,7 +117,7 @@ export function MissionView({ id }: { id: string }) {
                   role="radio"
                   aria-checked={view === v}
                   onClick={() => setView(v)}
-                  className={cn("flex h-7 items-center gap-1.5 rounded-[7px] px-2.5 font-mono text-[10.5px] uppercase tracking-[0.1em]", view === v ? "bg-white/[0.08] text-white" : "text-fg-3 hover:text-fg-1")}
+                  className={cn("flex h-7 items-center gap-1.5 rounded-[7px] px-2.5 text-[12px]", view === v ? "bg-white/[0.08] text-white" : "text-fg-3 hover:text-fg-1")}
                 >
                   {v === "topology" ? <Network size={12} /> : <Rows3 size={12} />}
                   {v}
@@ -126,7 +126,7 @@ export function MissionView({ id }: { id: string }) {
             </div>
           )}
           {mission.status === "running" && (
-            <button onClick={() => workspace.interrupt(mission.id)} className="h-8 rounded-[9px] px-3 font-mono text-[10px] uppercase tracking-[0.1em] text-fg-4 hover:text-fg-2" title="Demo control">
+            <button onClick={() => workspace.interrupt(mission.id)} className="h-8 rounded-[9px] px-3 text-[12px] text-fg-4 hover:text-fg-2" title="Demo control">
               Simulate interruption
             </button>
           )}
@@ -147,7 +147,7 @@ export function MissionView({ id }: { id: string }) {
             <div className="flex items-start gap-3">
               <TriangleAlert size={18} className="mt-0.5 text-err" />
               <div>
-                <div className="label text-[10px] text-err">Mission interrupted</div>
+                <div className="label text-err">Mission interrupted</div>
                 <p className="mt-2 text-[15px] text-white">
                   {agentOrFallback(mission.interruption.agentId).name} {mission.interruption.message}
                 </p>
@@ -211,7 +211,7 @@ export function MissionView({ id }: { id: string }) {
         </div>
 
         <aside className="space-y-6">
-          <Panel title="Execution" action={running && <span className="font-mono text-[10px] text-fg-4">live</span>}>
+          <Panel title="Execution" action={running && <span className="text-[12px] tabular-nums text-fg-4">live</span>}>
             <div className="max-h-[560px] overflow-y-auto pr-1">
               <ActivityFeed events={events} showMission={false} dense />
             </div>

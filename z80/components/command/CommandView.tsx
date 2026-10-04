@@ -96,7 +96,7 @@ export function CommandView() {
             <div className="mx-auto w-full max-w-[760px] flex-1 pb-8 pt-10">
               <div className="label mb-10 flex items-center justify-between">
                 <span>Command</span>
-                <button onClick={() => workspace.clearConversation()} className="font-mono text-[10px] uppercase tracking-[0.12em] text-fg-4 hover:text-fg-2">
+                <button onClick={() => workspace.clearConversation()} className="text-[12px] text-fg-4 hover:text-fg-2">
                   New conversation
                 </button>
               </div>

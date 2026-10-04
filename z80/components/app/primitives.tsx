@@ -15,8 +15,8 @@ export function PageHeader({ label, title, sub, actions, className }: { label?: 
     <header className={cn("flex flex-col gap-5 md:flex-row md:items-end md:justify-between", className)}>
       <div className="min-w-0">
         {label && <div className="label">{label}</div>}
-        <h1 className="mt-4 text-[clamp(34px,4.4vw,58px)] font-semibold leading-[0.98] tracking-[-0.045em] text-white">{title}</h1>
-        {sub && <p className="mt-4 max-w-[560px] text-[15px] leading-relaxed text-fg-2">{sub}</p>}
+        <h1 className="mt-2 text-[clamp(34px,4.4vw,56px)] font-semibold leading-[1] tracking-[-0.04em] text-white">{title}</h1>
+        {sub && <p className="mt-3 max-w-[560px] text-[19px] leading-snug text-fg-2">{sub}</p>}
       </div>
       {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
     </header>
@@ -29,11 +29,11 @@ export function PageWrap({ children, className }: { children: ReactNode; classNa
 
 /** Name + accent dot for an agent, Z80 or the user. */
 export function ActorTag({ actor, className }: { actor: Actor; className?: string }) {
-  if (actor === "z80") return <span className={cn("font-mono text-[10.5px] uppercase tracking-[0.12em] text-white", className)}>Z80</span>;
-  if (actor === "user") return <span className={cn("font-mono text-[10.5px] uppercase tracking-[0.12em] text-fg-2", className)}>You</span>;
+  if (actor === "z80") return <span className={cn("text-[12px] text-white", className)}>Z80</span>;
+  if (actor === "user") return <span className={cn("text-[12px] text-fg-2", className)}>You</span>;
   const a = agentOrFallback(actor);
   return (
-    <span className={cn("inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em]", className)} style={{ color: a.accent.tint }}>
+    <span className={cn("inline-flex items-center gap-1.5 text-[12px]", className)} style={{ color: a.accent.tint }}>
       <span className="h-1 w-1 rounded-full" style={{ background: a.accent.hex }} />
       {a.name}
     </span>
@@ -87,15 +87,15 @@ export function EmptyState({ title, body, action }: { title: string; body: strin
         <span className="absolute inset-[-10px] rounded-full border border-dashed border-white/[0.06] motion-safe:animate-spin-slow" />
         <span className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/60" />
       </div>
-      <h2 className="text-[13px] font-semibold uppercase tracking-[0.2em] text-white">{title}</h2>
+      <h2 className="text-[13px] font-semibold text-white">{title}</h2>
       <p className="mt-3 max-w-[360px] text-[15px] text-fg-2">{body}</p>
       {action &&
         (action.href ? (
-          <Link href={action.href} className="mt-8 inline-flex h-10 items-center rounded-[11px] bg-white px-5 text-[11px] font-medium uppercase tracking-[0.14em] text-black hover:bg-[#e9e9ee]">
+          <Link href={action.href} className="mt-8 inline-flex h-10 items-center rounded-[11px] bg-white px-5 text-[11px] font-medium text-black hover:bg-[#e9e9ee]">
             {action.label}
           </Link>
         ) : (
-          <button onClick={action.onClick} className="mt-8 inline-flex h-10 items-center rounded-[11px] bg-white px-5 text-[11px] font-medium uppercase tracking-[0.14em] text-black hover:bg-[#e9e9ee]">
+          <button onClick={action.onClick} className="mt-8 inline-flex h-10 items-center rounded-[11px] bg-white px-5 text-[11px] font-medium text-black hover:bg-[#e9e9ee]">
             {action.label}
           </button>
         ))}
@@ -108,7 +108,7 @@ export function Panel({ title, action, children, className }: { title?: ReactNod
     <section className={cn("panel p-5", className)}>
       {(title || action) && (
         <div className="mb-4 flex items-center justify-between gap-3">
-          {title && <h2 className="label text-[10px]">{title}</h2>}
+          {title && <h2 className="label">{title}</h2>}
           {action}
         </div>
       )}

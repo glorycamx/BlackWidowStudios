@@ -39,7 +39,7 @@ export function CommandThread({ messages, thinking, onReviewPlan, onNewMission }
         ))}
         {thinking && (
           <motion.li key="thinking" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-3" role="status">
-            <span className="label text-[10px] text-fg-1">Z80</span>
+            <span className="label text-fg-1">Z80</span>
             <span className="flex gap-1">
               {[0, 1, 2].map((i) => (
                 <motion.span key={i} className="h-1 w-1 rounded-full bg-[#8f9cff]" animate={{ opacity: [0.2, 1, 0.2] }} transition={{ duration: 1, repeat: Infinity, delay: i * 0.18 }} />
@@ -58,7 +58,7 @@ function UserMessage({ m }: { m: ChatMessage }) {
     <div className="flex justify-end">
       <div className="max-w-[85%] md:max-w-[75%]">
         <div className="rounded-[16px] rounded-br-[6px] bg-white/[0.07] px-4 py-3 text-[15px] leading-relaxed text-white">{m.text}</div>
-        <div className="mt-1.5 text-right font-mono text-[10px] text-fg-4">{clockTime(m.at)}</div>
+        <div className="mt-1.5 text-right text-[12px] tabular-nums text-fg-4">{clockTime(m.at)}</div>
       </div>
     </div>
   );
@@ -69,8 +69,8 @@ function Z80Message({ m, onReviewPlan, onNewMission }: { m: ChatMessage; onRevie
     <div className="max-w-[92%] md:max-w-[85%]">
       <div className="flex items-center gap-2.5">
         <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-[8px] font-bold tracking-[-0.04em] text-black">Z</span>
-        <span className="label text-[10px] text-fg-1">Z80</span>
-        <span className="font-mono text-[10px] text-fg-4">{clockTime(m.at)}</span>
+        <span className="label text-fg-1">Z80</span>
+        <span className="text-[12px] tabular-nums text-fg-4">{clockTime(m.at)}</span>
       </div>
       <div className="mt-3 whitespace-pre-line text-[15px] leading-[1.65] text-fg-1">{m.text}</div>
       {m.team && m.team.length > 0 && (
@@ -81,7 +81,7 @@ function Z80Message({ m, onReviewPlan, onNewMission }: { m: ChatMessage; onRevie
               <li key={id} className="flex items-center gap-3">
                 <AgentGlyph agent={a} size={30} />
                 <span>
-                  <span className="block text-[12.5px] font-semibold uppercase tracking-[0.12em] text-white">{a.name}</span>
+                  <span className="block text-[12.5px] font-semibold text-white">{a.name}</span>
                   <span className="block text-[12.5px] text-fg-3">{a.domain}</span>
                 </span>
               </li>
@@ -109,7 +109,7 @@ function AgentMessage({ m, onReviewPlan, onNewMission }: { m: ChatMessage; onRev
               <ActorTag actor={m.to} />
             </>
           )}
-          <span className="font-mono text-[10px] text-fg-4">{clockTime(m.at)}</span>
+          <span className="text-[12px] tabular-nums text-fg-4">{clockTime(m.at)}</span>
         </div>
         {!hasApproval && <p className="mt-1.5 text-[15px] leading-relaxed text-fg-1">{m.text}</p>}
         <Actions actions={m.actions} onReviewPlan={onReviewPlan} onNewMission={onNewMission} />
@@ -138,7 +138,7 @@ function Actions({ actions, onReviewPlan, onNewMission }: { actions?: ChatAction
   if (deployedMission) {
     const mm = missions[deployedMission];
     return (
-      <Link href={`/missions/${deployedMission}`} className="mt-5 inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.12em] text-fg-2 hover:text-white">
+      <Link href={`/missions/${deployedMission}`} className="mt-5 inline-flex items-center gap-2 text-[12px] text-fg-2 hover:text-white">
         <span className="h-1.5 w-1.5 rounded-full bg-run" />
         Deployed · Mission {mm ? missionCode(mm.number) : ""} <ArrowUpRight size={12} />
       </Link>

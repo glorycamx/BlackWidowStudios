@@ -25,9 +25,9 @@ export function CommandCenterPreview() {
     { id: "beacon", doing: "Creating campaign concepts" },
   ];
   return (
-    <Section id="product" index="11" label="Command center" className="py-[16vh]">
+    <Section id="product" index="11" label="Command center" className="py-[18vh]">
       <div className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-        <Display lines={["Your company.", "Now with an", "intelligence layer."]} className="text-[clamp(40px,5.8vw,100px)]" />
+        <Display lines={["Your company,", "with a mind of its own."]} className="text-[clamp(40px,5.8vw,96px)]" />
         <Reveal delay={0.1}>
           <Button variant="secondary" href="/command" iconRight={<ArrowUpRight size={14} />}>
             Open the command center
@@ -54,13 +54,13 @@ export function CommandCenterPreview() {
                 <span className="flex items-center gap-3">
                   <CheckCircle2 size={15} /> Approvals
                 </span>
-                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-attn/20 px-1.5 font-mono text-[10px] text-attn">2</span>
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-attn/20 px-1.5 text-[12px] tabular-nums text-attn">2</span>
               </div>
             </div>
 
             {/* Conversation */}
             <div className="flex flex-col p-6 md:p-10">
-              <div className="label text-[10px]">Command</div>
+              <div className="label">Command</div>
               <h3 className="mt-6 text-[clamp(30px,3.4vw,48px)] font-semibold leading-[1.02] tracking-[-0.04em] text-white">
                 Good morning.
                 <br />
@@ -77,7 +77,7 @@ export function CommandCenterPreview() {
                     {["lookout", "beacon", "helm"].map((id) => {
                       const a = agentOrFallback(id);
                       return (
-                        <span key={id} className="flex h-7 items-center gap-2 rounded-[8px] px-2.5 font-mono text-[10px] uppercase tracking-[0.1em] hairline" style={{ color: a.accent.tint }}>
+                        <span key={id} className="flex h-7 items-center gap-2 rounded-[8px] px-2.5 text-[12px] hairline" style={{ color: a.accent.tint }}>
                           <span className="h-1 w-1 rounded-full" style={{ background: a.accent.hex }} />
                           {a.name}
                         </span>
@@ -88,7 +88,7 @@ export function CommandCenterPreview() {
                 <div className="flex items-start gap-3">
                   <AgentGlyph agent={agentOrFallback("lookout")} size={26} />
                   <div>
-                    <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-lookout">Lookout</div>
+                    <div className="text-[12px] text-lookout">Lookout</div>
                     <p className="mt-1 text-[14px] text-fg-1">Found 81 potential accounts.</p>
                   </div>
                 </div>
@@ -103,7 +103,7 @@ export function CommandCenterPreview() {
 
             {/* Ambient rail */}
             <div className="hidden border-l border-line p-6 lg:block">
-              <div className="label text-[10px]">Active intelligences</div>
+              <div className="label">Active intelligences</div>
               <ul className="mt-5 space-y-5">
                 {rail.map((r) => {
                   const a = agentOrFallback(r.id);
@@ -111,7 +111,7 @@ export function CommandCenterPreview() {
                     <li key={r.id} className="flex items-start gap-3">
                       <StatusDot color={a.accent.hex} size={6} className="mt-1.5" />
                       <div>
-                        <div className="text-[12.5px] font-semibold uppercase tracking-[0.12em] text-white">{a.name}</div>
+                        <div className="text-[12.5px] font-semibold text-white">{a.name}</div>
                         <div className="mt-1 text-[13px] text-fg-3">{r.doing}</div>
                       </div>
                     </li>
@@ -131,7 +131,7 @@ export function CommandCenterPreview() {
                   </div>
                 ))}
               </dl>
-              <p className="mt-8 font-mono text-[9.5px] uppercase tracking-[0.12em] text-fg-4">Sample workspace</p>
+              <p className="mt-8 text-[12px] text-fg-4">Sample workspace</p>
             </div>
           </div>
         </div>

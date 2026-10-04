@@ -1,7 +1,6 @@
 import { CommandCenterPreview } from "@/components/home/CommandCenterPreview";
 import { ControlSection } from "@/components/home/ControlSection";
 import { FinalCTA } from "@/components/home/FinalCTA";
-import { FlowSection } from "@/components/home/FlowSection";
 import { FragmentSection } from "@/components/home/FragmentSection";
 import { Hero } from "@/components/home/Hero";
 import { HomeScene } from "@/components/home/HomeScene";
@@ -21,7 +20,6 @@ export default function HomePage() {
         <HomeScene />
         <Hero />
         <FragmentSection />
-        <FlowSection />
         <IntelligencesSection />
         <LiveWorkSection />
         <SignalsSection />

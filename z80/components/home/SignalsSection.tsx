@@ -9,7 +9,6 @@ import { generateSignal } from "@/lib/services/signalService";
 import { EASE } from "@/lib/motion";
 import type { Signal, Watch } from "@/types";
 
-const TRIGGERS = ["A website goes down", "A business changes hands", "A new business opens", "Reviews spike", "A domain is about to expire", "A company hires for work AI can do"];
 
 function demoWatch(kind: "website-opportunities" | "ai-opportunities"): Watch {
   const t = getWatchTemplate(kind)!;
@@ -38,29 +37,15 @@ export function SignalsSection() {
   const top = shown[0];
 
   return (
-    <Section id="signals" index="06" label="Always on" className="py-[16vh]">
+    <Section id="signals" index="06" label="Always on" className="py-[18vh]">
       <div className="mt-8 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,560px)] lg:gap-20">
         <div>
           <Display lines={["Leads that", "find you."]} />
           <Reveal delay={0.1}>
-            <p className="mt-8 max-w-[440px] text-[16px] leading-relaxed text-fg-2">
-              Lookout watches your market around the clock. The moment something changes, it researches the business, Beacon writes the opener, and your phone lights up. No ad spend. Every lead is timely, organic and explained.
-            </p>
+            <p className="mt-6 max-w-[420px] text-[clamp(18px,1.6vw,22px)] leading-[1.4] text-fg-2">Z80 watches your market around the clock. When something changes, your phone lights up.</p>
           </Reveal>
           <Reveal delay={0.15}>
-            <ul className="mt-8 grid max-w-[460px] gap-x-6 gap-y-2.5 sm:grid-cols-2">
-              {TRIGGERS.map((t) => (
-                <li key={t} className="flex items-center gap-2.5 text-[14px] text-fg-1">
-                  <span className="h-1 w-1 rounded-full bg-[#ff6f91]" />
-                  {t}
-                </li>
-              ))}
-            </ul>
-          </Reveal>
-          <Reveal delay={0.2}>
-            <p className="mt-8 max-w-[440px] text-[14px] text-fg-3">
-              Turn on autopilot and Z80 drafts the outreach mission for every hot lead the moment it lands. You still approve before anything is sent.
-            </p>
+            <p className="mt-4 text-[15px] text-fg-3">No ad spend.</p>
           </Reveal>
         </div>
 
@@ -73,12 +58,11 @@ export function SignalsSection() {
             <span>Illustration · sample data</span>
           </div>
           <ol className="relative space-y-3">
-            <AnimatePresence initial={false} mode="popLayout">
+            <AnimatePresence initial={false}>
               {shown.map((s, i) =>
                 s?.lead ? (
                   <motion.li
                     key={`${s.id}-${n - i}`}
-                    layout
                     initial={{ opacity: 0, y: -24, scale: 0.97 }}
                     animate={{ opacity: i === 0 ? 1 : 0.55 - i * 0.12, y: 0, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.97 }}
@@ -106,9 +90,9 @@ function FullCard({ s }: { s: Signal }) {
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <TempChip temp={l.temperature} />
-            <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-fg-3">{s.trigger}</span>
+            <span className="text-[12px] text-fg-3">{s.trigger}</span>
           </div>
-          <span className="font-mono text-[10px] text-fg-4">just now</span>
+          <span className="text-[12px] tabular-nums text-fg-4">just now</span>
         </div>
         <div className="mt-3 text-[20px] font-semibold tracking-[-0.02em] text-white">{l.business}</div>
         <div className="text-[13px] text-fg-3">
@@ -116,26 +100,26 @@ function FullCard({ s }: { s: Signal }) {
         </div>
         <dl className="mt-4 grid grid-cols-2 gap-x-5 gap-y-3 text-[12.5px]">
           <div>
-            <dt className="label text-[9px]">Problem</dt>
+            <dt className="label">Problem</dt>
             <dd className="mt-1 text-fg-1">{l.problems[0]}</dd>
           </div>
           <div>
-            <dt className="label text-[9px]">Google</dt>
+            <dt className="label">Google</dt>
             <dd className="mt-1 text-fg-1">
               ★ {l.google.rating.toFixed(1)} · {l.google.reviews} reviews
             </dd>
           </div>
           <div>
-            <dt className="label text-[9px]">Recommended</dt>
+            <dt className="label">Recommended</dt>
             <dd className="mt-1 text-fg-1">{l.recommended.offer}</dd>
           </div>
           <div>
-            <dt className="label text-[9px]">Price</dt>
+            <dt className="label">Price</dt>
             <dd className="mt-1 font-mono text-fg-1">{l.recommended.price}</dd>
           </div>
         </dl>
         <p className="mt-4 line-clamp-3 rounded-[10px] bg-white/[0.03] p-3 text-[13px] leading-relaxed text-fg-1">
-          <span className="mr-2 font-mono text-[9.5px] uppercase tracking-[0.12em] text-beacon">Opener</span>
+          <span className="mr-2 text-[12px] text-beacon">Opener</span>
           {l.outreachScript}
         </p>
       </div>

@@ -1,14 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, Bookmark, BookmarkCheck, Star, X } from "lucide-react";
-import { ActorTag } from "@/components/app/primitives";
+import { ArrowUpRight, Bookmark, BookmarkCheck, X } from "lucide-react";
 import { CopyButton, KindChip, TEMP_COLOR } from "@/components/signals/SignalParts";
 import { Button } from "@/components/ui/Button";
 import { useNow } from "@/lib/hooks/useNow";
 import { useWorkspace, workspace } from "@/lib/store/workspace";
 import { cn, missionCode, relativeTime } from "@/lib/utils";
 import type { Signal } from "@/types";
+
+function Group({ title, children }: { title?: string; children: React.ReactNode }) {
+  return (
+    <section>
+      {title && <h3 className="mb-2 px-1 text-[13px] text-fg-3">{title}</h3>}
+      <ul className="divide-y divide-white/[0.06] overflow-hidden rounded-[18px] bg-white/[0.04]">{children}</ul>
+    </section>
+  );
+}
+
+function Row({ k, v, wrap, dim }: { k: string; v: string; wrap?: boolean; dim?: boolean }) {
+  return (
+    <li className={cn("flex gap-4 px-4 py-3 text-[15px]", wrap ? "flex-col gap-1 sm:flex-row sm:gap-4" : "items-center justify-between")}>
+      <span className="shrink-0 text-fg-3 sm:w-[110px]">{k}</span>
+      <span className={cn("min-w-0 break-words", wrap ? "text-left" : "truncate text-right", dim ? "text-fg-3" : "text-white", !wrap && "sm:flex-1")}>{v}</span>
+    </li>
+  );
+}
 
 function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
@@ -22,20 +39,19 @@ function Field({ label, children, className }: { label: string; children: React.
 /** The full card for one signal: everything needed to act, in one place. */
 export function SignalDetail({ signal, onClose }: { signal: Signal; onClose?: () => void }) {
   const now = useNow(20000);
-  const watch = useWorkspace((s) => s.watches.find((w) => w.id === signal.watchId));
   const mission = useWorkspace((s) => (signal.missionId ? s.missions[signal.missionId] : undefined));
   const related = useWorkspace((s) => (signal.reminder?.relatedSignalId ? s.signals.find((x) => x.id === signal.reminder?.relatedSignalId) : undefined));
   const l = signal.lead;
 
   return (
-    <article className="panel-solid overflow-hidden" aria-label={signal.title}>
+    <article className="overflow-hidden rounded-[28px] bg-[#0b0b10]" style={{ boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.06)" }} aria-label={signal.title}>
       {l && <div aria-hidden className="h-px" style={{ background: `linear-gradient(90deg, transparent, ${TEMP_COLOR[l.temperature]}, transparent)` }} />}
-      <header className="border-b border-line p-5 md:p-6">
+      <header className="p-5 pb-1 md:p-6 md:pb-1">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2.5">
             <KindChip signal={signal} />
-            {l && <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-fg-3">Priority {l.priority}</span>}
-            <span className="font-mono text-[10px] text-fg-4">{relativeTime(signal.at, now)}</span>
+            {l && <span className="text-[12px] text-fg-3">Priority {l.priority}</span>}
+            <span className="text-[12px] tabular-nums text-fg-4">{relativeTime(signal.at, now)} · sample</span>
           </div>
           {onClose && (
             <button onClick={onClose} aria-label="Close" className="flex h-8 w-8 items-center justify-center rounded-[8px] text-fg-3 hover:text-white">
@@ -43,103 +59,66 @@ export function SignalDetail({ signal, onClose }: { signal: Signal; onClose?: ()
             </button>
           )}
         </div>
-        <h2 className="mt-4 text-[clamp(24px,2.6vw,32px)] font-semibold leading-[1.05] tracking-[-0.035em] text-white">{signal.title}</h2>
-        <p className="mt-2 text-[14.5px] text-fg-2">
+        <h2 className="mt-4 text-[clamp(28px,3vw,36px)] font-semibold leading-[1.05] tracking-[-0.035em] text-white">{signal.title}</h2>
+        <p className="mt-2 text-[16px] leading-snug text-fg-2">
           <span className="text-white">{signal.trigger}.</span> {signal.summary}
         </p>
-        <div className="mt-3 flex flex-wrap items-center gap-3 text-[12px] text-fg-3">
-          {watch && (
-            <span className="flex items-center gap-2">
-              <ActorTag actor={watch.agentId} /> · {watch.name}
-            </span>
-          )}
-          <span className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-fg-4">Simulated signal</span>
-        </div>
       </header>
 
       {l && (
-        <>
-          <div className="grid gap-x-8 gap-y-6 p-5 md:grid-cols-2 md:p-6">
-            <Field label="Business">
-              <div className="text-white">{l.business}</div>
-              <div className="text-fg-3">
-                {l.industry} · {l.location}
-              </div>
-            </Field>
-            <Field label="Owner">
-              <div className="text-white">{l.owner}</div>
-              <div className="text-fg-3">{l.ownerTitle}</div>
-            </Field>
-            <Field label="Contact">
-              <div className="font-mono text-[13px]">{l.phone}</div>
-              <div className="break-all font-mono text-[13px] text-fg-2">{l.email}</div>
-            </Field>
-            <Field label="Current website">
-              <span className={cn("font-mono text-[13px]", l.currentWebsite === "None" ? "text-fg-3" : "text-fg-1")}>{l.currentWebsite}</span>
-            </Field>
-            <Field label={l.opportunity === "website" ? "Website problems" : "Operational gaps"} className="md:col-span-2">
-              <ul className="grid gap-1.5 sm:grid-cols-2">
-                {l.problems.map((p) => (
-                  <li key={p} className="flex gap-2.5">
-                    <span className="mt-[9px] h-1 w-1 shrink-0 rounded-full" style={{ background: TEMP_COLOR[l.temperature] }} />
-                    {p}
-                  </li>
-                ))}
-              </ul>
-            </Field>
-            <Field label="Google presence">
-              <div className="flex items-center gap-1.5 text-white">
-                <Star size={13} className="fill-current text-fg-1" />
-                {l.google.rating.toFixed(1)} <span className="text-fg-3">· {l.google.reviews} reviews</span>
-              </div>
-              <div className="text-fg-3">
-                Profile {l.google.profile.toLowerCase()} · {l.google.mapPack}
-              </div>
-            </Field>
-            <Field label="Reviews">{l.reviewsSummary}</Field>
-            <Field label="Business value">{l.businessValue}</Field>
-            <Field label="Recommended">
-              <div className="text-white">{l.recommended.offer}</div>
-              <div className="font-mono text-[13px] text-fg-2">{l.recommended.price}</div>
-            </Field>
-            <Field label="Demo angle" className="md:col-span-2">
-              {l.demoAngle}
-            </Field>
-            {l.upsells.length > 0 && (
-              <Field label="Upsell opportunities" className="md:col-span-2">
-                <div className="flex flex-wrap gap-1.5">
-                  {l.upsells.map((u) => (
-                    <span key={u} className="rounded-[7px] px-2.5 py-1 text-[12.5px] text-fg-1 hairline">
-                      {u}
-                    </span>
-                  ))}
-                </div>
-              </Field>
-            )}
+        <div className="space-y-6 p-5 md:p-6">
+          <Group>
+            <Row k="Owner" v={`${l.owner}, ${l.ownerTitle}`} />
+            <Row k="Phone" v={l.phone} />
+            <Row k="Email" v={l.email} />
+            <Row k="Website" v={l.currentWebsite} dim={l.currentWebsite === "None"} />
+            <Row k="Location" v={l.location} />
+          </Group>
+
+          <Group title="Why now">
+            {l.problems.map((p) => (
+              <li key={p} className="flex items-center gap-3 px-4 py-3 text-[15px] text-white">
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: TEMP_COLOR[l.temperature] }} />
+                {p}
+              </li>
+            ))}
+          </Group>
+
+          <Group title="Presence">
+            <Row k="Google" v={`★ ${l.google.rating.toFixed(1)} · ${l.google.reviews} reviews`} />
+            <Row k="Maps" v={l.google.mapPack} />
+            <Row k="Reviews say" v={l.reviewsSummary} wrap />
+            <Row k="Business" v={l.businessValue} wrap />
+          </Group>
+
+          <Group title="The pitch">
+            <Row k="Offer" v={l.recommended.offer} wrap />
+            <Row k="Price" v={l.recommended.price} />
+            <Row k="Demo" v={l.demoAngle} wrap />
+            {l.upsells.length > 0 && <Row k="Upsells" v={l.upsells.join(", ")} wrap />}
+          </Group>
+
+          <div>
+            <div className="mb-2 flex items-center justify-between px-1">
+              <span className="text-[13px] text-fg-3">Opener, written by Beacon</span>
+              <CopyButton text={l.outreachScript} label="Copy" />
+            </div>
+            <blockquote className="rounded-[18px] bg-white/[0.04] p-5 text-[16px] leading-[1.6] text-white">{l.outreachScript}</blockquote>
           </div>
 
-          <div className="border-t border-line p-5 md:p-6">
-            <div className="flex items-center justify-between gap-3">
-              <div className="label text-[9.5px]">
-                Outreach script · <span className="text-beacon">Beacon</span>
-              </div>
-              <CopyButton text={l.outreachScript} label="Copy script" />
+          <div className="rounded-[18px] p-5" style={{ background: `${TEMP_COLOR[l.temperature]}12` }}>
+            <div className="text-[13px] font-medium" style={{ color: TEMP_COLOR[l.temperature] }}>
+              Next move
             </div>
-            <blockquote className="mt-3 rounded-[12px] bg-white/[0.03] p-4 text-[15px] leading-[1.65] text-white">{l.outreachScript}</blockquote>
-            <div className="mt-5 rounded-[12px] p-4" style={{ background: `${TEMP_COLOR[l.temperature]}0d`, boxShadow: `inset 0 0 0 1px ${TEMP_COLOR[l.temperature]}33` }}>
-              <div className="label text-[9.5px]" style={{ color: TEMP_COLOR[l.temperature] }}>
-                Next move
-              </div>
-              <p className="mt-2 text-[14.5px] text-white">{l.nextMove}</p>
-            </div>
+            <p className="mt-1.5 text-[16px] leading-snug text-white">{l.nextMove}</p>
           </div>
-        </>
+        </div>
       )}
 
       {signal.news && (
         <div className="space-y-5 p-5 md:p-6">
           <Field label="Why it matters to you">{signal.news.whyItMatters}</Field>
-          <p className="font-mono text-[10.5px] text-fg-4">Source: {signal.news.source}. Sample headline. Connect a news source for live briefings.</p>
+          <p className="text-[12px] tabular-nums text-fg-4">Source: {signal.news.source}. Sample headline. Connect a news source for live briefings.</p>
         </div>
       )}
 
@@ -156,7 +135,7 @@ export function SignalDetail({ signal, onClose }: { signal: Signal; onClose?: ()
         </div>
       )}
 
-      <footer className="flex flex-wrap items-center gap-2 border-t border-line p-4 md:px-6">
+      <footer className="flex flex-wrap items-center gap-2 px-5 pb-6 md:px-6">
         {l &&
           (mission ? (
             <Button variant="secondary" size="sm" href={`/missions/${mission.id}`} iconRight={<ArrowUpRight size={12} />}>
@@ -180,7 +159,7 @@ export function SignalDetail({ signal, onClose }: { signal: Signal; onClose?: ()
         >
           Dismiss
         </Button>
-        {mission && <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.12em] text-fg-3">{mission.status === "complete" ? "Outreach done" : "Outreach in progress"}</span>}
+        {mission && <span className="ml-auto text-[12px] text-fg-3">{mission.status === "complete" ? "Outreach done" : "Outreach in progress"}</span>}
       </footer>
     </article>
   );

@@ -64,7 +64,7 @@ export function SignalToasts() {
                   }}
                   className="block w-full p-4 pr-10 text-left"
                 >
-                  <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em]" style={{ color }}>
+                  <div className="flex items-center gap-2 text-[12px]" style={{ color }}>
                     <span className="relative flex h-1.5 w-1.5">
                       <span className="absolute inset-0 rounded-full motion-safe:animate-ping-once" style={{ background: color }} />
                       <span className="relative h-1.5 w-1.5 rounded-full" style={{ background: color }} />

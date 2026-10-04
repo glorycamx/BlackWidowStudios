@@ -5,21 +5,26 @@ import type { ReactNode } from "react";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
-/** Editorial section shell with a consistent index label. */
-export function Section({ id, index, label, children, className, ariaLabel }: { id?: string; index?: string; label?: string; children: ReactNode; className?: string; ariaLabel?: string }) {
+/** Section shell. Numbered markers are gone: the headline carries the section. */
+export function Section({ id, children, className, ariaLabel, label }: { id?: string; index?: string; label?: string; children: ReactNode; className?: string; ariaLabel?: string }) {
   return (
-    <section id={id} aria-label={ariaLabel ?? label} className={cn("relative z-10 mx-auto w-full max-w-[1440px] px-5 md:px-10", className)}>
-      {(index || label) && (
-        <Reveal>
-          <p className="label flex items-center gap-3">
-            {index && <span className="text-fg-2">{index}</span>}
-            <span className="h-px w-8 bg-white/15" />
-            {label}
-          </p>
-        </Reveal>
-      )}
+    <section id={id} aria-label={ariaLabel ?? label} className={cn("relative z-10 mx-auto w-full max-w-[1240px] px-5 md:px-10", className)}>
       {children}
     </section>
+  );
+}
+
+/** Apple-style centered intro: one headline, one line. */
+export function Intro({ title, sub, className }: { title: string[]; sub?: string; className?: string }) {
+  return (
+    <div className={cn("mx-auto max-w-[880px] text-center", className)}>
+      <Display lines={title} className="text-[clamp(44px,6.4vw,96px)]" />
+      {sub && (
+        <Reveal delay={0.1}>
+          <p className="mx-auto mt-6 max-w-[560px] text-[clamp(18px,1.6vw,22px)] leading-[1.4] text-fg-2">{sub}</p>
+        </Reveal>
+      )}
+    </div>
   );
 }
 
@@ -42,7 +47,7 @@ export function Display({ lines, className, as = "h2" }: { lines: string[]; clas
   const Tag = as === "h3" ? motion.h3 : motion.h2;
   return (
     <Tag
-      className={cn("display text-[clamp(44px,7.4vw,124px)]", className)}
+      className={cn("display text-[clamp(44px,7.4vw,124px)] text-balance", className)}
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, margin: "-8% 0px" }}
