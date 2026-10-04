@@ -2,13 +2,14 @@
   "name": "z80",
   "version": "0.1.0",
   "private": true,
-  "description": "Z80.si — AI Workforce Operating System (product demo)",
+  "description": "Z80.si \u2014 AI Workforce Operating System (product demo)",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "preview:build": "vite build --config preview/vite.config.ts && python3 preview/finalize.py"
   },
   "dependencies": {
     "geist": "^1.7.2",
@@ -22,12 +23,16 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
+    "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^26.6.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@types/three": "^0.186.0",
+    "@vitejs/plugin-react": "^6.1.1",
     "postcss": "^8.5.28",
     "tailwindcss": "^4.3.3",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^8.3.2",
+    "vite-plugin-singlefile": "^2.3.3"
   }
 }

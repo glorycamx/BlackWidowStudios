@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Network, Rows3, TriangleAlert, Zap } from "lucide-react";
 import { ActivityFeed } from "@/components/app/ActivityFeed";
@@ -20,6 +20,7 @@ import { cn, missionCode } from "@/lib/utils";
 
 export function MissionView({ id }: { id: string }) {
   const params = useSearchParams();
+  const router = useRouter();
   const entering = params.get("deployed") === "1";
   const mission = useWorkspace((s) => s.missions[id]);
   const activity = useWorkspace((s) => s.activity);
@@ -31,9 +32,9 @@ export function MissionView({ id }: { id: string }) {
   useEffect(() => {
     if (!flash) return;
     const t = setTimeout(() => setFlash(false), 900);
-    window.history.replaceState(null, "", `/missions/${id}`);
+    router.replace(`/missions/${id}`);
     return () => clearTimeout(t);
-  }, [flash, id]);
+  }, [flash, id, router]);
 
   useEffect(() => {
     if (window.location.hash === "#results") {

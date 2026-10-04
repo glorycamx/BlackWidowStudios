@@ -1,0 +1,14 @@
+@import "../../app/globals.css";
+
+@source "../../app";
+@source "../../components";
+@source "../../lib";
+@source "../../data";
+@source "../../config";
+
+:root {
+  --font-geist-sans: "Geist";
+  --font-geist-mono: "Geist Mono";
+  color-scheme: dark;
+}
+html, body { background: #000; }
