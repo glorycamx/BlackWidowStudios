@@ -7,6 +7,7 @@
  */
 import type { BriefFinding, CampaignConcept, Mission, MissionResults, Prospect } from "@/types";
 import { hashString, pick, prng, titleCase } from "@/lib/utils";
+import { MAX_PROSPECTS } from "@/lib/services/planService";
 
 const FIRST = ["Dana", "Marcus", "Priya", "Tom", "Elena", "Jordan", "Kevin", "Rosa", "Sam", "Hannah", "Luis", "Grace", "Owen", "Nadia", "Paul", "Tessa", "Victor", "Amy", "Caleb", "Irene"];
 const LAST = ["Mercer", "Okafor", "Lindqvist", "Brennan", "Castillo", "Duarte", "Hale", "Ibarra", "Kowalski", "Nguyen", "Ashford", "Pryor", "Sutter", "Wexler", "Yates", "Moreau", "Delgado", "Fischer", "Rourke", "Whitlock"];
@@ -33,7 +34,7 @@ function industryFrom(target?: string): string | null {
 
 export function generateProspects(mission: Mission): Prospect[] {
   const r = prng(hashString(mission.id + mission.objective));
-  const n = Math.min(mission.entities.count ?? 50, 200);
+  const n = Math.min(mission.entities.count ?? 50, MAX_PROSPECTS);
   const industry = industryFrom(mission.entities.target);
   const loc = mission.entities.location && mission.entities.location !== "your area" ? mission.entities.location : null;
   const used = new Set<string>();

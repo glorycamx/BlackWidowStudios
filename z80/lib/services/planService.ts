@@ -38,6 +38,9 @@ const INTENT_PATTERNS: Record<Intent, RegExp> = {
 const TARGET_NOUNS =
   "companies|businesses|agencies|firms|stores|shops|restaurants|contractors|clinics|practices|brands|startups|leads|prospects|accounts|customers|competitors|operators|owners|dealers|studios|gyms|salons|dentists|builders";
 
+/** Largest list a single mission prepares; results use the same cap. */
+export const MAX_PROSPECTS = 200;
+
 const STOP = new Set(["the", "my", "our", "top", "of", "a", "an", "more", "new", "all", "every", "some", "that", "in", "for", "find", "with", "and", "local"]);
 
 export function analyzeObjective(objective: string): ObjectiveEntities {
@@ -46,7 +49,7 @@ export function analyzeObjective(objective: string): ObjectiveEntities {
 
   let count: number | undefined;
   const countMatch = text.match(new RegExp(`\\b(\\d{1,4})\\s+(?:[a-z-]+\\s+){0,3}?(?:${TARGET_NOUNS})\\b`, "i"));
-  if (countMatch) count = Math.min(5000, parseInt(countMatch[1], 10));
+  if (countMatch) count = Math.min(MAX_PROSPECTS, parseInt(countMatch[1], 10));
 
   let target: string | undefined;
   const targetMatch = text.match(new RegExp(`((?:[A-Za-z-]+\\s+){0,2})(${TARGET_NOUNS})\\b`, "i"));
@@ -56,6 +59,11 @@ export function analyzeObjective(objective: string): ObjectiveEntities {
       .split(/\s+/)
       .filter((w) => w && !STOP.has(w.toLowerCase()) && !/^\d+$/.test(w));
     target = [...prefix, targetMatch[2]].join(" ").toLowerCase();
+  }
+  if (!target) {
+    const work = text.match(/((?:[A-Za-z-]+\s+){1,2})(?:jobs|work|projects|contracts)\b/i);
+    const words = work?.[1].trim().split(/\s+/).filter((w) => !STOP.has(w.toLowerCase()) && !/^(get|win|land|book)$/i.test(w));
+    if (words?.length) target = `${words.join(" ").toLowerCase()} prospects`;
   }
 
   let location: string | undefined;
@@ -71,7 +79,9 @@ export function analyzeObjective(objective: string): ObjectiveEntities {
     location,
     intents: intents.length ? intents : ["operations"],
     mentionsCrm: /\b(crm|cold leads?|existing (customers|leads|contacts)|re-?engage|recover)\b/i.test(text),
-    outbound: /\b(outreach|emails?|send|campaign|contact|reach out|follow[- ]?up|message|sequence|re-?engage|recover)\b/i.test(text),
+    outbound:
+      /\b(outreach|emails?|send|campaign|contact|reach out|follow[- ]?up|message|sequence|re-?engage|recover)\b/i.test(text) ||
+      /\b(more|new|win|land|book|get)\s+(?:[a-z-]+\s+){0,2}(customers|clients|jobs|business|leads|deals|work)\b/i.test(text),
   };
 }
 
@@ -84,7 +94,7 @@ function step(message: string, delay = 1600, detail?: string[]): PlannedStep {
 }
 
 function resultKindFor(e: ObjectiveEntities): ResultKind {
-  if (e.intents.includes("sales") && (e.count || e.target || e.mentionsCrm)) return "prospects";
+  if (e.intents.includes("sales")) return "prospects";
   if (e.intents.includes("research") && !e.intents.includes("creative")) return "brief";
   if (e.intents.includes("creative")) return "campaign";
   if (e.intents.includes("research")) return "brief";
@@ -95,7 +105,8 @@ function chooseAgents(e: ObjectiveEntities, kind: ResultKind): AgentId[] {
   const set = new Set<AgentId>();
   if (kind === "prospects" || e.intents.includes("research") || e.intents.includes("sales")) set.add("lookout");
   if (e.intents.includes("creative") || (kind === "prospects" && e.outbound) || kind === "campaign") set.add("beacon");
-  if (set.size !== 1 || e.intents.includes("operations") || kind === "prospects") set.add("helm");
+  // Helm coordinates multi-agent work and owns every approval gate.
+  if (set.size !== 1 || e.intents.includes("operations") || kind === "prospects" || kind === "generic" || e.outbound) set.add("helm");
   // Coordinator always reads first.
   return ["helm", "lookout", "beacon"].filter((id) => set.has(id));
 }
@@ -321,7 +332,7 @@ function campaignTasks(c: Ctx, agents: AgentId[]): PlannedTask[] {
 }
 
 function briefTasks(c: Ctx, agents: AgentId[]): PlannedTask[] {
-  const writer = agents.includes("beacon") ? "beacon" : "helm";
+  const writer = agents.includes("beacon") ? "beacon" : agents.includes("helm") ? "helm" : "lookout";
   return [
     {
       id: "map",
@@ -544,7 +555,7 @@ export function createPlan(objective: string, org?: Organization | null): Plan {
     objective: objective.trim(),
     title: makeTitle(e, kind, objective),
     analysis: `${agents.length === 1 ? "1 intelligence" : `${agents.length} intelligences`} recommended${orgLine}.`,
-    reasoningSummary: `I'd start by ${lead.slice(0, -1).join(", ")}${lead.length > 1 ? ", then " : ""}${lead[lead.length - 1] ?? "organizing the work"}.${
+    reasoningSummary: `The plan: ${lead.slice(0, -1).join(", ")}${lead.length > 1 ? ", then " : ""}${lead[lead.length - 1] ?? "organize the work"}.${
       tasks.some((t) => t.approval?.kind === "review") ? " Nothing leaves the company until you approve it." : ""
     }`,
     entities: e,

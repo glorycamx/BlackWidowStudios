@@ -116,8 +116,11 @@ function setState(patch: Partial<WorkspaceState> | ((s: WorkspaceState) => Parti
 
 function schedulePersist() {
   if (!state.hydrated || typeof window === "undefined") return;
-  if (persistTimer) clearTimeout(persistTimer);
+  // Throttle, not debounce: the mission clock changes state every 200ms,
+  // so a debounce would never fire while anything is running.
+  if (persistTimer) return;
   persistTimer = setTimeout(() => {
+    persistTimer = null;
     try {
       const { hydrated: _h, thinking: _t, ...rest } = state;
       void _h;
