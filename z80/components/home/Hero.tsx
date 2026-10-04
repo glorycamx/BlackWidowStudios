@@ -131,7 +131,7 @@ export function Hero() {
 
   return (
     <section ref={sectionRef} id="hero" aria-label="Z80" className="relative z-10 flex min-h-[100svh] flex-col">
-      <div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-5 pb-10 pt-24 md:px-10 md:pt-28">
+      <div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-5 pb-8 pt-20 md:px-10 md:pt-24">
         <AnimatePresence mode="wait">
           {!inAssembly ? (
             <motion.div

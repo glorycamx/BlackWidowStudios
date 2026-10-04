@@ -157,6 +157,7 @@ export function advanceMission(
           type: "activity",
           event: {
             missionId: m.id,
+            taskId: e.taskId,
             actor: e.agentId,
             kind: /\d/.test(e.message) && !/^(Scanning|Requesting|Scheduling)/.test(e.message) ? "result" : "action",
             message: e.message,
@@ -213,7 +214,7 @@ export function advanceMission(
         m.progress = 1;
         m.tasks = m.tasks.map((t) => (t.status === "skipped" ? t : { ...t, status: "complete" }));
         m.results = generateResults(m);
-        emissions.push({ type: "activity", event: { missionId: m.id, actor: "z80", kind: "system", message: `Mission ${m.title.toLowerCase()} complete.` } });
+        emissions.push({ type: "activity", event: { missionId: m.id, actor: "z80", kind: "system", message: `Mission ${String(m.number).padStart(4, "0")} complete.` } });
         emissions.push({
           type: "chat",
           message: {

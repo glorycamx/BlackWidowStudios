@@ -74,6 +74,8 @@ export function HomeScene() {
             opacity: 0.85,
             lines: 0.6,
           };
+        } else if (desktop) {
+          t = { weights: FORMS.cluster, offset: [0, -0.05], scale: 0.42, opacity: 0.8, activity: 0.2, clusters: null, groupAlpha: flow.activeGroups, lines: 0.6 };
         } else {
           t = { weights: FORMS.field, opacity: 0.45, activity: 0, clusters: null };
         }

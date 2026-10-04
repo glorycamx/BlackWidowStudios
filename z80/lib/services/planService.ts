@@ -19,7 +19,7 @@ import type {
   PlannedTask,
   ResultKind,
 } from "@/types";
-import { hashString, prng, titleCase, uid } from "@/lib/utils";
+import { hashString, prng, uid } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ */
 /* Objective analysis                                                  */
@@ -493,9 +493,9 @@ function makeTitle(e: ObjectiveEntities, kind: ResultKind, objective: string): s
   }
   if (kind === "campaign") return /content|posts?|calendar/i.test(objective) ? "Run the content operation" : "Launch the next campaign";
   if (kind === "brief") return /competitor/i.test(objective) ? "Competitive intelligence brief" : "Market research brief";
-  const clean = objective.replace(/[.!?]+$/, "");
-  const words = clean.split(/\s+/).slice(0, 7).join(" ");
-  return titleCase(words.charAt(0).toLowerCase() + words.slice(1)).replace(/^./, (m) => m.toUpperCase());
+  const first = objective.split(/[,.:;!?]| and | then /i)[0].trim();
+  const words = first.split(/\s+/).slice(0, 6).join(" ");
+  return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
 /** Build a full Plan for an objective. Deterministic for a given objective. */

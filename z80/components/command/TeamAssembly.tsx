@@ -106,11 +106,13 @@ export function TeamAssembly({ plan: initial, onDeployed, onBack, backLabel = "E
   }, [onLayout, wide, ids]);
 
   useEffect(() => {
-    const t = setTimeout(reportLayout, 950);
+    const t = setTimeout(reportLayout, 320);
+    const t2 = setTimeout(reportLayout, 1300);
     window.addEventListener("resize", reportLayout);
     window.addEventListener("scroll", reportLayout, { passive: true });
     return () => {
       clearTimeout(t);
+      clearTimeout(t2);
       window.removeEventListener("resize", reportLayout);
       window.removeEventListener("scroll", reportLayout);
     };
@@ -196,7 +198,7 @@ export function TeamAssembly({ plan: initial, onDeployed, onBack, backLabel = "E
       <div className={cn("mt-6 grid gap-6", wide ? "grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px]" : "grid-cols-1")}>
         {/* Network */}
         {wide ? (
-          <div ref={netRef} className="relative h-[min(54vh,520px)] min-h-[380px]">
+          <div ref={netRef} className="relative h-[min(52vh,500px)] min-h-[360px]">
             <svg className="absolute inset-0 h-full w-full overflow-visible" aria-hidden>
               <defs>
                 <linearGradient id="energy" x1="0" x2="1">
@@ -285,7 +287,7 @@ export function TeamAssembly({ plan: initial, onDeployed, onBack, backLabel = "E
 
         {/* Detail panel */}
         {wide && (
-          <div className="relative">
+          <div className="relative max-h-[min(52vh,500px)] min-h-[360px] overflow-y-auto rounded-[14px] pr-1">
             <AnimatePresence mode="wait">
               {sel && (
                 <motion.div

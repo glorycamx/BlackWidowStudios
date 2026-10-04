@@ -298,6 +298,7 @@ export type Actor = AgentId | "z80" | "user";
 export interface ActivityEvent {
   id: string;
   missionId?: string;
+  taskId?: string;
   actor: Actor;
   /** For agent-to-agent communication. */
   to?: Actor;

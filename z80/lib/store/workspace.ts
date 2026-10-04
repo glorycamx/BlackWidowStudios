@@ -9,6 +9,7 @@
  */
 import { useRef, useSyncExternalStore } from "react";
 import { defaultPermissions } from "@/data/permissions";
+import { memoryDomains } from "@/data/memory";
 import { requestChat, requestPlan } from "@/lib/api";
 import { agentReply } from "@/lib/services/chatService";
 import {
@@ -51,6 +52,12 @@ export interface WorkspaceState {
   /** Direct threads with individual intelligences. */
   threads: Record<AgentId, ChatMessage[]>;
   plans: Record<string, Plan>;
+  /** planId → missionId once deployed. */
+  deployedPlans: Record<string, string>;
+  /** Organization memory items by domain id. */
+  memory: Record<string, string[]>;
+  /** Integrations the user asked to be notified about. */
+  interest: string[];
   permissions: PermissionRule[];
   connections: Record<string, boolean>;
   pausedAgents: AgentId[];
@@ -76,6 +83,9 @@ function emptyState(): WorkspaceState {
     chat: [],
     threads: {},
     plans: {},
+    deployedPlans: {},
+    memory: Object.fromEntries(memoryDomains.map((d) => [d.id, d.items])),
+    interest: [],
     permissions: defaultPermissions,
     connections: {},
     pausedAgents: [],
@@ -319,6 +329,7 @@ export const workspace = {
     const names = plan.agents.length;
     setState((s) => ({
       missions: { ...s.missions, [mission.id]: mission },
+      deployedPlans: { ...s.deployedPlans, [planId]: mission.id },
       missionOrder: [mission.id, ...s.missionOrder.filter((id) => id !== mission.id)],
       nextMissionNumber: number + 1,
       chat: [
@@ -349,11 +360,10 @@ export const workspace = {
       return;
     }
     const r = resolveMissionApproval(mission, approval, decision);
-    setState((s) => ({
-      approvals: { ...s.approvals, [approvalId]: resolved },
-      missions: { ...s.missions, [mission.id]: r.mission },
-      ...applyEmissions(r.emissions, s),
-    }));
+    setState((s) => {
+      const base = { ...s, approvals: { ...s.approvals, [approvalId]: resolved } };
+      return { approvals: base.approvals, missions: { ...s.missions, [mission.id]: r.mission }, ...applyEmissions(r.emissions, base) };
+    });
   },
 
   setMissionSpeed(missionId: string, speed: number) {
@@ -415,6 +425,20 @@ export const workspace = {
       }));
       playSound("message", state.settings.sound);
     }, 900);
+  },
+
+  addMemory(domainId: string, item: string) {
+    const t = item.trim();
+    if (!t) return;
+    setState((s) => ({ memory: { ...s.memory, [domainId]: [...(s.memory[domainId] ?? []), t] } }));
+  },
+
+  removeMemory(domainId: string, index: number) {
+    setState((s) => ({ memory: { ...s.memory, [domainId]: (s.memory[domainId] ?? []).filter((_, i) => i !== index) } }));
+  },
+
+  toggleInterest(integrationId: string) {
+    setState((s) => ({ interest: s.interest.includes(integrationId) ? s.interest.filter((i) => i !== integrationId) : [...s.interest, integrationId] }));
   },
 
   setOrg(org: Organization) {

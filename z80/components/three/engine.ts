@@ -74,14 +74,15 @@ function build(count: number, arcCount: number, linkCount: number): Built {
         if (Math.hypot(...p) <= 1.0) sites.push(p);
       }
 
-  // Muse ribbons.
-  const ribbons = Array.from({ length: 6 }, () => ({
-    a: 1 + Math.floor(r() * 3),
-    b: 1 + Math.floor(r() * 3),
-    c: 1 + Math.floor(r() * 2),
-    p: r() * Math.PI * 2,
+  // Muse ribbons: a few wide, flowing bands.
+  const ribbons = Array.from({ length: 4 }, (_, k) => ({
+    a: 1,
+    b: 2,
+    c: 1,
+    p: (k / 4) * Math.PI * 2 + r() * 0.4,
     q: r() * Math.PI * 2,
-    amp: 0.75 + r() * 0.45,
+    amp: 0.85 + k * 0.12,
+    tilt: (k - 1.5) * 0.35,
   }));
 
   for (let i = 0; i < count; i++) {
@@ -115,22 +116,26 @@ function build(count: number, arcCount: number, linkCount: number): Built {
     dots[i3 + 2] *= 0.92;
 
     // --- grok: data terrain of scan rows, tilted toward the viewer
-    const row = Math.floor(r() * 30);
-    const gz = (row / 29) * 2.4 - 1.2;
+    const row = Math.floor(r() * 26);
+    const gz = (row / 25) * 2.2 - 1.1;
     const gx = r() * 3.6 - 1.8;
     let gy = 0.16 * Math.sin(gx * 2.1 + gz * 3.0) + 0.08 * Math.sin(gx * 5.3 - gz * 2.2);
     if (r() < 0.035) gy += r() * 0.55; // signal spikes
-    const tilt = -0.5;
+    const tilt = -0.95;
     grok[i3] = gx;
     grok[i3 + 1] = gy * Math.cos(tilt) - gz * Math.sin(tilt) - 0.05;
     grok[i3 + 2] = gy * Math.sin(tilt) + gz * Math.cos(tilt);
 
-    // --- muse: flowing ribbons
+    // --- muse: flowing ribbons (band = curve + offset along a twisting normal)
     const rb = ribbons[Math.floor(r() * ribbons.length)];
     const u = r() * Math.PI * 2;
-    muse[i3] = Math.sin(u * rb.a + rb.p) * 1.15 * rb.amp + gauss(r) * 0.035;
-    muse[i3 + 1] = Math.sin(u * rb.b + rb.q) * 0.62 * rb.amp + gauss(r) * 0.035;
-    muse[i3 + 2] = Math.cos(u * rb.c) * 0.55 + gauss(r) * 0.035;
+    const w = (r() - 0.5) * 0.22;
+    const cx = Math.sin(u * rb.a + rb.p) * 1.2 * rb.amp;
+    const cy = Math.sin(u * rb.b + rb.q) * 0.5 * rb.amp + rb.tilt * Math.cos(u);
+    const cz = Math.cos(u * rb.c + rb.p) * 0.45;
+    muse[i3] = cx + gauss(r) * 0.012;
+    muse[i3 + 1] = cy + w * Math.cos(u * 2 + rb.q) + gauss(r) * 0.012;
+    muse[i3 + 2] = cz + w * Math.sin(u * 2 + rb.q);
 
     // --- field: ambient volume
     field[i3] = (r() * 2 - 1) * 7.5;
@@ -334,13 +339,13 @@ void main() {
   gL.x = gx;
   vec3 pG = uOffset + uScale * (uRotSoft * gL);
   float bx = sin(t * 0.55) * 1.6;
-  float beam = exp(-pow((gx - bx) * 4.5, 2.0));
+  float beam = exp(-pow((gx - bx) * 3.0, 2.0));
 
   // Muse ribbons
-  vec3 mL = aMuse + 0.075 * vec3(
-    sin(t * 0.7 + aMuse.y * 3.1 + aRand.x * 2.0),
-    sin(t * 0.6 + aMuse.z * 2.7 + aRand.y * 2.0),
-    sin(t * 0.8 + aMuse.x * 2.3));
+  vec3 mL = aMuse + vec3(
+    0.06 * sin(t * 0.5 + aMuse.y * 2.4),
+    0.12 * sin(t * 0.7 + aMuse.x * 2.2),
+    0.08 * sin(t * 0.6 + aMuse.x * 1.7 + aMuse.y));
   vec3 pM = uOffset + uScale * (uRotSoft * mL);
 
   // Field
@@ -366,10 +371,10 @@ void main() {
 
   float hot = step(0.965, aRand.w) * beam * 2.5;
   vec3 cG = mix(vec3(0.34, 0.29, 1.0), vec3(0.74, 0.69, 1.0), aRand.y) + beam * vec3(0.35, 0.35, 0.5);
-  float aG = (0.22 + 0.7 * beam + hot) * smoothstep(1.8, 1.25, abs(gx));
+  float aG = (0.42 + 0.75 * beam + hot) * smoothstep(1.8, 1.2, abs(gx));
 
   vec3 cM = mix(vec3(0.52, 0.3, 1.0), vec3(0.93, 0.38, 0.9), smoothstep(-1.2, 1.2, aMuse.x + sin(t * 0.3 + aMuse.y)));
-  float aM = 0.72;
+  float aM = 0.85;
 
   vec3 cF = vec3(0.62, 0.66, 0.86);
   float aF = 0.18 + 0.4 * aRand.z;
