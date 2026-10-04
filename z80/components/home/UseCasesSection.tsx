@@ -17,7 +17,7 @@ export function UseCasesSection() {
 
   return (
     <Section id="solutions" className="py-[18vh]">
-      <Intro title={["What do you want", "to accelerate?"]} />
+      <Intro title={["What should run", "on autopilot?"]} />
 
       <Reveal delay={0.05}>
         <div className="no-scrollbar -mx-5 mt-12 overflow-x-auto px-5">

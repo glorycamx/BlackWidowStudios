@@ -41,18 +41,18 @@ export function FragmentSection() {
   const showcase = availableAgents.filter((a) => a.sceneGroup !== undefined).sort((a, b) => (a.sceneGroup ?? 0) - (b.sceneGroup ?? 0));
 
   return (
-    <section ref={ref} id="fragment" aria-label="One request, an entire team" className="relative z-10 h-[280vh]">
+    <section ref={ref} id="fragment" aria-label="Not a chatbot. A workforce." className="relative z-10 h-[280vh]">
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         <div className="mx-auto flex h-full max-w-[1440px] flex-col px-5 pt-24 md:justify-center md:px-10 md:pt-0">
           <div className="max-w-[560px]">
             <h2 className="display text-[clamp(42px,6.2vw,96px)]">
-              One request.
+              Not a chatbot.
               <br />
-              <span className="text-fg-2">An entire team.</span>
+              <span className="text-fg-2">A workforce.</span>
             </h2>
           </div>
           <motion.div style={{ opacity: body }} className="mt-6 hidden max-w-[420px] text-[clamp(18px,1.6vw,22px)] leading-[1.4] text-fg-2 md:block">
-            <p>Tell Z80 the outcome. It picks the team and runs the work.</p>
+            <p>Three agents that think, act and work together. Day and night.</p>
           </motion.div>
         </div>
 
@@ -75,7 +75,7 @@ export function FragmentSection() {
           ))}
 
         <motion.p style={{ opacity: body }} className="absolute inset-x-5 bottom-10 text-[15px] leading-relaxed text-fg-2 md:hidden">
-          Tell Z80 the outcome. It decides which intelligences should work and coordinates the operation.
+          Three agents that think, act and work together. Day and night.
         </motion.p>
       </div>
     </section>

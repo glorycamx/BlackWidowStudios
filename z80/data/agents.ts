@@ -13,7 +13,7 @@ export const agents: Agent[] = [
     designation: "Z80-OPS",
     role: "Operations Intelligence",
     domain: "Research + Orchestration",
-    tagline: "Turns complex objectives into coordinated action.",
+    tagline: "Runs the operation. Day and night.",
     shortDescription: "Breaks the mission down, routes the work, and makes sure it is finished.",
     description:
       "Helm is the connective intelligence of your workforce. It decomposes objectives into tasks, decides which intelligence handles each one, keeps work moving between them, and tells you when a human decision is needed.",
@@ -48,7 +48,7 @@ export const agents: Agent[] = [
     designation: "Z80-GRW",
     role: "Growth Intelligence",
     domain: "Prospecting + Market Intelligence",
-    tagline: "Find the opportunity before everyone else does.",
+    tagline: "Never stops looking. Finds it first.",
     shortDescription: "Finds, researches and qualifies the companies and people worth your time.",
     description:
       "Lookout is a fast, relentless researcher. It scans markets, identifies companies that fit, finds the decision makers, reads the signals that suggest timing, and scores every opportunity so your team only spends time where it counts.",
@@ -83,7 +83,7 @@ export const agents: Agent[] = [
     designation: "Z80-CRT",
     role: "Creative Intelligence",
     domain: "Creative + Messaging",
-    tagline: "Turns information into ideas people act on.",
+    tagline: "Writes the message while you sleep.",
     shortDescription: "Writes, concepts and directs the work your customers actually see.",
     description:
       "Beacon is your creative director. It studies your brand, your audience and the research the rest of the workforce gathers, then produces campaigns, messaging, copy and concepts that sound like you and give people a reason to respond.",

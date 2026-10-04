@@ -21,8 +21,8 @@ export default function HomePage() {
         <Hero />
         <FragmentSection />
         <IntelligencesSection />
-        <LiveWorkSection />
         <SignalsSection />
+        <LiveWorkSection />
         <ControlSection />
         <MemorySection />
         <IntegrationsSection />

@@ -64,7 +64,7 @@ export function CommandCenterPreview() {
               <h3 className="mt-6 text-[clamp(30px,3.4vw,48px)] font-semibold leading-[1.02] tracking-[-0.04em] text-white">
                 Good morning.
                 <br />
-                <span className="text-fg-3">What should we accomplish?</span>
+                <span className="text-fg-3">Your agents worked through the night.</span>
               </h3>
               <div className="mt-8 space-y-4">
                 <div className="ml-auto max-w-[80%] rounded-[14px] bg-white/[0.06] px-4 py-3 text-[14px] text-white">I want more commercial roofing jobs next month.</div>
@@ -95,7 +95,7 @@ export function CommandCenterPreview() {
               </div>
               <div className="mt-auto pt-8">
                 <div className="flex h-12 items-center justify-between rounded-[13px] px-4 text-[14px] text-fg-3 hairline">
-                  Tell Z80 what outcome you need.
+                  Give your agents a new goal.
                   <span className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-white/[0.06] text-fg-2">↑</span>
                 </div>
               </div>

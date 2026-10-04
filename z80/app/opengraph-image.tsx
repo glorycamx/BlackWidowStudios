@@ -25,7 +25,7 @@ export default function OpengraphImage() {
             <span style={{ backgroundImage: "linear-gradient(100deg, #3f7bff, #8754ff, #c847f0)", backgroundClip: "text", color: "transparent" }}>.si</span>
           </div>
           <div style={{ marginTop: 28, fontSize: 40, color: "#c9cad2", letterSpacing: -1 }}>Super intelligence is here.</div>
-          <div style={{ marginTop: 16, fontSize: 24, color: "#686872" }}>Describe the outcome. Deploy the team.</div>
+          <div style={{ marginTop: 16, fontSize: 24, color: "#686872" }}>Autonomous agents. Always on.</div>
         </div>
       </div>
     ),

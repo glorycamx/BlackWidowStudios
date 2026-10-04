@@ -2,14 +2,14 @@
 export const site = {
   name: "Z80.si",
   shortName: "Z80",
-  title: "Z80 — Deploy Your AI Workforce",
+  title: "Z80 — Autonomous AI agents that run 24/7",
   titleTemplate: "%s — Z80",
   description:
-    "Describe the outcome. Z80 assembles and coordinates the AI workforce to get it done.",
+    "Super intelligence is here. Autonomous AI agents that find opportunities, do the work and run your business around the clock.",
   tagline: "Super intelligence is here.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://z80.si",
   locale: "en_US",
-  keywords: ["AI workforce", "AI agents", "AI operations", "multi-agent", "Z80"],
+  keywords: ["autonomous AI agents", "AI agents 24/7", "AI workforce", "superintelligence", "Z80"],
 } as const;
 
 export const publicNav = [

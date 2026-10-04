@@ -8,6 +8,7 @@ import { AnalysisSequence } from "@/components/command/AnalysisSequence";
 import { CommandConsole, type CommandConsoleHandle } from "@/components/command/CommandConsole";
 import { TeamAssembly, type AssemblyLayout } from "@/components/command/TeamAssembly";
 import { Button } from "@/components/ui/Button";
+import { LiveTicker } from "@/components/home/LiveTicker";
 import { Wordmark } from "@/components/z80/Wordmark";
 import { getAgent } from "@/data/agents";
 import { homeDirector, toNdc } from "@/lib/scene/director";
@@ -18,7 +19,7 @@ import { missionCode } from "@/lib/utils";
 import type { Plan } from "@/types";
 
 export const DEMO_MISSION =
-  "Find 50 businesses in my area that need a new website and build a personalized outreach campaign.";
+  "Keep finding businesses in my area that need a new website, and reach out to the best ones.";
 
 export function Hero() {
   const router = useRouter();
@@ -159,6 +160,14 @@ export function Hero() {
                 >
                   Super intelligence is here.
                 </motion.p>
+                <motion.p
+                  className="mt-3 max-w-[460px] text-[clamp(17px,1.5vw,20px)] leading-[1.4] text-fg-3"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.2, duration: 1 }}
+                >
+                  Autonomous agents that run your business. 24/7, on their own.
+                </motion.p>
 
 
                 <motion.div
@@ -187,11 +196,14 @@ export function Hero() {
                   transition={{ delay: phase === "idle" ? 1.6 : 0, duration: 0.8 }}
                 >
                   <Button variant="primary" size="lg" onClick={deployCta} disabled={phase !== "idle"} data-deploy>
-                    Deploy your team
+                    Deploy your agents
                   </Button>
                   <Button variant="ghost" size="lg" href="#fragment" iconRight={<ArrowDown size={14} />}>
                     See how it works
                   </Button>
+                </motion.div>
+                <motion.div className="mt-8 max-w-[460px]" initial={{ opacity: 0 }} animate={{ opacity: phase === "idle" ? 1 : 0 }} transition={{ delay: phase === "idle" ? 2 : 0, duration: 0.8 }}>
+                  <LiveTicker />
                 </motion.div>
               </div>
             </motion.div>

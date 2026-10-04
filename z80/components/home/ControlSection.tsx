@@ -15,7 +15,7 @@ export function ControlSection() {
 
   return (
     <Section id="control" className="py-[18vh]">
-      <Intro title={["You set the mission.", "Z80 runs it."]} sub="Choose what happens on its own, and what asks you first." />
+      <Intro title={["Fully autonomous.", "Never out of control."]} sub="They act on their own. You choose what needs your yes." />
       <Reveal delay={0.1}>
         <ul className="mx-auto mt-14 max-w-[640px] divide-y divide-white/[0.06] overflow-hidden rounded-[24px] bg-white/[0.04]">
           {rules.map((r) => (

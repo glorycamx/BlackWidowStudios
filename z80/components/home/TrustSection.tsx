@@ -11,7 +11,7 @@ const POINTS = [
 export function TrustSection() {
   return (
     <Section id="trust" className="py-[18vh]">
-      <Intro title={["Humans decide.", "Z80 executes."]} />
+      <Intro title={["Autonomous.", "Accountable."]} />
       <Reveal delay={0.05}>
         <ul className="mx-auto mt-16 grid max-w-[960px] gap-px overflow-hidden rounded-[24px] bg-white/[0.07] sm:grid-cols-3">
           {POINTS.map((p) => (

@@ -1,10 +1,8 @@
-# Z80.si — AI Workforce Operating System
+# Z80.si: autonomous AI agents
 
-**Describe the outcome. Deploy the team.**
+**Super intelligence is here.** Z80 agents don't wait for prompts. They run 24/7 on their own: they watch the market, find opportunities, research them, write the outreach and do the work. They only come to you when a decision needs a person.
 
-A product demo of Z80: a homepage experience and working product where you describe an objective, Z80 assembles a team of intelligences (Helm, Lookout, Beacon), and you watch them work, approve their output, and inspect the results.
-
-Everything runs without a backend or API keys. Planning and agent work are **simulated** by a mock service layer that you can replace with real implementations.
+This repository is a product demo. Agent work and incoming signals are **simulated** by a mock service layer that you can replace with real implementations.
 
 ## Run it
 

@@ -7,15 +7,17 @@ import { AmbientRail } from "@/components/app/AmbientRail";
 import { CommandConsole, MISSION_EXAMPLES, type CommandConsoleHandle } from "@/components/command/CommandConsole";
 import { CommandThread } from "@/components/command/CommandThread";
 import { PlanDialog } from "@/components/command/PlanDialog";
-import { useWorkspace, workspace } from "@/lib/store/workspace";
+import { selectPendingApprovals, selectVisibleSignals, useWorkspace, workspace } from "@/lib/store/workspace";
+import { useNow } from "@/lib/hooks/useNow";
+import Link from "next/link";
 import { EASE } from "@/lib/motion";
 import { greeting } from "@/lib/utils";
 
 const SUGGESTIONS = [
-  "Find 50 businesses in my area that need a new website and build a personalized outreach campaign.",
-  "I want more commercial roofing jobs next month.",
-  "Research my top five competitors and tell me where we can win.",
-  "Run our content operation: plan a month of posts and write the first week.",
+  "Keep finding businesses in my area that need a new website.",
+  "I want more commercial roofing jobs every month.",
+  "Watch my top five competitors and tell me where we can win.",
+  "Run our content operation every week.",
 ];
 
 export function CommandView() {
@@ -24,6 +26,11 @@ export function CommandView() {
   const chat = useWorkspace((s) => s.chat);
   const thinking = useWorkspace((s) => s.thinking);
   const org = useWorkspace((s) => s.org);
+  const signals = useWorkspace(selectVisibleSignals);
+  const decisions = useWorkspace(selectPendingApprovals).length;
+  const now = useNow(30000);
+  const recent = signals.filter((x) => x.at > now - 12 * 3600e3 && x.kind === "lead");
+  const overnight = { leads: recent.length, hot: recent.filter((x) => x.lead?.temperature === "hot").length, decisions };
   const [value, setValue] = useState("");
   const [review, setReview] = useState<string | null>(null);
   const consoleRef = useRef<CommandConsoleHandle>(null);
@@ -76,10 +83,23 @@ export function CommandView() {
             >
               {greeting()}
               <br />
-              <span className="text-fg-3">What should we accomplish?</span>
+              <span className="text-fg-3">Your agents kept working.</span>
             </motion.h1>
-            <motion.div className="mt-10" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1, ease: EASE }}>
+            <motion.div className="mt-8 grid grid-cols-3 gap-2" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.08, ease: EASE }}>
+              {[
+                { n: overnight.leads, k: "new leads", href: "/signals" },
+                { n: overnight.hot, k: "hot", href: "/signals" },
+                { n: overnight.decisions, k: overnight.decisions === 1 ? "needs your yes" : "need your yes", href: "/approvals" },
+              ].map((x) => (
+                <Link key={x.k} href={x.href} className="rounded-[20px] bg-white/[0.04] px-5 py-4 transition-colors hover:bg-white/[0.07]">
+                  <div className="text-[30px] font-semibold tabular-nums tracking-[-0.03em] text-white">{x.n}</div>
+                  <div className="text-[14px] text-fg-3">{x.k}</div>
+                </Link>
+              ))}
+            </motion.div>
+            <motion.div className="mt-8" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1, ease: EASE }}>
               <CommandConsole ref={consoleRef} id="command-input" value={value} onChange={setValue} onSubmit={send} examples={MISSION_EXAMPLES} />
+              <p className="mt-3 px-2 text-[14px] text-fg-4">Give them a new goal. They take it from there.</p>
             </motion.div>
             <motion.ul className="mt-6 grid gap-2 sm:grid-cols-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
               {SUGGESTIONS.map((s) => (
@@ -105,7 +125,7 @@ export function CommandView() {
             </div>
             <div className="sticky bottom-[4.5rem] z-10 mx-auto w-full max-w-[760px] pb-4 pt-2 lg:bottom-0 lg:pb-6">
               <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-10 bottom-0 bg-gradient-to-t from-black via-black/90 to-transparent" />
-              <CommandConsole ref={consoleRef} id="command-input" size="compact" value={value} onChange={setValue} onSubmit={send} disabled={thinking} hint="Talk to your workforce." />
+              <CommandConsole ref={consoleRef} id="command-input" size="compact" value={value} onChange={setValue} onSubmit={send} disabled={thinking} hint="Talk to your agents." />
             </div>
           </>
         )}

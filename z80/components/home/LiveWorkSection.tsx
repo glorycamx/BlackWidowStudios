@@ -11,13 +11,13 @@ import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 const BEATS: { t: string; agent: string; text: string; task: number }[] = [
-  { t: "09:41:03", agent: "helm", text: "Mission decomposed into 7 tasks.", task: 0 },
-  { t: "09:41:06", agent: "lookout", text: "Scanning target region.", task: 1 },
-  { t: "09:41:14", agent: "lookout", text: "247 companies identified.", task: 1 },
-  { t: "09:41:21", agent: "lookout", text: "68 passed initial qualification.", task: 2 },
-  { t: "09:41:25", agent: "beacon", text: "Analyzing each company's positioning.", task: 3 },
-  { t: "09:41:32", agent: "beacon", text: "Creating personalized opening lines.", task: 3 },
-  { t: "09:41:41", agent: "helm", text: "50 prospects prepared.", task: 4 },
+  { t: "02:41:03", agent: "helm", text: "Mission decomposed into 7 tasks.", task: 0 },
+  { t: "02:41:06", agent: "lookout", text: "Scanning target region.", task: 1 },
+  { t: "02:41:14", agent: "lookout", text: "247 companies identified.", task: 1 },
+  { t: "02:41:21", agent: "lookout", text: "68 passed initial qualification.", task: 2 },
+  { t: "02:41:25", agent: "beacon", text: "Analyzing each company's positioning.", task: 3 },
+  { t: "02:41:32", agent: "beacon", text: "Creating personalized opening lines.", task: 3 },
+  { t: "02:41:41", agent: "helm", text: "50 prospects prepared.", task: 4 },
 ];
 
 const TASKS = ["Plan", "Find", "Qualify", "Write", "Prepare", "Approve"];
@@ -57,9 +57,9 @@ export function LiveWorkSection() {
     <Section id="live" index="05" label="Execution" className="py-[18vh]">
       <div className="mt-8 grid gap-12 lg:grid-cols-[1fr_minmax(0,600px)] lg:gap-20">
         <div>
-          <Display lines={["Watch the", "work happen."]} />
+          <Display lines={["Work that", "never stops."]} />
           <Reveal delay={0.1}>
-            <p className="mt-6 max-w-[400px] text-[clamp(18px,1.6vw,22px)] leading-[1.4] text-fg-2">Every step, live. Nothing hidden.</p>
+            <p className="mt-6 max-w-[400px] text-[clamp(18px,1.6vw,22px)] leading-[1.4] text-fg-2">While you sleep, every step is logged.</p>
           </Reveal>
         </div>
 
@@ -128,10 +128,10 @@ export function LiveWorkSection() {
                 transition={{ duration: 0.6, ease: EASE }}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[13px] tabular-nums text-fg-3">09:41:43</span>
+                  <span className="text-[13px] tabular-nums text-fg-3">07:00:00</span>
                   <span className="label text-attn">Approval required</span>
                 </div>
-                <p className="mt-2.5 text-[15px] text-white">{approved ? "Approved. Outreach scheduled for tomorrow, 9:00 AM." : "Review campaign before anything is sent?"}</p>
+                <p className="mt-2.5 text-[15px] text-white">{approved ? "Approved. Outreach goes out at 9:00 AM." : "Good morning. 50 prospects ready overnight. Send the campaign?"}</p>
                 {!approved && (
                   <div className="mt-4 flex gap-2">
                     <Button variant="secondary" size="sm" onClick={() => setApproved(true)}>

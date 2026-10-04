@@ -69,7 +69,9 @@ export function respond(text: string, ctx: ChatContext): ChatReply {
   const count = plan.agents.length;
   return {
     plan,
-    text: `Understood. ${plan.reasoningSummary}\n\nI recommend ${count === 1 ? "one intelligence" : `${count} intelligences`} for this. Want me to deploy ${count === 1 ? "it" : "them"}?`,
+    text: `Got it. ${plan.reasoningSummary}
+
+I'll put ${count === 1 ? "one agent" : `${count} agents`} on this. They keep working on it around the clock and only come to you for a yes. Deploy?`,
   };
 }
 

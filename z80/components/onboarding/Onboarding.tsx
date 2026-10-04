@@ -16,7 +16,7 @@ const GOALS = [
   { id: "admin", label: "Less admin", ask: "What takes up the most time each week?", hint: "e.g. Chasing project updates and writing reports" },
   { id: "research", label: "Faster research", ask: "What do you need to know more about?", hint: "e.g. The five competitors we lose deals to" },
   { id: "followup", label: "Better follow-up", ask: "Who isn't getting followed up with today?", hint: "e.g. Last month's customers and quotes that went quiet" },
-  { id: "other", label: "Something else", ask: "Describe the outcome you want.", hint: "Tell Z80 what needs to happen." },
+  { id: "other", label: "Something else", ask: "What should your agents work on, around the clock?", hint: "Give your agents a goal." },
 ] as const;
 
 type GoalId = (typeof GOALS)[number]["id"];

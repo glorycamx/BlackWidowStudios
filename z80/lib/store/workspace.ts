@@ -445,7 +445,7 @@ export const workspace = {
         ...s.chat,
         chatMessage({
           author: "z80",
-          text: `Team deployed. Mission ${String(number).padStart(4, "0")} is running with ${names === 1 ? "one intelligence" : `${names} intelligences`}. I'll bring you anything that needs a decision.`,
+          text: `Agents deployed. Mission ${String(number).padStart(4, "0")} is live with ${names === 1 ? "one agent" : `${names} agents`}. They work on their own from here. I'll only interrupt you for a yes.`,
           missionId: mission.id,
           actions: [{ kind: "open-mission", missionId: mission.id }],
         }),

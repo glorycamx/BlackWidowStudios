@@ -8,14 +8,14 @@ import { integrations, integrationStatusLabel } from "@/data/integrations";
 import { EASE } from "@/lib/motion";
 import { clamp, cn } from "@/lib/utils";
 
+/** Standing goals, not one-off prompts: the agents keep working on these. */
 export const MISSION_EXAMPLES = [
-  "Build me a sales pipeline.",
-  "Launch our next campaign.",
-  "Find companies that need our service.",
-  "Run our content operation.",
-  "Research my competitors.",
-  "Recover our cold leads.",
-  "Prepare tomorrow's sales calls.",
+  "Keep my sales pipeline full.",
+  "Find businesses that need a new website.",
+  "Watch my competitors around the clock.",
+  "Never let a lead go cold.",
+  "Spot companies that need AI.",
+  "Run our content, every week.",
 ];
 
 export interface CommandConsoleHandle {
@@ -56,7 +56,7 @@ function getSpeech(): (new () => SpeechRec) | null {
  * charges with energy as the objective takes shape.
  */
 export const CommandConsole = forwardRef<CommandConsoleHandle, Props>(function CommandConsole(
-  { value, onChange, onSubmit, examples = MISSION_EXAMPLES, size = "hero", disabled, label = "Mission", hint = "Tell Z80 what outcome you need.", className, id = "mission-input" },
+  { value, onChange, onSubmit, examples = MISSION_EXAMPLES, size = "hero", disabled, label = "Goal", hint = "Give your agents a goal. They take it from there.", className, id = "mission-input" },
   ref,
 ) {
   const taRef = useRef<HTMLTextAreaElement>(null);
