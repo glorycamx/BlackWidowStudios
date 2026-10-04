@@ -14,7 +14,7 @@ export function ControlSection() {
   const set = (id: string, level: PermissionLevel) => setRules((r) => r.map((x) => (x.id === id ? { ...x, level } : x)));
 
   return (
-    <Section id="control" index="06" label="Control" className="py-[16vh]">
+    <Section id="control" index="07" label="Control" className="py-[16vh]">
       <div className="mt-8 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,640px)] lg:gap-20">
         <div>
           <Display lines={["You set", "the mission.", "Z80 runs the", "operation."]} className="text-[clamp(40px,5.6vw,92px)]" />

@@ -10,7 +10,7 @@ export function IntegrationsSection() {
   const outer = integrations.slice(6);
 
   return (
-    <Section id="connections" index="08" label="Connections" className="overflow-hidden py-[16vh]">
+    <Section id="connections" index="09" label="Connections" className="overflow-hidden py-[16vh]">
       <div className="mt-8 grid items-center gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="order-2 lg:order-1">
           <div className="relative mx-auto aspect-square w-full max-w-[560px]" aria-hidden>

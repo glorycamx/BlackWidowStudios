@@ -21,7 +21,9 @@ import {
   resolveMissionApproval,
   type Emission,
 } from "@/lib/services/missionService";
-import { createPlan, retargetPlan } from "@/lib/services/planService";
+import { createLeadPlan, createPlan, retargetPlan } from "@/lib/services/planService";
+import { generateSignal, nextDelayMs } from "@/lib/services/signalService";
+import { watchTemplates } from "@/data/watches";
 import { playSound } from "@/lib/sound";
 import { uid } from "@/lib/utils";
 import type {
@@ -34,6 +36,8 @@ import type {
   PermissionLevel,
   PermissionRule,
   Plan,
+  Signal,
+  Watch,
   WorkspaceSettings,
 } from "@/types";
 
@@ -65,9 +69,33 @@ export interface WorkspaceState {
   nextMissionNumber: number;
   /** Z80 is composing a reply. */
   thinking: boolean;
+  /** Always-on standing orders. */
+  watches: Watch[];
+  /** Newest first. */
+  signals: Signal[];
+  /** Per-watch signal counter (drives deterministic generation). */
+  watchSeq: Record<string, number>;
 }
 
-const STORAGE_KEY = "z80.workspace.v2";
+const SIGNAL_CAP = 150;
+
+function defaultWatches(now = 0): Watch[] {
+  return watchTemplates.map((t) => ({
+    id: `w-${t.kind}`,
+    kind: t.kind,
+    name: t.name,
+    agentId: t.agentId,
+    description: t.description,
+    triggers: t.triggers,
+    cadence: t.cadence,
+    status: "live",
+    autopilot: t.kind === "website-opportunities",
+    createdAt: now,
+    nextAt: 0,
+  }));
+}
+
+const STORAGE_KEY = "z80.workspace.v3";
 const ACTIVITY_CAP = 600;
 const CHAT_CAP = 300;
 
@@ -92,6 +120,9 @@ function emptyState(): WorkspaceState {
     settings: { sound: false, demoSpeed: 1 },
     nextMissionNumber: 248,
     thinking: false,
+    watches: defaultWatches(),
+    signals: [],
+    watchSeq: {},
   };
 }
 
@@ -190,6 +221,31 @@ function applyEmissions(emissions: Emission[], s: WorkspaceState, now = Date.now
   };
 }
 
+function signalEmissions(sig: Signal, w: Watch): Emission[] {
+  const out: Emission[] = [];
+  if (sig.kind === "lead" && sig.lead) {
+    out.push({
+      type: "activity",
+      event: {
+        actor: w.agentId,
+        kind: "result",
+        message: `New ${sig.lead.temperature} lead: ${sig.lead.business}. ${sig.trigger}.`,
+        detail: [sig.summary, `${sig.lead.recommended.offer} · ${sig.lead.recommended.price}`],
+      },
+    });
+    if (sig.lead.temperature === "hot") {
+      out.push({ type: "chat", message: { author: w.agentId, text: `New hot lead: ${sig.lead.business} (${sig.lead.location}). ${sig.trigger}: ${sig.summary.toLowerCase()}.`, actions: [{ kind: "open-signal", signalId: sig.id }] } });
+      out.push({ type: "sound", name: "approval" });
+    } else out.push({ type: "sound", name: "message" });
+  } else if (sig.kind === "news") {
+    out.push({ type: "activity", event: { actor: w.agentId, kind: "result", message: `AI briefing: ${sig.title}.`, detail: [sig.news?.whyItMatters ?? ""] } });
+  } else {
+    out.push({ type: "activity", event: { actor: w.agentId, kind: "action", message: `Reminder: ${sig.title}.` } });
+    out.push({ type: "sound", name: "message" });
+  }
+  return out;
+}
+
 /* ------------------------------------------------------------------ */
 /* Demo seed                                                           */
 /* ------------------------------------------------------------------ */
@@ -230,6 +286,26 @@ function seedState(now = Date.now()): WorkspaceState {
   }
   base.activity.sort((a, b) => b.at - a.at);
   base.connections = { web: true };
+  // A morning's worth of signals, so the feed is alive on first visit.
+  base.watches = defaultWatches(now - 7 * 86400e3);
+  const plan: [string, number][] = [
+    ["w-website-opportunities", 290],
+    ["w-ai-news", 240],
+    ["w-ai-opportunities", 205],
+    ["w-website-opportunities", 150],
+    ["w-ai-news", 95],
+    ["w-website-opportunities", 64],
+    ["w-ai-opportunities", 38],
+    ["w-reminders", 21],
+    ["w-website-opportunities", 9],
+  ];
+  for (const [wid, minsAgo] of plan) {
+    const w = base.watches.find((x) => x.id === wid)!;
+    const seq = (base.watchSeq[wid] ?? 0) + 1;
+    base.watchSeq[wid] = seq;
+    const sig = generateSignal(w, seq, now - minsAgo * 60e3, base.signals);
+    if (sig) base.signals.unshift({ ...sig, read: minsAgo > 60 });
+  }
   base.hydrated = true;
   return base;
 }
@@ -254,6 +330,11 @@ export const workspace = {
       loaded = null;
     }
     state = loaded ?? seedState();
+    const now = Date.now();
+    state = {
+      ...state,
+      watches: state.watches.map((w, i) => ({ ...w, nextAt: now + 6000 + i * 4000 + nextDelayMs(w, (state.watchSeq[w.id] ?? 0) + 1) / 3 })),
+    };
     emit();
     schedulePersist();
   },
@@ -261,8 +342,11 @@ export const workspace = {
   /** Advance every running mission. Called by the runner. */
   tick(dt: number) {
     const s = state;
+    const now = Date.now();
     const running = s.missionOrder.filter((id) => s.missions[id]?.status === "running");
-    if (!running.length) return;
+    const dueWatches = s.watches.filter((w) => w.status === "live" && w.nextAt > 0 && now >= w.nextAt);
+    if (!running.length && !dueWatches.length) return;
+
     const missions = { ...s.missions };
     const all: Emission[] = [];
     for (const id of running) {
@@ -270,7 +354,29 @@ export const workspace = {
       missions[id] = r.mission;
       all.push(...r.emissions);
     }
-    setState({ missions, ...applyEmissions(all, s) });
+
+    let signals = s.signals;
+    let watches = s.watches;
+    const watchSeq = { ...s.watchSeq };
+    const fresh: Signal[] = [];
+    for (const w of dueWatches) {
+      const seq = (watchSeq[w.id] ?? 0) + 1;
+      watchSeq[w.id] = seq;
+      const sig = generateSignal(w, seq, now, signals);
+      watches = watches.map((x) => (x.id === w.id ? { ...x, nextAt: now + nextDelayMs(w, seq + 1) / s.settings.demoSpeed } : x));
+      if (!sig) continue;
+      fresh.push(sig);
+      signals = [sig, ...signals].slice(0, SIGNAL_CAP);
+      all.push(...signalEmissions(sig, w));
+    }
+
+    setState({ missions, watches, signals, watchSeq, ...applyEmissions(all, s) });
+
+    // Autopilot: hot leads get an outreach mission drafted immediately.
+    for (const sig of fresh) {
+      const w = watches.find((x) => x.id === sig.watchId);
+      if (w?.autopilot && sig.lead?.temperature === "hot") workspace.deploySignal(sig.id, { auto: true });
+    }
   },
 
   /** Send a message in the Command conversation. */
@@ -456,6 +562,66 @@ export const workspace = {
     setState({ chat: [] });
   },
 
+  /** Turn a lead signal into a single-lead outreach mission. Returns the mission id. */
+  deploySignal(signalId: string, opts: { auto?: boolean } = {}): string | null {
+    const sig = state.signals.find((x) => x.id === signalId);
+    if (!sig?.lead) return null;
+    if (sig.missionId && state.missions[sig.missionId]) return sig.missionId;
+    const plan = createLeadPlan(sig.id, sig.lead);
+    setState((cur) => ({ plans: { ...cur.plans, [plan.id]: plan } }));
+    const missionId = workspace.deploy(plan.id);
+    if (!missionId) return null;
+    setState((cur) => ({
+      signals: cur.signals.map((x) => (x.id === signalId ? { ...x, missionId, read: true } : x)),
+      ...(opts.auto
+        ? {
+            chat: [
+              ...cur.chat,
+              chatMessage({
+                author: "z80",
+                text: `Autopilot: ${sig.lead!.business} is a hot lead (${sig.trigger.toLowerCase()}). I deployed an outreach mission. It will wait for your approval before anything is sent.`,
+                missionId,
+                actions: [{ kind: "open-mission", missionId }, { kind: "open-signal", signalId }],
+              }),
+            ],
+          }
+        : {}),
+    }));
+    return missionId;
+  },
+
+  markSignalRead(signalId: string) {
+    if (!state.signals.some((x) => x.id === signalId && !x.read)) return;
+    setState((s) => ({ signals: s.signals.map((x) => (x.id === signalId ? { ...x, read: true } : x)) }));
+  },
+
+  markAllSignalsRead() {
+    setState((s) => ({ signals: s.signals.map((x) => (x.read ? x : { ...x, read: true })) }));
+  },
+
+  toggleSaveSignal(signalId: string) {
+    setState((s) => ({ signals: s.signals.map((x) => (x.id === signalId ? { ...x, saved: !x.saved } : x)) }));
+  },
+
+  dismissSignal(signalId: string) {
+    setState((s) => ({ signals: s.signals.map((x) => (x.id === signalId ? { ...x, dismissed: true, read: true } : x)) }));
+  },
+
+  toggleWatch(watchId: string) {
+    setState((s) => ({
+      watches: s.watches.map((w) => (w.id === watchId ? { ...w, status: w.status === "live" ? "paused" : "live", nextAt: Date.now() + 8000 } : w)),
+    }));
+  },
+
+  setAutopilot(watchId: string, on: boolean) {
+    setState((s) => ({ watches: s.watches.map((w) => (w.id === watchId ? { ...w, autopilot: on } : w)) }));
+  },
+
+  /** Demo control: make a watch fire on the next tick. */
+  scanNow(watchId: string) {
+    setState((s) => ({ watches: s.watches.map((w) => (w.id === watchId ? { ...w, status: "live", nextAt: Date.now() } : w)) }));
+  },
+
   /** Restore the seeded demo workspace. */
   resetDemo() {
     const settings = state.settings;
@@ -478,6 +644,9 @@ export const workspace = {
 /* ------------------------------------------------------------------ */
 
 export const selectMissions = (s: WorkspaceState) => s.missionOrder.map((id) => s.missions[id]).filter(Boolean);
+export const selectVisibleSignals = (s: WorkspaceState) => s.signals.filter((x) => !x.dismissed);
+export const selectUnreadHot = (s: WorkspaceState) => s.signals.filter((x) => !x.read && !x.dismissed && (x.lead?.temperature === "hot")).length;
+
 export const selectPendingApprovals = (s: WorkspaceState) =>
   Object.values(s.approvals)
     .filter((a) => a.status === "pending")

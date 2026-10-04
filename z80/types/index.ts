@@ -165,7 +165,7 @@ export interface PlannedTask {
   output?: string;
 }
 
-export type ResultKind = "prospects" | "campaign" | "brief" | "generic";
+export type ResultKind = "prospects" | "campaign" | "brief" | "outreach" | "generic";
 
 export interface Plan {
   id: string;
@@ -178,6 +178,7 @@ export interface Plan {
   tasks: PlannedTask[];
   resultKind: ResultKind;
   estimatedMinutes: number;
+  lead?: { signalId: string; business: string; owner: string; script: string };
 }
 
 /* ------------------------------------------------------------------ */
@@ -260,6 +261,7 @@ export interface MissionResults {
   prospects?: Prospect[];
   concepts?: CampaignConcept[];
   findings?: BriefFinding[];
+  outreach?: { to: string; business: string; script: string };
 }
 
 export interface Mission {
@@ -287,6 +289,8 @@ export interface Mission {
   interruption?: { agentId: AgentId; integration: string; message: string };
   /** Approval checkpoints from the plan, keyed by task id. */
   plannedApprovals: Record<string, { kind: "review" | "access"; title: string; detail: string }>;
+  /** Single-lead outreach missions created from a signal. */
+  lead?: { signalId: string; business: string; owner: string; script: string };
 }
 
 /* ------------------------------------------------------------------ */
@@ -314,7 +318,8 @@ export type ChatAction =
   | { kind: "open-mission"; missionId: string }
   | { kind: "view-results"; missionId: string }
   | { kind: "new-mission" }
-  | { kind: "approval"; approvalId: string };
+  | { kind: "approval"; approvalId: string }
+  | { kind: "open-signal"; signalId: string };
 
 export interface ChatMessage {
   id: string;
@@ -344,4 +349,73 @@ export interface WorkspaceSettings {
   sound: boolean;
   /** Global simulation speed multiplier for the demo. */
   demoSpeed: number;
+}
+
+/* ------------------------------------------------------------------ */
+/* Watches & signals — the always-on side of the workforce              */
+/* ------------------------------------------------------------------ */
+
+export type WatchKind = "website-opportunities" | "ai-opportunities" | "ai-news" | "reminders";
+
+/** A standing order that runs around the clock and produces signals. */
+export interface Watch {
+  id: string;
+  kind: WatchKind;
+  name: string;
+  agentId: AgentId;
+  description: string;
+  /** What fires a signal. */
+  triggers: string[];
+  cadence: string;
+  status: "live" | "paused";
+  /** Draft an outreach mission automatically for every hot lead (still needs approval to send). */
+  autopilot: boolean;
+  createdAt: number;
+  /** Simulation: when the next signal is due. */
+  nextAt: number;
+}
+
+export type LeadTemperature = "hot" | "warm" | "cool";
+
+/** Everything needed to act on an opportunity, in one card. */
+export interface LeadDossier {
+  opportunity: "website" | "ai";
+  business: string;
+  industry: string;
+  owner: string;
+  ownerTitle: string;
+  location: string;
+  phone: string;
+  email: string;
+  currentWebsite: string;
+  priority: 1 | 2 | 3;
+  temperature: LeadTemperature;
+  problems: string[];
+  google: { rating: number; reviews: number; profile: "Claimed" | "Unclaimed"; mapPack: string };
+  reviewsSummary: string;
+  businessValue: string;
+  demoAngle: string;
+  recommended: { offer: string; price: string };
+  upsells: string[];
+  outreachScript: string;
+  nextMove: string;
+}
+
+export interface Signal {
+  id: string;
+  watchId: string;
+  kind: "lead" | "news" | "reminder";
+  at: number;
+  /** What happened in the world that fired this signal. */
+  trigger: string;
+  title: string;
+  summary: string;
+  read: boolean;
+  saved: boolean;
+  dismissed: boolean;
+  /** Mission created from this signal, if any. */
+  missionId?: string;
+  lead?: LeadDossier;
+  news?: { source: string; whyItMatters: string };
+  reminder?: { due: string; relatedSignalId?: string };
 }

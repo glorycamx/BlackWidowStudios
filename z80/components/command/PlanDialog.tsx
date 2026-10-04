@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect } from "react";
 import { TeamAssembly } from "@/components/command/TeamAssembly";
+import { Portal } from "@/components/ui/Portal";
 import { useWorkspace } from "@/lib/store/workspace";
 import { EASE } from "@/lib/motion";
 
@@ -22,6 +23,7 @@ export function PlanDialog({ planId, onClose, onDeployed }: { planId: string | n
   }, [planId, onClose]);
 
   return (
+    <Portal>
     <AnimatePresence>
       {planId && plan && (
         <motion.div className="fixed inset-0 z-[70] overflow-y-auto bg-black/85 backdrop-blur-xl" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
@@ -48,5 +50,6 @@ export function PlanDialog({ planId, onClose, onDeployed }: { planId: string | n
         </motion.div>
       )}
     </AnimatePresence>
+    </Portal>
   );
 }

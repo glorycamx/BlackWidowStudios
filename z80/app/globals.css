@@ -68,6 +68,11 @@
 /* ------------------------------------------------------------------ */
 
 @layer base {
+  html,
+  body {
+    /* Decorative glows may bleed past the edge; never widen the page. */
+    overflow-x: clip;
+  }
   html {
     background: #000;
     color-scheme: dark;

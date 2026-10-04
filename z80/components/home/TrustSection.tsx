@@ -14,7 +14,7 @@ const PRINCIPLES = [
 /** Trust as part of the product, not a badge wall. No certifications are claimed. */
 export function TrustSection() {
   return (
-    <Section id="trust" index="11" label="Trust" className="py-[16vh]">
+    <Section id="trust" index="12" label="Trust" className="py-[16vh]">
       <div className="mt-8 grid gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
         <div>
           <Display lines={["Humans decide.", "Z80 executes."]} className="text-[clamp(40px,5.8vw,100px)]" />

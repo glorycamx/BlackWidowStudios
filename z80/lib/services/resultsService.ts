@@ -108,6 +108,13 @@ export function generateResults(mission: Mission): MissionResults {
         summary: held ? "Held for your edits. Nothing has been published." : "3 directions, 12 assets, scheduled for launch.",
         concepts: concepts(),
       };
+    case "outreach":
+      return {
+        kind: "outreach",
+        headline: held ? `Outreach to ${mission.lead?.business ?? "the lead"} is on hold.` : `Outreach to ${mission.lead?.business ?? "the lead"} is scheduled.`,
+        summary: held ? "Nothing was sent. The draft is saved for your edits." : "First touch goes out tomorrow at 9:00 AM. Follow-up in 3 days.",
+        outreach: mission.lead ? { to: mission.lead.owner, business: mission.lead.business, script: mission.lead.script } : undefined,
+      };
     case "brief":
       return { kind: "brief", headline: "Your brief is ready.", summary: "5 competitors analyzed. 3 gaps worth acting on.", findings: findings() };
     default:

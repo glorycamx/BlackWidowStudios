@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { ApprovalCard } from "@/components/app/ApprovalCard";
 import { StatusDot } from "@/components/ui/StatusDot";
+import { KindChip } from "@/components/signals/SignalParts";
 import { availableAgents } from "@/data/agents";
 import { getAgentLiveState } from "@/lib/services/agentService";
-import { selectMissions, selectPendingApprovals, useWorkspace } from "@/lib/store/workspace";
+import { selectMissions, selectPendingApprovals, selectVisibleSignals, useWorkspace } from "@/lib/store/workspace";
+import { relativeTime } from "@/lib/utils";
 import { useNow } from "@/lib/hooks/useNow";
 
 /** Calm ambient status: who is working, what happened today. */
@@ -15,6 +17,7 @@ export function AmbientRail() {
   const activity = useWorkspace((s) => s.activity);
   const paused = useWorkspace((s) => s.pausedAgents);
   const pending = useWorkspace(selectPendingApprovals);
+  const signals = useWorkspace(selectVisibleSignals);
   const now = useNow(30000);
 
   const start = new Date(now);
@@ -45,6 +48,29 @@ export function AmbientRail() {
               </li>
             );
           })}
+        </ul>
+      </section>
+
+      <section>
+        <div className="flex items-center justify-between">
+          <h2 className="label text-[10px]">Live signals</h2>
+          <Link href="/signals" className="font-mono text-[10px] uppercase tracking-[0.12em] text-fg-3 hover:text-white">
+            All →
+          </Link>
+        </div>
+        <ul className="mt-4 space-y-3">
+          {signals.slice(0, 4).map((s) => (
+            <li key={s.id}>
+              <Link href={`/signals?id=${s.id}`} className="block rounded-[10px] p-2.5 transition-colors hover:bg-white/[0.03]" style={{ boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05)" }}>
+                <div className="flex items-center justify-between gap-2">
+                  <KindChip signal={s} />
+                  <span className="font-mono text-[9.5px] text-fg-4">{relativeTime(s.at, now)}</span>
+                </div>
+                <div className="mt-1.5 truncate text-[13px] text-white">{s.title}</div>
+                <div className="truncate text-[11.5px] text-fg-3">{s.trigger}</div>
+              </Link>
+            </li>
+          ))}
         </ul>
       </section>
 

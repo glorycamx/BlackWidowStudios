@@ -87,6 +87,7 @@ export function createMission(plan: Plan, number: number, now = Date.now()): Mis
     cursor: 0,
     resultKind: plan.resultKind,
     entities: plan.entities,
+    lead: plan.lead,
     plannedApprovals: Object.fromEntries(
       plan.tasks.flatMap((t) => (t.approval ? [[t.id, { kind: t.approval.kind, title: t.approval.title, detail: t.approval.detail }]] : [])),
     ),

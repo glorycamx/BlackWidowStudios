@@ -12,6 +12,7 @@ import type {
   AgentAssignment,
   AgentId,
   Intent,
+  LeadDossier,
   ObjectiveEntities,
   Organization,
   Plan,
@@ -462,6 +463,7 @@ const TOOL_RELEVANCE: Record<ResultKind, string[]> = {
   campaign: ["gdrive", "meta", "instagram", "gmail", "web"],
   brief: ["web", "google", "notion", "gdrive"],
   generic: ["gdrive", "slack", "gmail", "notion", "web"],
+  outreach: ["web", "gmail", "hubspot"],
 };
 
 function assignmentFor(agentId: AgentId, tasks: PlannedTask[], c: Ctx, kind: ResultKind): AgentAssignment {
@@ -593,5 +595,88 @@ export function retargetPlan(plan: Plan, agentIds: AgentId[], roles: Record<Agen
     tasks,
     agents: assignments,
     analysis: `${keep.length === 1 ? "1 intelligence" : `${keep.length} intelligences`} assigned.`,
+  };
+}
+
+/**
+ * A single-lead outreach mission, built from a signal's dossier.
+ * Lookout verifies the account, Beacon finalizes the opener, Helm holds it
+ * for approval and sends.
+ */
+export function createLeadPlan(signalId: string, lead: LeadDossier): Plan {
+  const first = lead.owner.split(" ")[0];
+  const tasks: PlannedTask[] = [
+    {
+      id: "verify",
+      label: "Verify the account",
+      agentId: "lookout",
+      kind: "research",
+      dependsOn: [],
+      steps: [
+        step(`Re-checking ${lead.business}: ${lead.problems[0]?.toLowerCase() ?? "site status"}.`, 1300),
+        step(`Confirmed ${first} is the decision maker.`, 1400),
+      ],
+      handoff: { to: "beacon", message: `${lead.business} verified. Demo angle: ${lead.demoAngle}` },
+    },
+    {
+      id: "draft",
+      label: "Finalize outreach",
+      agentId: "beacon",
+      kind: "create",
+      dependsOn: ["verify"],
+      steps: [step(`Personalizing the opener for ${first}.`, 1400), step("Outreach script and follow-up ready.", 1300)],
+      handoff: { to: "helm", message: "Outreach ready. Holding for approval." },
+      output: "Opener + follow-up",
+    },
+    {
+      id: "approval",
+      label: "Human approval",
+      agentId: "helm",
+      kind: "approval",
+      dependsOn: ["draft"],
+      steps: [step("Requesting approval before contacting the owner.", 900)],
+      approval: {
+        kind: "review",
+        title: `Send outreach to ${lead.business}`,
+        detail: `Personalized message to ${lead.owner} (${lead.ownerTitle}). Nothing is sent until you approve.`,
+        blocking: true,
+      },
+      handoff: { to: "user", message: `Outreach to ${lead.business} is ready. Approve to send?` },
+    },
+    {
+      id: "launch",
+      label: "Send",
+      agentId: "helm",
+      kind: "launch",
+      dependsOn: ["approval"],
+      steps: [step(`First touch scheduled for ${first}, 9:00 AM tomorrow.`, 1000), step("Follow-up reminder set for 3 days.", 900)],
+    },
+  ];
+  const entities: ObjectiveEntities = { intents: ["sales"], mentionsCrm: false, outbound: true, count: 1, target: lead.business, location: lead.location };
+  const why: Record<string, string> = {
+    lookout: "Found the signal. Re-verifies the account before anyone reaches out.",
+    beacon: "Turns the dossier into a message written for this owner.",
+    helm: "Holds the send for your approval, then schedules the follow-up.",
+  };
+  return {
+    id: uid("plan"),
+    objective: `Reach out to ${lead.owner} at ${lead.business}. ${lead.demoAngle}`,
+    title: `Outreach: ${lead.business}`,
+    analysis: "3 intelligences assigned.",
+    reasoningSummary: `The plan: verify ${lead.business}, finalize the opener for ${first}, then send after you approve.`,
+    entities,
+    agents: (["helm", "lookout", "beacon"] as AgentId[]).map((id) => ({
+      agentId: id,
+      roleId: getAgent(id)?.roles[0]?.id ?? "default",
+      why: why[id],
+      objectives: tasks.filter((t) => t.agentId === id && t.kind !== "approval").map((t) => t.label),
+      tools: id === "lookout" ? ["web"] : id === "beacon" ? ["gmail"] : ["hubspot"],
+      permissions: id === "helm" ? ["Send outbound emails · ask first"] : ["Generate drafts · autonomous"],
+      estimatedOutput: id === "beacon" ? "Personalized opener + follow-up" : id === "lookout" ? "Verified account" : "Scheduled send",
+    })),
+    tasks,
+    resultKind: "outreach",
+    estimatedMinutes: 2,
+    lead: { signalId, business: lead.business, owner: lead.owner, script: lead.outreachScript },
   };
 }

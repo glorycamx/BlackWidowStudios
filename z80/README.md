@@ -35,6 +35,7 @@ Use **4×** in the mission header to speed things up. Use **Settings → Reset d
 | `/` | Cinematic homepage: hero command, team assembly, scroll story |
 | `/agents/[slug]` | Public intelligence profiles with their particle form |
 | `/command` | One chat, multiple intelligences. Plans, deploys, agent messages, approvals |
+| `/signals` | Always-on watches and their live feed: hot-lead dossiers, AI briefings, reminders, autopilot |
 | `/missions`, `/missions/[id]` | Mission list; live topology/timeline, approvals, execution feed, results |
 | `/workforce`, `/workforce/[slug]` | Roster; agent workspace with pause, permissions and a direct line |
 | `/approvals`, `/activity` | Human checkpoints; the audit trail |
@@ -62,6 +63,12 @@ lib/auth/               auth provider boundary (mock, not secure)
 lib/scene/              director bridging the DOM and the particle engine
 types/                  the domain model
 ```
+
+### Watches and signals (the always-on side)
+
+Watches (`data/watches.ts`) are standing orders that run around the clock: website opportunities, AI implementation opportunities, AI news and reminders. Each one produces **signals**: a hot-lead dossier (business, owner, contact, current site, priority, temperature, problems, Google presence, reviews, value, demo angle, recommended offer and price, upsells, Beacon's outreach script and the next move), a briefing or a reminder. New signals raise a toast, appear in the command thread and the activity log, and can be turned into an outreach mission in one click. With **autopilot** on, every hot lead gets an outreach mission drafted immediately, and it still waits for approval before anything is sent.
+
+In this build `lib/services/signalService.ts` simulates the feed with generated sample data (555-01xx numbers, `.example` domains). Real monitors emit the same `Signal` shape.
 
 ### Replacing the mocks
 

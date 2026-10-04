@@ -47,6 +47,14 @@ export function MissionResults({ results, missionNumber }: { results: Results; m
             ))}
           </div>
         )}
+        {results.outreach && (
+          <div className="panel p-5 md:p-6">
+            <div className="label text-[10px]">
+              To {results.outreach.to} · {results.outreach.business}
+            </div>
+            <blockquote className="mt-4 text-[16px] leading-[1.65] text-white">“{results.outreach.script}”</blockquote>
+          </div>
+        )}
         {results.findings && (
           <ul className="divide-y divide-white/[0.07] border-y border-line">
             {results.findings.map((f) => (

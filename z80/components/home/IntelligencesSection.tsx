@@ -104,7 +104,7 @@ export function IntelligencesSection() {
           </div>
 
           {/* Chapter index */}
-          <nav aria-label="Intelligences" className="mt-6 flex items-center gap-6 md:gap-10">
+          <nav aria-label="Intelligences" className="mt-6 flex items-center gap-4 md:gap-10">
             {showcase.map((a, i) => (
               <button
                 key={a.id}
@@ -117,11 +117,11 @@ export function IntelligencesSection() {
                 className={cn("group flex items-center gap-3 text-left transition-opacity duration-500", i === idx ? "opacity-100" : "opacity-40 hover:opacity-70")}
                 aria-current={i === idx}
               >
-                <span className="font-mono text-[11px] text-fg-3">0{i + 1}</span>
-                <span className="relative h-px w-10 overflow-hidden bg-white/15 md:w-16">
+                <span className="hidden font-mono text-[11px] text-fg-3 md:inline">0{i + 1}</span>
+                <span className="relative h-px w-5 overflow-hidden bg-white/15 md:w-16">
                   <span className={cn("absolute inset-y-0 left-0 transition-[width] duration-700 ease-[var(--ease-z)]", i === idx ? "w-full" : "w-0")} style={{ background: a.accent.hex }} />
                 </span>
-                <span className="text-[12px] font-medium uppercase tracking-[0.14em] text-white">{a.name}</span>
+                <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-white md:text-[12px] md:tracking-[0.14em]">{a.name}</span>
               </button>
             ))}
           </nav>

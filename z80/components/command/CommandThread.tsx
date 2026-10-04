@@ -173,6 +173,12 @@ function Actions({ actions, onReviewPlan, onNewMission }: { actions?: ChatAction
                 View results
               </Button>
             );
+          case "open-signal":
+            return (
+              <Button key={i} variant="secondary" size="sm" href={`/signals?id=${a.signalId}`} iconRight={<ArrowUpRight size={12} />}>
+                Open lead
+              </Button>
+            );
           case "new-mission":
             return (
               <Button key={i} variant="secondary" size="sm" onClick={onNewMission}>

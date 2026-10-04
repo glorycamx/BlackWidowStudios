@@ -53,7 +53,8 @@ export function getAgentLiveState(
     .flatMap((m) => m.tasks.filter((t) => t.status === "running" && t.agentId === agentId))[0];
 
   let state: AgentState = "idle";
-  let doing = agent.availability === "available" ? "Standing by for a mission" : "Not yet available";
+  let doing =
+    agent.availability !== "available" ? "Not yet available" : agentId === "lookout" ? "Watching the market around the clock" : agentId === "helm" ? "Tracking reminders and follow-ups" : "Standing by for a mission";
   if (paused.includes(agentId)) {
     state = "paused";
     doing = "Paused by you";

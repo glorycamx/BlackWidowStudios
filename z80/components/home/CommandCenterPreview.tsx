@@ -25,7 +25,7 @@ export function CommandCenterPreview() {
     { id: "beacon", doing: "Creating campaign concepts" },
   ];
   return (
-    <Section id="product" index="10" label="Command center" className="py-[16vh]">
+    <Section id="product" index="11" label="Command center" className="py-[16vh]">
       <div className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
         <Display lines={["Your company.", "Now with an", "intelligence layer."]} className="text-[clamp(40px,5.8vw,100px)]" />
         <Reveal delay={0.1}>

@@ -13,6 +13,7 @@ import {
   MessageSquare,
   Plug,
   Plus,
+  Radar,
   Search,
   Settings,
   Users,
@@ -90,6 +91,7 @@ export function CommandPalette() {
   const items = useMemo<Item[]>(() => {
     const base: Item[] = [
       { id: "new", label: "New mission", hint: "Describe an outcome", group: "Command", icon: <Plus size={15} />, run: go("/command?focus=1") },
+      { id: "signals", label: "Open signals", hint: "Hot leads and briefings", group: "Navigate", icon: <Radar size={15} />, run: go("/signals") },
       { id: "workforce", label: "Open workforce", group: "Navigate", icon: <Users size={15} />, run: go("/workforce") },
       { id: "approvals", label: "View approvals", group: "Navigate", icon: <CheckCircle2 size={15} />, run: go("/approvals") },
       { id: "missions", label: "Search missions", group: "Navigate", icon: <Search size={15} />, run: go("/missions") },

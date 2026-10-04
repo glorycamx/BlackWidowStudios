@@ -17,7 +17,7 @@ export function UseCasesSection() {
   const uc = useCases.find((u) => u.id === id) ?? useCases[0];
 
   return (
-    <Section id="solutions" index="09" label="Solutions" className="py-[16vh]">
+    <Section id="solutions" index="10" label="Solutions" className="py-[16vh]">
       <div className="mt-8">
         <Display lines={["What do you want", "to accelerate?"]} className="text-[clamp(40px,6vw,104px)]" />
       </div>

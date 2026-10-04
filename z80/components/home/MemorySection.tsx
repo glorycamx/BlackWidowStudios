@@ -29,7 +29,7 @@ export function MemorySection() {
   const sel = pts.find((p) => p.id === active);
 
   return (
-    <Section id="memory" index="07" label="Memory" className="py-[16vh]">
+    <Section id="memory" index="08" label="Memory" className="py-[16vh]">
       <div className="mt-8 grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,620px)] lg:gap-16">
         <div>
           <Display lines={["Your team", "actually knows", "your business."]} className="text-[clamp(40px,5.6vw,92px)]" />

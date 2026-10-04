@@ -9,6 +9,7 @@ import { IntegrationsSection } from "@/components/home/IntegrationsSection";
 import { IntelligencesSection } from "@/components/home/IntelligencesSection";
 import { LiveWorkSection } from "@/components/home/LiveWorkSection";
 import { MemorySection } from "@/components/home/MemorySection";
+import { SignalsSection } from "@/components/home/SignalsSection";
 import { TrustSection } from "@/components/home/TrustSection";
 import { UseCasesSection } from "@/components/home/UseCasesSection";
 import { Footer } from "@/components/z80/Footer";
@@ -23,6 +24,7 @@ export default function HomePage() {
         <FlowSection />
         <IntelligencesSection />
         <LiveWorkSection />
+        <SignalsSection />
         <ControlSection />
         <MemorySection />
         <IntegrationsSection />

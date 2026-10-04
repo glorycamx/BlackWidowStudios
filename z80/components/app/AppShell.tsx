@@ -3,18 +3,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { Activity, Brain, CheckCircle2, Command, MoreHorizontal, Plug, Search, Settings, Target, Users } from "lucide-react";
+import { Activity, Brain, CheckCircle2, Command, MoreHorizontal, Plug, Radar, Search, Settings, Target, Users } from "lucide-react";
+import { SignalToasts } from "@/components/signals/SignalToasts";
 import { Kbd } from "@/components/ui/Kbd";
 import { Wordmark } from "@/components/z80/Wordmark";
 import { openCommandPalette } from "@/components/z80/CommandPalette";
 import { AgentGlyph } from "@/components/agents/AgentGlyph";
 import { agents } from "@/data/agents";
-import { selectPendingApprovals, useWorkspace } from "@/lib/store/workspace";
+import { selectPendingApprovals, selectUnreadHot, useWorkspace } from "@/lib/store/workspace";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { href: "/command", label: "Command", icon: Command },
+  { href: "/signals", label: "Signals", icon: Radar },
   { href: "/workforce", label: "Workforce", icon: Users },
   { href: "/missions", label: "Missions", icon: Target },
   { href: "/memory", label: "Memory", icon: Brain },
@@ -24,8 +26,8 @@ const NAV = [
 
 const MOBILE = [
   { href: "/command", label: "Command", icon: Command },
+  { href: "/signals", label: "Signals", icon: Radar },
   { href: "/missions", label: "Missions", icon: Target },
-  { href: "/workforce", label: "Workforce", icon: Users },
   { href: "/approvals", label: "Approvals", icon: CheckCircle2 },
   { href: "/settings", label: "More", icon: MoreHorizontal },
 ];
@@ -39,6 +41,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const hydrated = useWorkspace((s) => s.hydrated);
   const pending = useWorkspace(selectPendingApprovals).length;
   const org = useWorkspace((s) => s.org);
+  const hot = useWorkspace(selectUnreadHot);
 
   return (
     <div className="relative min-h-dvh bg-black">
@@ -64,7 +67,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <ul className="space-y-0.5">
             {NAV.map((n) => (
               <li key={n.href}>
-                <NavLink href={n.href} label={n.label} icon={<n.icon size={15} />} active={isActive(path, n.href)} />
+                <NavLink
+                  href={n.href}
+                  label={n.label}
+                  icon={<n.icon size={15} />}
+                  active={isActive(path, n.href)}
+                  badge={n.href === "/signals" && hydrated && hot > 0 ? hot : undefined}
+                  badgeTone="hot"
+                />
               </li>
             ))}
           </ul>
@@ -135,6 +145,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         )}
       </main>
 
+      {hydrated && <SignalToasts />}
+
       {/* Mobile tab bar */}
       <nav aria-label="Workspace" className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-black/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
         <ul className="grid grid-cols-5">
@@ -145,6 +157,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Link href={n.href} aria-current={on ? "page" : undefined} className={cn("relative flex h-16 flex-col items-center justify-center gap-1.5 text-[10px] tracking-[0.04em]", on ? "text-white" : "text-fg-3")}>
                   <span className="relative">
                     <n.icon size={18} />
+                    {n.href === "/signals" && hydrated && hot > 0 && (
+                      <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#ff6f91] px-1 font-mono text-[9px] text-black">{hot}</span>
+                    )}
                     {n.href === "/approvals" && hydrated && pending > 0 && (
                       <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-attn px-1 font-mono text-[9px] text-black">{pending}</span>
                     )}
@@ -161,7 +176,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-function NavLink({ href, label, icon, active, badge }: { href: string; label: string; icon: React.ReactNode; active: boolean; badge?: number }) {
+function NavLink({ href, label, icon, active, badge, badgeTone }: { href: string; label: string; icon: React.ReactNode; active: boolean; badge?: number; badgeTone?: "hot" }) {
   return (
     <Link
       href={href}
@@ -175,7 +190,14 @@ function NavLink({ href, label, icon, active, badge }: { href: string; label: st
       {icon}
       <span className="flex-1">{label}</span>
       {badge !== undefined && (
-        <span className="flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 font-mono text-[10px] text-attn" style={{ background: "rgba(215,123,255,0.14)", boxShadow: "inset 0 0 0 1px rgba(215,123,255,0.3)" }}>
+        <span
+          className="flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 font-mono text-[10px]"
+          style={
+            badgeTone === "hot"
+              ? { color: "#ff6f91", background: "rgba(255,111,145,0.14)", boxShadow: "inset 0 0 0 1px rgba(255,111,145,0.35)" }
+              : { color: "var(--color-attn)", background: "rgba(215,123,255,0.14)", boxShadow: "inset 0 0 0 1px rgba(215,123,255,0.3)" }
+          }
+        >
           {badge}
         </span>
       )}
