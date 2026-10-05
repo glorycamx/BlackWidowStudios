@@ -4,7 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { Activity, Brain, CalendarDays, CheckCircle2, Command, MoreHorizontal, Plug, Radar, Repeat, Search, Settings, Target, Users } from "lucide-react";
-import { SignalToasts } from "@/components/signals/SignalToasts";
+import { NoticeBell, PhoneToasts, ShiftClock } from "@/components/app/Notifications";
+import { useWorkingBots } from "@/components/bots/useBot";
+import { StatusDot } from "@/components/ui/StatusDot";
 import { NAV_LABELS } from "@/lib/copy";
 import { Kbd } from "@/components/ui/Kbd";
 import { Wordmark } from "@/components/z80/Wordmark";
@@ -45,6 +47,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pending = useWorkspace(selectPendingApprovals).length;
   const org = useWorkspace((s) => s.org);
   const hot = useWorkspace(selectUnreadHot);
+  const working = useWorkingBots();
+  const paused = useWorkspace((s) => s.pausedAgents);
 
   return (
     <div className="relative min-h-dvh bg-black">
@@ -57,6 +61,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Wordmark />
           </Link>
           <span className="label text-fg-4">Demo</span>
+        </div>
+        <div className="mx-3 mb-3 flex items-center justify-between pl-2">
+          {hydrated ? <ShiftClock /> : <span />}
+          <NoticeBell />
         </div>
         <button
           onClick={openCommandPalette}
@@ -93,16 +101,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="mt-8 px-2.5">
             <div className="label mb-3">Your team</div>
             <ul className="space-y-2">
-              {agents
-                .filter((a) => a.availability === "available")
-                .map((a) => (
-                  <li key={a.id}>
-                    <Link href={`/team/${a.slug}`} className="group flex items-center gap-2.5 text-[12.5px] text-fg-3 transition-colors hover:text-fg-1">
-                      <AgentGlyph agent={a} size={20} animated={false} />
-                      {a.name}
-                    </Link>
-                  </li>
-                ))}
+              {working.map((a) => (
+                <li key={a.id}>
+                  <Link href={`/team/${a.slug}`} className="group flex items-center gap-2.5 text-[12.5px] text-fg-3 transition-colors hover:text-fg-1">
+                    <AgentGlyph agent={a} size={20} animated={false} />
+                    <span className="min-w-0 flex-1 truncate">{a.name}</span>
+                    <StatusDot color={paused.includes(a.id) ? "#686872" : a.accent.hex} size={4} live={!paused.includes(a.id)} />
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -130,6 +137,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <button onClick={openCommandPalette} aria-label="Open command palette" className="flex h-10 w-10 items-center justify-center text-fg-2">
             <Search size={17} />
           </button>
+          {hydrated && <NoticeBell className="h-10 w-10" />}
           <Link href="/activity" aria-label="Activity" className="flex h-10 w-10 items-center justify-center text-fg-2">
             <Activity size={17} />
           </Link>
@@ -148,7 +156,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         )}
       </main>
 
-      {hydrated && <SignalToasts />}
+      {hydrated && <PhoneToasts />}
 
       {/* Mobile tab bar */}
       <nav aria-label="Workspace" className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-black/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">

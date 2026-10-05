@@ -32,7 +32,7 @@ import { addQuietChecks, loadBeatCounts, makeBeat, pushBeat, resetBeats } from "
 import { backfill, FEED_CAP, NOTICE_CAP, scheduleNext, step, TEAM_CAP, type SimStep } from "@/lib/sim/scheduler";
 import { channelLabel, fillCalendar } from "@/lib/sim/generators";
 import { playSound } from "@/lib/sound";
-import { startOfDay } from "@/lib/time";
+import { parseClock, startOfDay } from "@/lib/time";
 import { hashString, prng, uid } from "@/lib/utils";
 import type {
   ActivityEvent,
@@ -298,6 +298,7 @@ function simSlice(s: WorkspaceState) {
     posts: s.posts,
     pendingApprovals: Object.values(s.approvals).filter((a) => a.status === "pending").length,
     pausedBots: s.pausedAgents,
+    quiet: [parseClock(s.settings.quietFrom ?? "22:00") ?? 1320, parseClock(s.settings.quietTo ?? "06:00") ?? 360] as [number, number],
   };
 }
 
@@ -852,6 +853,20 @@ export const workspace = {
 
   setSettings(patch: Partial<WorkspaceSettings>) {
     setState((s) => ({ settings: { ...s.settings, ...patch } }));
+  },
+
+  /** Morning text and recap times also move their routines. */
+  setReachTimes(patch: { morningTextAt?: string; recapAt?: string; quietFrom?: string; quietTo?: string }) {
+    const now = clock.now();
+    setState((s) => ({
+      settings: { ...s.settings, ...patch },
+      routines: s.routines.map((r) => {
+        const t = r.engine === "morning-text" ? patch.morningTextAt : r.engine === "evening-recap" ? patch.recapAt : undefined;
+        if (!t || r.trigger.kind !== "schedule") return r;
+        const next = { ...r, trigger: { ...r.trigger, times: [t] } };
+        return { ...next, nextRunAt: scheduleNext(next, now) };
+      }),
+    }));
   },
 
   clearConversation() {

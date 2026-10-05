@@ -20,6 +20,8 @@ export interface SimSlice {
   posts: ScheduledPost[];
   pendingApprovals: number;
   pausedBots: string[];
+  /** Quiet hours as minutes after midnight [from, to]. Defaults to 10 PM to 6 AM. */
+  quiet?: [number, number];
 }
 
 export interface SimStep {
@@ -97,9 +99,10 @@ function followOn(find: FeedItem, routines: Routine[], at: number, quietHours: b
   return { team, notices };
 }
 
-function isQuiet(ts: number) {
-  const h = new Date(ts).getHours();
-  return h >= 22 || h < 6;
+function isQuiet(ts: number, q: [number, number] = [22 * 60, 6 * 60]) {
+  const d = new Date(ts);
+  const m = d.getHours() * 60 + d.getMinutes();
+  return q[0] > q[1] ? m >= q[0] || m < q[1] : m >= q[0] && m < q[1];
 }
 
 function bump(r: Routine, at: number, found: boolean): Routine {
@@ -189,7 +192,7 @@ export function step(s: SimSlice, now: number, speed: number): SimStep {
     if (res.find) {
       finds.push(res.find);
       feed = [res.find, ...feed];
-      const f = followOn(res.find, routines, now, isQuiet(now));
+      const f = followOn(res.find, routines, now, isQuiet(now, s.quiet));
       team.push(...f.team);
       notices.push(...f.notices);
     } else quiet.push(r0.id);
@@ -273,7 +276,7 @@ export function backfill(s: SimSlice, from: number, to: number, opts: { maxFinds
     if (res.find) {
       finds.push(res.find);
       feed = [res.find, ...feed];
-      const f = followOn(res.find, routines, e.at, isQuiet(e.at));
+      const f = followOn(res.find, routines, e.at, isQuiet(e.at, s.quiet));
       team.push(...f.team);
       notices.push(...f.notices.filter((n) => n.tone !== "info"));
     }
