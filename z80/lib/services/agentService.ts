@@ -2,7 +2,7 @@
  * agentService — derives each intelligence's live state from the workspace.
  * Pure: swap the inputs for server state when agents run for real.
  */
-import { agents } from "@/data/bots";
+import { agentOrFallback, getAgent } from "@/data/bots";
 import type { ActivityEvent, Agent, AgentId, AgentState, Approval, Mission } from "@/types";
 
 export interface AgentLiveState {
@@ -36,8 +36,8 @@ export function getAgentLiveState(
   paused: AgentId[],
   now = Date.now(),
 ): AgentLiveState | null {
-  const agent = agents.find((a) => a.id === agentId);
-  if (!agent) return null;
+  // Custom bots may not be registered on the very first render; fall back instead of failing.
+  const agent = getAgent(agentId) ?? agentOrFallback(agentId);
   const mine = missions.filter((m) => m.agents.some((a) => a.agentId === agentId));
   const activeMissions = mine.filter((m) => m.status !== "complete");
   const pendingApprovals = approvals.filter((a) => a.agentId === agentId && a.status === "pending");
@@ -54,7 +54,7 @@ export function getAgentLiveState(
 
   let state: AgentState = "idle";
   let doing =
-    agent.availability !== "available" ? "Not yet available" : agentId === "lead-hunter" ? "Watching the market around the clock" : agentId === "manager" ? "Tracking reminders and follow-ups" : "Standing by for a mission";
+    agent.availability !== "available" ? "Not yet available" : agentId === "lead-hunter" ? "Watching the market around the clock" : agentId === "manager" ? "Tracking reminders and follow-ups" : "On shift";
   if (paused.includes(agentId)) {
     state = "paused";
     doing = "Paused by you";

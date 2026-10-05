@@ -6,7 +6,10 @@ import { CopyButton, KindChip, TEMP_COLOR } from "@/components/signals/SignalPar
 import { Button } from "@/components/ui/Button";
 import { useNow } from "@/lib/hooks/useNow";
 import { useWorkspace, workspace } from "@/lib/store/workspace";
-import { cn, missionCode, relativeTime } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { jobLabel } from "@/lib/copy";
+import { channelLabel } from "@/lib/sim/generators";
+import { formatAgo, formatLocalTime } from "@/lib/time";
 import type { Signal } from "@/types";
 
 function Group({ title, children }: { title?: string; children: React.ReactNode }) {
@@ -27,6 +30,13 @@ function Row({ k, v, wrap, dim }: { k: string; v: string; wrap?: boolean; dim?: 
   );
 }
 
+/** "Happened 2:07 AM · Caught 2:09 AM", or how long ago. */
+export function caughtLine(f: Signal, now: number): string {
+  if (f.kind === "post" && f.happenedAt) return `Scheduled ${formatLocalTime(f.happenedAt)} · Posted ${formatLocalTime(f.foundAt ?? f.at)}`;
+  if (f.happenedAt) return `Happened ${formatLocalTime(f.happenedAt)} · Caught ${formatLocalTime(f.foundAt ?? f.at)}`;
+  return `${formatLocalTime(f.at)} · ${formatAgo(f.at, now)}`;
+}
+
 function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
     <div className={cn("min-w-0", className)}>
@@ -42,6 +52,7 @@ export function SignalDetail({ signal, onClose }: { signal: Signal; onClose?: ()
   const mission = useWorkspace((s) => (signal.missionId ? s.missions[signal.missionId] : undefined));
   const related = useWorkspace((s) => (signal.reminder?.relatedId ? s.feed.find((x) => x.id === signal.reminder?.relatedId) : undefined));
   const l = signal.lead;
+  const post = useWorkspace((s) => (signal.post ? s.posts.find((p) => p.id === signal.post?.postId) : undefined));
 
   return (
     <article className="overflow-hidden rounded-[28px] bg-[#0b0b10]" style={{ boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.06)" }} aria-label={signal.title}>
@@ -51,7 +62,7 @@ export function SignalDetail({ signal, onClose }: { signal: Signal; onClose?: ()
           <div className="flex flex-wrap items-center gap-2.5">
             <KindChip signal={signal} />
             {l && <span className="text-[12px] text-fg-3">Priority {l.priority}</span>}
-            <span className="text-[12px] tabular-nums text-fg-4">{relativeTime(signal.at, now)} · sample</span>
+            <span className="text-[12px] tabular-nums text-fg-4">{caughtLine(signal, now)} · sample</span>
           </div>
           {onClose && (
             <button onClick={onClose} aria-label="Close" className="flex h-8 w-8 items-center justify-center rounded-[8px] text-fg-3 hover:text-white">
@@ -155,6 +166,17 @@ export function SignalDetail({ signal, onClose }: { signal: Signal; onClose?: ()
         </ul>
       )}
 
+      {post && (
+        <div className="space-y-5 p-5 md:p-6">
+          <blockquote className="rounded-[18px] bg-white/[0.04] p-5 text-[16px] leading-[1.6] text-white">{post.caption}</blockquote>
+          <Field label="Picture">{post.visualHint}</Field>
+          <Field label="Where">{channelLabel(post.channel)}</Field>
+          <Link href="/calendar" className="inline-flex items-center gap-1.5 text-[13px] text-fg-2 hover:text-white">
+            Open the content calendar <ArrowUpRight size={12} />
+          </Link>
+        </div>
+      )}
+
       {signal.reminder && (
         <div className="space-y-5 p-5 md:p-6">
           <Field label="Due">{signal.reminder.due}</Field>
@@ -172,11 +194,11 @@ export function SignalDetail({ signal, onClose }: { signal: Signal; onClose?: ()
         {l &&
           (mission ? (
             <Button variant="secondary" size="sm" href={`/jobs/${mission.id}`} iconRight={<ArrowUpRight size={12} />}>
-              Mission {missionCode(mission.number)}
+              {jobLabel(mission.number)}
             </Button>
           ) : (
             <Button variant="primary" size="sm" data-deploy onClick={() => workspace.deploySignal(signal.id)}>
-              Deploy outreach
+              Start outreach
             </Button>
           ))}
         <Button variant="ghost" size="sm" icon={signal.saved ? <BookmarkCheck size={13} /> : <Bookmark size={13} />} onClick={() => workspace.toggleSaveSignal(signal.id)}>
@@ -192,7 +214,7 @@ export function SignalDetail({ signal, onClose }: { signal: Signal; onClose?: ()
         >
           Dismiss
         </Button>
-        {mission && <span className="ml-auto text-[12px] text-fg-3">{mission.status === "complete" ? "Outreach done" : "Outreach in progress"}</span>}
+        {mission && <span className="ml-auto text-[12px] text-fg-3">{mission.status === "complete" ? "Outreach done" : "Your bots are on it"}</span>}
       </footer>
     </article>
   );

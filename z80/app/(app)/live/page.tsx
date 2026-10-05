@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { SignalsView } from "@/components/signals/SignalsView";
+import { LiveView } from "@/components/live/LiveView";
 
-export const metadata: Metadata = { title: "Signals" };
+export const metadata: Metadata = { title: "Live" };
 
-export default function SignalsPage() {
+export default function LivePage() {
   return (
     <Suspense>
-      <SignalsView />
+      <LiveView />
     </Suspense>
   );
 }
