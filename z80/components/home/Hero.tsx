@@ -8,37 +8,22 @@ import { LiveTicker } from "@/components/home/LiveTicker";
 import { Wordmark } from "@/components/z80/Wordmark";
 import { availableAgents } from "@/data/bots";
 import { COPY } from "@/lib/copy";
-import { clusterLayout, clusterRadiusPx } from "@/lib/scene/director";
 import { EASE } from "@/lib/motion";
 import { formatLocalTime } from "@/lib/time";
 
-/** Where the five clusters rest in the hero (mirrors HomeScene). */
+/** Where the orb rests in the hero (mirrors HomeScene). */
 export function heroStage(desktop: boolean) {
-  return { offset: (desktop ? [0.44, -0.02] : [0, 0.42]) as [number, number], scale: desktop ? 0.72 : 0.5 };
+  return { offset: (desktop ? [0.47, 0] : [0, 0.44]) as [number, number], scale: desktop ? 0.68 : 0.62 };
 }
 
-/** The hero: one promise, five bots already at work behind it. */
+/** The hero: one promise, and the orb. */
 export function Hero() {
   const [now, setNow] = useState<number | null>(null);
-  const [labels, setLabels] = useState<{ x: number; y: number }[]>([]);
 
   useEffect(() => {
     setNow(Date.now());
     const t = setInterval(() => setNow(Date.now()), 30000);
-    const calc = () => {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      if (w < 900) return setLabels([]);
-      const st = heroStage(true);
-      const r = clusterRadiusPx(st.scale, w / h, h);
-      setLabels(clusterLayout(st.offset, w / h).map(([x, y]) => ({ x: ((x + 1) / 2) * w, y: ((1 - y) / 2) * h + r + 10 })));
-    };
-    calc();
-    window.addEventListener("resize", calc);
-    return () => {
-      clearInterval(t);
-      window.removeEventListener("resize", calc);
-    };
+    return () => clearInterval(t);
   }, []);
 
   const bots = availableAgents.filter((a) => a.sceneGroup !== undefined).sort((a, b) => (a.sceneGroup ?? 0) - (b.sceneGroup ?? 0));
@@ -83,24 +68,6 @@ export function Hero() {
         </div>
       </div>
 
-      {/* Names under the five clusters (desktop) */}
-      {labels.length === 5 &&
-        bots.map((a, i) => (
-          <motion.div
-            key={a.id}
-            className="pointer-events-none absolute hidden -translate-x-1/2 text-center lg:block"
-            style={{ left: labels[i].x, top: labels[i].y }}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 3.2 + i * 0.1, duration: 0.8, ease: EASE }}
-            aria-hidden
-          >
-            <div className="text-[13px] font-medium text-white">{a.name}</div>
-            <div className="text-[11px]" style={{ color: a.accent.tint }}>
-              {a.domain}
-            </div>
-          </motion.div>
-        ))}
     </section>
   );
 }

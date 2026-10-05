@@ -21,8 +21,8 @@ function rect(id: string) {
 const ALL_ON = [1, 1, 1, 1, 1];
 
 /**
- * The homepage's one particle scene, driven by scroll. Five bot clusters
- * pulse behind the hero, fade to an ambient field while you read, become
+ * The homepage's one particle scene, driven by scroll. The orb sits
+ * behind the hero, fade to an ambient field while you read, become
  * Manager, Lead Hunter and Content Creator in the showcase, and gather back
  * into five clusters for the final call to action.
  */
@@ -45,7 +45,7 @@ export function HomeScene() {
       const final = rect("final");
       const heroEnd = heroEl ? heroEl.top + heroEl.height : vh;
 
-      let weights: FormWeights = FORMS.cluster;
+      let weights: FormWeights = FORMS.sphere;
       let offset: Vec2 = hero.offset;
       let scale = hero.scale;
       let opacity = 1;
@@ -54,11 +54,12 @@ export function HomeScene() {
       const AMBIENT = 0.35;
 
       if (y < heroEnd) {
-        // Hero: five clusters at work, dissolving into the field as you scroll.
+        // Hero: the orb, dissolving into the field as you scroll.
         const h = smooth(heroEnd * 0.25, heroEnd, y);
-        weights = blend(FORMS.cluster, FORMS.field, h);
+        weights = blend(FORMS.sphere, FORMS.field, h);
         opacity = 1 - h * (1 - AMBIENT);
-        activity = 0.25 * (1 - h);
+        activity = 0;
+        lines = 1;
       } else if (intel && y < intel.top) {
         // Reading: quiet ambient field, gathering into the first bot just before the showcase.
         const k = smooth(intel.top - vh * 0.9, intel.top, y);
