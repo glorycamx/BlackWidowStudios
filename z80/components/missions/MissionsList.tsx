@@ -38,7 +38,7 @@ export function MissionsList() {
   if (!missions.length) {
     return (
       <PageWrap>
-        <EmptyState title="Nothing running." body="What should your workforce accomplish?" action={{ label: "Create mission", href: "/command?focus=1" }} />
+        <EmptyState title="Nothing running." body="What should your workforce accomplish?" action={{ label: "Create mission", href: "/chat?focus=1" }} />
       </PageWrap>
     );
   }
@@ -50,7 +50,7 @@ export function MissionsList() {
         title="Missions"
         sub="Every objective you deploy."
         actions={
-          <Button variant="solid" icon={<Plus size={14} />} href="/command?focus=1">
+          <Button variant="solid" icon={<Plus size={14} />} href="/chat?focus=1">
             New mission
           </Button>
         }
@@ -84,7 +84,7 @@ export function MissionsList() {
       <ul className="mt-6 border-t border-line">
         {list.map((m, i) => (
           <motion.li key={m.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.03, ease: EASE }} className="border-b border-line">
-            <Link href={`/missions/${m.id}`} className="group grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-3 px-1 py-5 transition-colors hover:bg-white/[0.015] md:grid-cols-[70px_1fr_180px_150px_90px]">
+            <Link href={`/jobs/${m.id}`} className="group grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-3 px-1 py-5 transition-colors hover:bg-white/[0.015] md:grid-cols-[70px_1fr_180px_150px_90px]">
               <span className="hidden text-[13px] tabular-nums text-fg-3 md:block">{missionCode(m.number)}</span>
               <span className="min-w-0">
                 <span className="block truncate text-[15.5px] text-white">{m.title}</span>

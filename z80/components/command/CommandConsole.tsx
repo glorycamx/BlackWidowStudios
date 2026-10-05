@@ -268,7 +268,7 @@ export const CommandConsole = forwardRef<CommandConsoleHandle, Props>(function C
                         </li>
                       ))}
                     </ul>
-                    <Link href="/connections" className="mt-1 block rounded-md px-2 py-2 text-[12px] text-fg-1 hover:bg-white/5">
+                    <Link href="/apps" className="mt-1 block rounded-md px-2 py-2 text-[12px] text-fg-1 hover:bg-white/5">
                       Manage connections →
                     </Link>
                   </motion.div>

@@ -3,7 +3,7 @@
 import { Check } from "lucide-react";
 import { ActorTag } from "@/components/app/primitives";
 import { StatusDot } from "@/components/ui/StatusDot";
-import { agentOrFallback } from "@/data/agents";
+import { agentOrFallback } from "@/data/bots";
 import { useWorkspace } from "@/lib/store/workspace";
 import { clockTime, cn } from "@/lib/utils";
 import type { Mission } from "@/types";

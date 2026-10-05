@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AgentProfile } from "@/components/agents/AgentProfile";
 import { Footer } from "@/components/z80/Footer";
-import { agents, getAgentBySlug } from "@/data/agents";
+import { agents, getAgentBySlug } from "@/data/bots";
 
 export function generateStaticParams() {
   return agents.map((a) => ({ slug: a.slug }));

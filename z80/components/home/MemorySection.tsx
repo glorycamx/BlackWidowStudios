@@ -3,7 +3,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useState } from "react";
 import { Display, Reveal, Section } from "@/components/home/Section";
-import { availableAgents } from "@/data/agents";
+import { availableAgents } from "@/data/bots";
 import { memoryDomains } from "@/data/memory";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";

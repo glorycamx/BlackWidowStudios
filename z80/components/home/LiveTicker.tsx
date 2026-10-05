@@ -2,17 +2,17 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
-import { agentOrFallback } from "@/data/agents";
+import { agentOrFallback } from "@/data/bots";
 import { EASE } from "@/lib/motion";
 
 /** Sample of what the agents do on their own. Illustrative, labelled as such. */
 const LINES: { agent: string; text: string }[] = [
-  { agent: "lookout", text: "found a hot lead in Nashua, NH" },
-  { agent: "beacon", text: "wrote 3 personalized openers" },
-  { agent: "helm", text: "scheduled 2 follow-ups for 9:00 AM" },
-  { agent: "lookout", text: "noticed a competitor's site went down" },
-  { agent: "beacon", text: "drafted this week's posts" },
-  { agent: "helm", text: "flagged a proposal expiring tomorrow" },
+  { agent: "lead-hunter", text: "found a hot lead in Nashua, NH" },
+  { agent: "content-creator", text: "wrote 3 personalized openers" },
+  { agent: "manager", text: "scheduled 2 follow-ups for 9:00 AM" },
+  { agent: "lead-hunter", text: "noticed a competitor's site went down" },
+  { agent: "content-creator", text: "drafted this week's posts" },
+  { agent: "manager", text: "flagged a proposal expiring tomorrow" },
 ];
 
 export function LiveTicker() {

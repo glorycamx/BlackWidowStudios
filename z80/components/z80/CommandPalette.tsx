@@ -19,7 +19,7 @@ import {
   Users,
   Volume2,
 } from "lucide-react";
-import { availableAgents } from "@/data/agents";
+import { availableAgents } from "@/data/bots";
 import { selectMissions, useWorkspace, workspace } from "@/lib/store/workspace";
 import { EASE } from "@/lib/motion";
 import { cn, missionCode } from "@/lib/utils";
@@ -90,20 +90,20 @@ export function CommandPalette() {
 
   const items = useMemo<Item[]>(() => {
     const base: Item[] = [
-      { id: "new", label: "New mission", hint: "Describe an outcome", group: "Command", icon: <Plus size={15} />, run: go("/command?focus=1") },
-      { id: "signals", label: "Open signals", hint: "Hot leads and briefings", group: "Navigate", icon: <Radar size={15} />, run: go("/signals") },
-      { id: "workforce", label: "Open workforce", group: "Navigate", icon: <Users size={15} />, run: go("/workforce") },
+      { id: "new", label: "New mission", hint: "Describe an outcome", group: "Command", icon: <Plus size={15} />, run: go("/chat?focus=1") },
+      { id: "signals", label: "Open signals", hint: "Hot leads and briefings", group: "Navigate", icon: <Radar size={15} />, run: go("/live") },
+      { id: "workforce", label: "Open workforce", group: "Navigate", icon: <Users size={15} />, run: go("/team") },
       { id: "approvals", label: "View approvals", group: "Navigate", icon: <CheckCircle2 size={15} />, run: go("/approvals") },
-      { id: "missions", label: "Search missions", group: "Navigate", icon: <Search size={15} />, run: go("/missions") },
+      { id: "missions", label: "Search missions", group: "Navigate", icon: <Search size={15} />, run: go("/jobs") },
       ...availableAgents.map((a) => ({
         id: `msg-${a.id}`,
         label: `Message ${a.name}`,
         hint: a.role,
         group: "Intelligences",
         icon: <MessageSquare size={15} style={{ color: a.accent.hex }} />,
-        run: go(`/workforce/${a.slug}?message=1`),
+        run: go(`/team/${a.slug}?message=1`),
       })),
-      { id: "connections", label: "Connections", group: "Navigate", icon: <Plug size={15} />, run: go("/connections") },
+      { id: "connections", label: "Connections", group: "Navigate", icon: <Plug size={15} />, run: go("/apps") },
       { id: "memory", label: "Organization memory", group: "Navigate", icon: <Brain size={15} />, run: go("/memory") },
       { id: "activity", label: "Activity", group: "Navigate", icon: <Activity size={15} />, run: go("/activity") },
       { id: "settings", label: "Settings", group: "Navigate", icon: <Settings size={15} />, run: go("/settings") },
@@ -125,7 +125,7 @@ export function CommandPalette() {
       hint: `Mission ${missionCode(m.number)}`,
       group: "Missions",
       icon: <ArrowRight size={15} />,
-      run: go(`/missions/${m.id}`),
+      run: go(`/jobs/${m.id}`),
     }));
     const all = [...base, ...ms];
     const query = q.trim().toLowerCase();

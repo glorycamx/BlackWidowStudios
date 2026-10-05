@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { Intro, Reveal, Section } from "@/components/home/Section";
 import { Button } from "@/components/ui/Button";
-import { agentOrFallback } from "@/data/agents";
+import { agentOrFallback } from "@/data/bots";
 import { useCases } from "@/data/useCases";
 import { homeFlow } from "@/lib/scene/homeFlow";
 import { EASE } from "@/lib/motion";

@@ -10,6 +10,7 @@ const FORM_FOR: Record<AgentVisual, keyof typeof FORMS> = {
   scanner: "scanner",
   fluid: "fluid",
   orbit: "sphere",
+  pulse: "sphere",
 };
 
 /** A contained particle stage showing one intelligence's signature form. */

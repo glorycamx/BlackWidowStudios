@@ -45,10 +45,10 @@ export function SettingsView() {
       <PageHeader label="Workspace" title="Settings" />
       <nav aria-label="More" className="mt-8 grid grid-cols-2 gap-2 lg:hidden">
         {[
-          ["Workforce", "/workforce"],
+          ["Workforce", "/team"],
           ["Approvals", "/approvals"],
           ["Memory", "/memory"],
-          ["Connections", "/connections"],
+          ["Connections", "/apps"],
           ["Activity", "/activity"],
         ].map(([label, href]) => (
           <Link key={href} href={href} className="flex h-12 items-center justify-between rounded-[12px] px-4 text-[14px] text-white hairline">

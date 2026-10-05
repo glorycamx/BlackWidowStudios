@@ -6,7 +6,7 @@ import { Display, Reveal, Section } from "@/components/home/Section";
 import { Button } from "@/components/ui/Button";
 import { StatusDot } from "@/components/ui/StatusDot";
 import { Wordmark } from "@/components/z80/Wordmark";
-import { agentOrFallback } from "@/data/agents";
+import { agentOrFallback } from "@/data/bots";
 
 const NAV = [
   { label: "Command", icon: Command, on: true },
@@ -20,16 +20,16 @@ const NAV = [
 /** STATE 09 — a calm, static preview of the logged-in product. */
 export function CommandCenterPreview() {
   const rail = [
-    { id: "helm", doing: "Coordinating 4 missions" },
-    { id: "lookout", doing: "Researching 38 accounts" },
-    { id: "beacon", doing: "Creating campaign concepts" },
+    { id: "manager", doing: "Coordinating 4 missions" },
+    { id: "lead-hunter", doing: "Researching 38 accounts" },
+    { id: "content-creator", doing: "Creating campaign concepts" },
   ];
   return (
     <Section id="product" index="11" label="Command center" className="py-[18vh]">
       <div className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
         <Display lines={["Your company,", "with a mind of its own."]} className="text-[clamp(40px,5.8vw,96px)]" />
         <Reveal delay={0.1}>
-          <Button variant="secondary" href="/command" iconRight={<ArrowUpRight size={14} />}>
+          <Button variant="secondary" href="/chat" iconRight={<ArrowUpRight size={14} />}>
             Open the command center
           </Button>
         </Reveal>
@@ -74,7 +74,7 @@ export function CommandCenterPreview() {
                     Understood. I&apos;d start by identifying commercial property operators in your area, researching which buildings likely need roofing work, and building an outreach campaign around those opportunities.
                   </p>
                   <div className="mt-3 flex gap-2">
-                    {["lookout", "beacon", "helm"].map((id) => {
+                    {["lead-hunter", "content-creator", "manager"].map((id) => {
                       const a = agentOrFallback(id);
                       return (
                         <span key={id} className="flex h-7 items-center gap-2 rounded-[8px] px-2.5 text-[12px] hairline" style={{ color: a.accent.tint }}>
@@ -86,9 +86,9 @@ export function CommandCenterPreview() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <AgentGlyph agent={agentOrFallback("lookout")} size={26} />
+                  <AgentGlyph agent={agentOrFallback("lead-hunter")} size={26} />
                   <div>
-                    <div className="text-[12px] text-lookout">Lookout</div>
+                    <div className="text-[12px] text-hunter">Lead Hunter</div>
                     <p className="mt-1 text-[14px] text-fg-1">Found 81 potential accounts.</p>
                   </div>
                 </div>

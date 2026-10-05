@@ -100,7 +100,7 @@ export function SignalDetail({ signal, onClose }: { signal: Signal; onClose?: ()
 
           <div>
             <div className="mb-2 flex items-center justify-between px-1">
-              <span className="text-[13px] text-fg-3">Opener, written by Beacon</span>
+              <span className="text-[13px] text-fg-3">Opener, written by Content Creator</span>
               <CopyButton text={l.outreachScript} label="Copy" />
             </div>
             <blockquote className="rounded-[18px] bg-white/[0.04] p-5 text-[16px] leading-[1.6] text-white">{l.outreachScript}</blockquote>
@@ -127,7 +127,7 @@ export function SignalDetail({ signal, onClose }: { signal: Signal; onClose?: ()
           <Field label="Due">{signal.reminder.due}</Field>
           {related && (
             <Field label="Lead">
-              <Link href={`/signals?id=${related.id}`} className="inline-flex items-center gap-1.5 text-white hover:underline">
+              <Link href={`/live?id=${related.id}`} className="inline-flex items-center gap-1.5 text-white hover:underline">
                 {related.title} <ArrowUpRight size={13} />
               </Link>
             </Field>
@@ -138,7 +138,7 @@ export function SignalDetail({ signal, onClose }: { signal: Signal; onClose?: ()
       <footer className="flex flex-wrap items-center gap-2 px-5 pb-6 md:px-6">
         {l &&
           (mission ? (
-            <Button variant="secondary" size="sm" href={`/missions/${mission.id}`} iconRight={<ArrowUpRight size={12} />}>
+            <Button variant="secondary" size="sm" href={`/jobs/${mission.id}`} iconRight={<ArrowUpRight size={12} />}>
               Mission {missionCode(mission.number)}
             </Button>
           ) : (

@@ -96,7 +96,7 @@ export function generateResults(mission: Mission): MissionResults {
         summary: hasOutreach
           ? held
             ? "Outreach is held for your edits. Nothing has been sent."
-            : "Your outreach campaign is prepared. Lookout keeps watching for more."
+            : "Your outreach campaign is prepared. Lead Hunter keeps watching for more."
           : "Decision makers and contact paths are attached.",
         prospects,
       };

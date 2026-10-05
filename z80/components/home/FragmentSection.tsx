@@ -2,7 +2,7 @@
 
 import { motion, useMotionValueEvent, useScroll, useTransform } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { availableAgents } from "@/data/agents";
+import { availableAgents } from "@/data/bots";
 import { clusterRadiusPx, clusterTriangle, type Vec2 } from "@/lib/scene/director";
 
 /** Formation placement while the sphere splits (mirrors HomeScene). */

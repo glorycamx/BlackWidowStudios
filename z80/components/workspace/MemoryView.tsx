@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Plus, X } from "lucide-react";
 import { PageHeader, PageWrap } from "@/components/app/primitives";
-import { availableAgents } from "@/data/agents";
+import { availableAgents } from "@/data/bots";
 import { memoryDomains } from "@/data/memory";
 import { useWorkspace, workspace } from "@/lib/store/workspace";
 

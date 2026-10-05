@@ -36,7 +36,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
     try {
       if (mode === "login") {
         await auth.signIn(email, password);
-        router.push("/command");
+        router.push("/chat");
       } else {
         await auth.signUp(name, email, password);
         router.push("/onboarding");

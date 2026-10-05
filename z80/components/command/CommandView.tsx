@@ -49,10 +49,10 @@ export function CommandView() {
     const prompt = params.get("prompt");
     if (prompt) {
       send(prompt);
-      router.replace("/command");
+      router.replace("/chat");
     } else if (params.get("focus")) {
       requestAnimationFrame(() => consoleRef.current?.focus());
-      router.replace("/command");
+      router.replace("/chat");
     }
   }, [params, router, send]);
 
@@ -87,8 +87,8 @@ export function CommandView() {
             </motion.h1>
             <motion.div className="mt-8 grid grid-cols-3 gap-2" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.08, ease: EASE }}>
               {[
-                { n: overnight.leads, k: "new leads", href: "/signals" },
-                { n: overnight.hot, k: "hot", href: "/signals" },
+                { n: overnight.leads, k: "new leads", href: "/live" },
+                { n: overnight.hot, k: "hot", href: "/live" },
                 { n: overnight.decisions, k: overnight.decisions === 1 ? "needs your yes" : "need your yes", href: "/approvals" },
               ].map((x) => (
                 <Link key={x.k} href={x.href} className="rounded-[20px] bg-white/[0.04] px-5 py-4 transition-colors hover:bg-white/[0.07]">

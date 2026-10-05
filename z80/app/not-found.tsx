@@ -13,7 +13,7 @@ export default function NotFound() {
         <Link href="/" className="inline-flex h-10 items-center rounded-[11px] bg-white px-5 text-[11px] font-medium text-black">
           Return home
         </Link>
-        <Link href="/command" className="inline-flex h-10 items-center rounded-[11px] px-5 text-[11px] font-medium text-fg-1 hairline">
+        <Link href="/chat" className="inline-flex h-10 items-center rounded-[11px] px-5 text-[11px] font-medium text-fg-1 hairline">
           Open command
         </Link>
       </div>

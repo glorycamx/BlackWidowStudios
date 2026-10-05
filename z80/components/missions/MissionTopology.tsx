@@ -4,7 +4,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { useState } from "react";
 import { Check } from "lucide-react";
 import { AgentGlyph } from "@/components/agents/AgentGlyph";
-import { agentOrFallback } from "@/data/agents";
+import { agentOrFallback } from "@/data/bots";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import type { Mission, MissionTask, TaskStatus } from "@/types";

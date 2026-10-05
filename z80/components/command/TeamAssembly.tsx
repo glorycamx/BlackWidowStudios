@@ -6,7 +6,7 @@ import { ArrowLeft, Check, ChevronDown, Plus, X } from "lucide-react";
 import { AgentGlyph } from "@/components/agents/AgentGlyph";
 import { Button } from "@/components/ui/Button";
 import { StatusDot } from "@/components/ui/StatusDot";
-import { agentOrFallback, agents as roster } from "@/data/agents";
+import { agentOrFallback, agents as roster } from "@/data/bots";
 import { getIntegration, integrationStatusLabel } from "@/data/integrations";
 import { workspace } from "@/lib/store/workspace";
 import { useMediaQuery } from "@/lib/hooks/useMediaQuery";

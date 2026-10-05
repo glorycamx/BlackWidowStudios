@@ -6,18 +6,18 @@ import { Check } from "lucide-react";
 import { Display, Reveal, Section } from "@/components/home/Section";
 import { Button } from "@/components/ui/Button";
 import { StatusDot } from "@/components/ui/StatusDot";
-import { agentOrFallback } from "@/data/agents";
+import { agentOrFallback } from "@/data/bots";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 const BEATS: { t: string; agent: string; text: string; task: number }[] = [
-  { t: "02:41:03", agent: "helm", text: "Mission decomposed into 7 tasks.", task: 0 },
-  { t: "02:41:06", agent: "lookout", text: "Scanning target region.", task: 1 },
-  { t: "02:41:14", agent: "lookout", text: "247 companies identified.", task: 1 },
-  { t: "02:41:21", agent: "lookout", text: "68 passed initial qualification.", task: 2 },
-  { t: "02:41:25", agent: "beacon", text: "Analyzing each company's positioning.", task: 3 },
-  { t: "02:41:32", agent: "beacon", text: "Creating personalized opening lines.", task: 3 },
-  { t: "02:41:41", agent: "helm", text: "50 prospects prepared.", task: 4 },
+  { t: "02:41:03", agent: "manager", text: "Mission decomposed into 7 tasks.", task: 0 },
+  { t: "02:41:06", agent: "lead-hunter", text: "Scanning target region.", task: 1 },
+  { t: "02:41:14", agent: "lead-hunter", text: "247 companies identified.", task: 1 },
+  { t: "02:41:21", agent: "lead-hunter", text: "68 passed initial qualification.", task: 2 },
+  { t: "02:41:25", agent: "content-creator", text: "Analyzing each company's positioning.", task: 3 },
+  { t: "02:41:32", agent: "content-creator", text: "Creating personalized opening lines.", task: 3 },
+  { t: "02:41:41", agent: "manager", text: "50 prospects prepared.", task: 4 },
 ];
 
 const TASKS = ["Plan", "Find", "Qualify", "Write", "Prepare", "Approve"];

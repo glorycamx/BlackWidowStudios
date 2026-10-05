@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 import type { ReactNode } from "react";
 import { AgentGlyph } from "@/components/agents/AgentGlyph";
 import { StatusDot } from "@/components/ui/StatusDot";
-import { agentOrFallback } from "@/data/agents";
+import { agentOrFallback } from "@/data/bots";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import type { Actor, MissionStatus } from "@/types";

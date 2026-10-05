@@ -6,7 +6,7 @@ import { ChevronRight } from "lucide-react";
 import { AgentGlyph } from "@/components/agents/AgentGlyph";
 import { PageHeader, PageWrap } from "@/components/app/primitives";
 import { StatusDot } from "@/components/ui/StatusDot";
-import { agents } from "@/data/agents";
+import { agents } from "@/data/bots";
 import { agentStateLabel, getAgentLiveState } from "@/lib/services/agentService";
 import { selectMissions, useWorkspace } from "@/lib/store/workspace";
 import { useNow } from "@/lib/hooks/useNow";
@@ -65,7 +65,7 @@ export function WorkforceRoster() {
               {soon ? (
                 <div aria-label={`${a.name}, coming soon`}>{row}</div>
               ) : (
-                <Link href={`/workforce/${a.slug}`} className="group block px-1 transition-colors hover:bg-white/[0.015]">
+                <Link href={`/team/${a.slug}`} className="group block px-1 transition-colors hover:bg-white/[0.015]">
                   {row}
                 </Link>
               )}

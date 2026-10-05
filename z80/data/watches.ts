@@ -20,7 +20,7 @@ export const watchTemplates: WatchTemplate[] = [
   {
     kind: "website-opportunities",
     name: "Website opportunities",
-    agentId: "lookout",
+    agentId: "lead-hunter",
     description: "Local businesses whose website is costing them customers, caught the moment something changes.",
     triggers: [
       "Website goes down",
@@ -37,7 +37,7 @@ export const watchTemplates: WatchTemplate[] = [
   {
     kind: "ai-opportunities",
     name: "AI implementation",
-    agentId: "lookout",
+    agentId: "lead-hunter",
     description: "Companies showing signs they need AI and automation: manual processes, hiring for repetitive work, slow response times.",
     triggers: [
       "Hiring for repetitive roles",
@@ -52,7 +52,7 @@ export const watchTemplates: WatchTemplate[] = [
   {
     kind: "ai-news",
     name: "AI news",
-    agentId: "lookout",
+    agentId: "lead-hunter",
     description: "What changed in AI, filtered for what matters to your business and your clients.",
     triggers: ["Every 5 minutes"],
     cadence: "Every 5 min",
@@ -61,7 +61,7 @@ export const watchTemplates: WatchTemplate[] = [
   {
     kind: "reminders",
     name: "Reminders",
-    agentId: "helm",
+    agentId: "manager",
     description: "Follow-ups, expiring proposals and anything a lead is waiting on. Nothing slips.",
     triggers: ["Follow-up due", "Proposal expiring", "Lead went quiet"],
     cadence: "As due",

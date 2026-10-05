@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ApprovalCard } from "@/components/app/ApprovalCard";
 import { StatusDot } from "@/components/ui/StatusDot";
 import { KindChip } from "@/components/signals/SignalParts";
-import { availableAgents } from "@/data/agents";
+import { availableAgents } from "@/data/bots";
 import { getAgentLiveState } from "@/lib/services/agentService";
 import { selectMissions, selectPendingApprovals, selectVisibleSignals, useWorkspace } from "@/lib/store/workspace";
 import { relativeTime } from "@/lib/utils";
@@ -38,7 +38,7 @@ export function AmbientRail() {
             const color = st.state === "waiting" ? "var(--color-attn)" : st.state === "idle" || st.state === "paused" ? "#686872" : a.accent.hex;
             return (
               <li key={a.id}>
-                <Link href={`/workforce/${a.slug}`} className="group flex items-start gap-3">
+                <Link href={`/team/${a.slug}`} className="group flex items-start gap-3">
                   <StatusDot color={color} size={6} live={st.state === "working" || st.state === "active" || st.state === "waiting"} className="mt-1.5" />
                   <span className="min-w-0">
                     <span className="block text-[12px] font-semibold text-white group-hover:text-fg-1">{a.name}</span>
@@ -54,14 +54,14 @@ export function AmbientRail() {
       <section>
         <div className="flex items-center justify-between">
           <h2 className="label">Live signals</h2>
-          <Link href="/signals" className="text-[12px] text-fg-3 hover:text-white">
+          <Link href="/live" className="text-[12px] text-fg-3 hover:text-white">
             All →
           </Link>
         </div>
         <ul className="mt-4 space-y-3">
           {signals.slice(0, 4).map((s) => (
             <li key={s.id}>
-              <Link href={`/signals?id=${s.id}`} className="block rounded-[10px] p-2.5 transition-colors hover:bg-white/[0.03]" style={{ boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05)" }}>
+              <Link href={`/live?id=${s.id}`} className="block rounded-[10px] p-2.5 transition-colors hover:bg-white/[0.03]" style={{ boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05)" }}>
                 <div className="flex items-center justify-between gap-2">
                   <KindChip signal={s} />
                   <span className="text-[12px] tabular-nums text-fg-4">{relativeTime(s.at, now)}</span>

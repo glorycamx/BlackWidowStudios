@@ -124,7 +124,7 @@ function Prospects({ rows, missionNumber }: { rows: Prospect[]; missionNumber: n
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: EASE }} className="overflow-hidden">
                     <div className="px-5 pb-5">
                       <div className="rounded-[12px] bg-white/[0.025] p-4">
-                        <div className="text-[12px] text-beacon">Beacon · opening line</div>
+                        <div className="text-[12px] text-creator">Content Creator · opening line</div>
                         <p className="mt-2 text-[14.5px] leading-relaxed text-fg-1">“{p.opener}”</p>
                       </div>
                     </div>

@@ -5,30 +5,31 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { Activity, Brain, CheckCircle2, Command, MoreHorizontal, Plug, Radar, Search, Settings, Target, Users } from "lucide-react";
 import { SignalToasts } from "@/components/signals/SignalToasts";
+import { NAV_LABELS } from "@/lib/copy";
 import { Kbd } from "@/components/ui/Kbd";
 import { Wordmark } from "@/components/z80/Wordmark";
 import { openCommandPalette } from "@/components/z80/CommandPalette";
 import { AgentGlyph } from "@/components/agents/AgentGlyph";
-import { agents } from "@/data/agents";
+import { agents } from "@/data/bots";
 import { selectPendingApprovals, selectUnreadHot, useWorkspace } from "@/lib/store/workspace";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { href: "/command", label: "Command", icon: Command },
-  { href: "/signals", label: "Signals", icon: Radar },
-  { href: "/workforce", label: "Workforce", icon: Users },
-  { href: "/missions", label: "Missions", icon: Target },
-  { href: "/memory", label: "Memory", icon: Brain },
-  { href: "/connections", label: "Connections", icon: Plug },
-  { href: "/activity", label: "Activity", icon: Activity },
+  { href: "/live", label: NAV_LABELS.live, icon: Radar },
+  { href: "/chat", label: NAV_LABELS.chat, icon: Command },
+  { href: "/team", label: NAV_LABELS.team, icon: Users },
+  { href: "/jobs", label: NAV_LABELS.jobs, icon: Target },
+  { href: "/memory", label: NAV_LABELS.memory, icon: Brain },
+  { href: "/apps", label: NAV_LABELS.apps, icon: Plug },
+  { href: "/activity", label: NAV_LABELS.activity, icon: Activity },
 ];
 
 const MOBILE = [
-  { href: "/command", label: "Command", icon: Command },
-  { href: "/signals", label: "Signals", icon: Radar },
-  { href: "/missions", label: "Missions", icon: Target },
-  { href: "/approvals", label: "Approvals", icon: CheckCircle2 },
+  { href: "/live", label: NAV_LABELS.live, icon: Radar },
+  { href: "/chat", label: NAV_LABELS.chat, icon: Command },
+  { href: "/team", label: "Team", icon: Users },
+  { href: "/approvals", label: NAV_LABELS.approvals, icon: CheckCircle2 },
   { href: "/settings", label: "More", icon: MoreHorizontal },
 ];
 
@@ -72,7 +73,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   label={n.label}
                   icon={<n.icon size={15} />}
                   active={isActive(path, n.href)}
-                  badge={n.href === "/signals" && hydrated && hot > 0 ? hot : undefined}
+                  badge={n.href === "/live" && hydrated && hot > 0 ? hot : undefined}
                   badgeTone="hot"
                 />
               </li>
@@ -81,20 +82,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="my-4 h-px bg-line" />
           <NavLink
             href="/approvals"
-            label="Approvals"
+            label={NAV_LABELS.approvals}
             icon={<CheckCircle2 size={15} />}
             active={isActive(path, "/approvals")}
             badge={hydrated && pending > 0 ? pending : undefined}
           />
 
           <div className="mt-8 px-2.5">
-            <div className="label mb-3 text-[9.5px]">Intelligences</div>
+            <div className="label mb-3">Your team</div>
             <ul className="space-y-2">
               {agents
                 .filter((a) => a.availability === "available")
                 .map((a) => (
                   <li key={a.id}>
-                    <Link href={`/workforce/${a.slug}`} className="group flex items-center gap-2.5 text-[12.5px] text-fg-3 transition-colors hover:text-fg-1">
+                    <Link href={`/team/${a.slug}`} className="group flex items-center gap-2.5 text-[12.5px] text-fg-3 transition-colors hover:text-fg-1">
                       <AgentGlyph agent={a} size={20} animated={false} />
                       {a.name}
                     </Link>
@@ -157,7 +158,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Link href={n.href} aria-current={on ? "page" : undefined} className={cn("relative flex h-16 flex-col items-center justify-center gap-1.5 text-[10px] tracking-[0.04em]", on ? "text-white" : "text-fg-3")}>
                   <span className="relative">
                     <n.icon size={18} />
-                    {n.href === "/signals" && hydrated && hot > 0 && (
+                    {n.href === "/live" && hydrated && hot > 0 && (
                       <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#ff6f91] px-1 text-[12px] tabular-nums text-black">{hot}</span>
                     )}
                     {n.href === "/approvals" && hydrated && pending > 0 && (

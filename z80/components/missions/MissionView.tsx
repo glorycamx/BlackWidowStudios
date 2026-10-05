@@ -12,7 +12,7 @@ import { MissionResults } from "@/components/missions/MissionResults";
 import { MissionTimeline } from "@/components/missions/MissionTimeline";
 import { MissionTopology } from "@/components/missions/MissionTopology";
 import { Button } from "@/components/ui/Button";
-import { agentOrFallback } from "@/data/agents";
+import { agentOrFallback } from "@/data/bots";
 import { useMediaQuery } from "@/lib/hooks/useMediaQuery";
 import { useWorkspace, workspace } from "@/lib/store/workspace";
 import { EASE } from "@/lib/motion";
@@ -32,7 +32,7 @@ export function MissionView({ id }: { id: string }) {
   useEffect(() => {
     if (!flash) return;
     const t = setTimeout(() => setFlash(false), 900);
-    router.replace(`/missions/${id}`);
+    router.replace(`/jobs/${id}`);
     return () => clearTimeout(t);
   }, [flash, id, router]);
 
@@ -44,7 +44,7 @@ export function MissionView({ id }: { id: string }) {
 
   if (!mission) {
     return (
-      <EmptyState title="Mission not found" body="It may have been cleared from this demo workspace." action={{ label: "Create mission", href: "/command?focus=1" }} />
+      <EmptyState title="Mission not found" body="It may have been cleared from this demo workspace." action={{ label: "Create mission", href: "/chat?focus=1" }} />
     );
   }
 
@@ -62,7 +62,7 @@ export function MissionView({ id }: { id: string }) {
         )}
       </AnimatePresence>
 
-      <Link href="/missions" className="label inline-flex items-center gap-2 text-fg-3 hover:text-white">
+      <Link href="/jobs" className="label inline-flex items-center gap-2 text-fg-3 hover:text-white">
         <ArrowLeft size={12} /> Missions
       </Link>
 
@@ -191,7 +191,7 @@ export function MissionView({ id }: { id: string }) {
               <Button variant="solid" magnetic={false} onClick={() => document.getElementById("results")?.scrollIntoView({ behavior: "smooth" })}>
                 View results
               </Button>
-              <Button variant="secondary" href="/command?focus=1">
+              <Button variant="secondary" href="/chat?focus=1">
                 Start another mission
               </Button>
             </div>

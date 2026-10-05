@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { AgentWorkspace } from "@/components/workforce/AgentWorkspace";
-import { agents, getAgentBySlug } from "@/data/agents";
+import { agents, getAgentBySlug } from "@/data/bots";
 
 export function generateStaticParams() {
   return agents.map((a) => ({ slug: a.slug }));

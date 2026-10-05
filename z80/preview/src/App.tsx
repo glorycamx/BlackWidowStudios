@@ -12,20 +12,20 @@ import CompanyPage from "@/app/(marketing)/company/page";
 import LoginPage from "@/app/(auth)/login/page";
 import SignupPage from "@/app/(auth)/signup/page";
 import OnboardingPage from "@/app/(auth)/onboarding/page";
-import CommandPage from "@/app/(app)/command/page";
-import MissionsPage from "@/app/(app)/missions/page";
-import WorkforcePage from "@/app/(app)/workforce/page";
+import CommandPage from "@/app/(app)/chat/page";
+import MissionsPage from "@/app/(app)/jobs/page";
+import WorkforcePage from "@/app/(app)/team/page";
 import ApprovalsPage from "@/app/(app)/approvals/page";
 import ActivityPage from "@/app/(app)/activity/page";
 import MemoryPage from "@/app/(app)/memory/page";
-import ConnectionsPage from "@/app/(app)/connections/page";
+import ConnectionsPage from "@/app/(app)/apps/page";
 import SettingsPage from "@/app/(app)/settings/page";
 import NotFound from "@/app/not-found";
 import { AgentProfile } from "@/components/agents/AgentProfile";
 import { MissionView } from "@/components/missions/MissionView";
 import { AgentWorkspace } from "@/components/workforce/AgentWorkspace";
 import { Footer } from "@/components/z80/Footer";
-import { getAgentBySlug } from "@/data/agents";
+import { getAgentBySlug } from "@/data/bots";
 import { useLocation } from "./shims/nav";
 
 const marketing: Record<string, () => ReactNode> = {
@@ -44,13 +44,13 @@ const auth: Record<string, () => ReactNode> = {
 };
 
 const product: Record<string, () => ReactNode> = {
-  "/command": () => <CommandPage />,
-  "/missions": () => <MissionsPage />,
-  "/workforce": () => <WorkforcePage />,
+  "/chat": () => <CommandPage />,
+  "/jobs": () => <MissionsPage />,
+  "/team": () => <WorkforcePage />,
   "/approvals": () => <ApprovalsPage />,
   "/activity": () => <ActivityPage />,
   "/memory": () => <MemoryPage />,
-  "/connections": () => <ConnectionsPage />,
+  "/apps": () => <ConnectionsPage />,
   "/settings": () => <SettingsPage />,
 };
 
@@ -59,7 +59,7 @@ function Route({ path }: { path: string }) {
   if (auth[path]) return <AuthLayout>{auth[path]()}</AuthLayout>;
   if (product[path]) return <AppLayout>{product[path]()}</AppLayout>;
 
-  const agent = path.match(/^\/agents\/([^/]+)$/);
+  const agent = path.match(/^\/bots\/([^/]+)$/);
   if (agent) {
     const a = getAgentBySlug(agent[1]);
     if (!a) return <NotFound />;
@@ -70,7 +70,7 @@ function Route({ path }: { path: string }) {
       </MarketingLayout>
     );
   }
-  const mission = path.match(/^\/missions\/([^/]+)$/);
+  const mission = path.match(/^\/jobs\/([^/]+)$/);
   if (mission)
     return (
       <AppLayout>
@@ -79,7 +79,7 @@ function Route({ path }: { path: string }) {
         </Suspense>
       </AppLayout>
     );
-  const ws = path.match(/^\/workforce\/([^/]+)$/);
+  const ws = path.match(/^\/team\/([^/]+)$/);
   if (ws)
     return (
       <AppLayout>

@@ -182,7 +182,7 @@ export function Onboarding() {
         {plan && (
           <motion.div className="mt-16" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: EASE }}>
             <p className="label mb-6 text-fg-1">Your initial workforce</p>
-            <TeamAssembly plan={plan} onDeployed={(id) => router.push(`/missions/${id}?deployed=1`)} />
+            <TeamAssembly plan={plan} onDeployed={(id) => router.push(`/jobs/${id}?deployed=1`)} />
           </motion.div>
         )}
       </AnimatePresence>

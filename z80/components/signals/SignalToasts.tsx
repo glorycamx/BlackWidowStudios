@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { TEMP_COLOR } from "@/components/signals/SignalParts";
-import { agentOrFallback } from "@/data/agents";
+import { agentOrFallback } from "@/data/bots";
 import { useWorkspace } from "@/lib/store/workspace";
 import { EASE } from "@/lib/motion";
 import type { Signal } from "@/types";
@@ -44,7 +44,7 @@ export function SignalToasts() {
         {toasts.map((t) => {
           const temp = t.lead?.temperature;
           const color = temp ? TEMP_COLOR[temp] : "#8f9cff";
-          const agent = agentOrFallback(watches.find((w) => w.id === t.watchId)?.agentId ?? "lookout");
+          const agent = agentOrFallback(watches.find((w) => w.id === t.watchId)?.agentId ?? "lead-hunter");
           const head = t.kind === "reminder" ? "Reminder" : temp === "hot" ? "New hot lead" : temp === "warm" ? "New warm lead" : "New lead";
           return (
             <motion.div
@@ -60,7 +60,7 @@ export function SignalToasts() {
                 <button
                   onClick={() => {
                     close(t.id);
-                    router.push(`/signals?id=${t.id}`);
+                    router.push(`/live?id=${t.id}`);
                   }}
                   className="block w-full p-4 pr-10 text-left"
                 >

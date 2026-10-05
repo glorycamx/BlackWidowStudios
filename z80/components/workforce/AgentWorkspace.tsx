@@ -13,7 +13,7 @@ import { ActorTag, EmptyState, Panel, ProgressBar } from "@/components/app/primi
 import { CommandConsole, type CommandConsoleHandle } from "@/components/command/CommandConsole";
 import { Button } from "@/components/ui/Button";
 import { StatusDot } from "@/components/ui/StatusDot";
-import { agentOrFallback, getAgentBySlug } from "@/data/agents";
+import { agentOrFallback, getAgentBySlug } from "@/data/bots";
 import { getIntegration, integrationStatusLabel } from "@/data/integrations";
 import { getMemoryDomain } from "@/data/memory";
 import { agentStateLabel, getAgentLiveState } from "@/lib/services/agentService";
@@ -48,7 +48,7 @@ export function AgentWorkspace({ slug }: { slug: string }) {
   }, [params]);
 
   if (!agent || agent.availability !== "available") {
-    return <EmptyState title="Intelligence not available" body={agent ? `${agent.name} is on the roadmap.` : "No intelligence with that name."} action={{ label: "Open workforce", href: "/workforce" }} />;
+    return <EmptyState title="Intelligence not available" body={agent ? `${agent.name} is on the roadmap.` : "No intelligence with that name."} action={{ label: "Open workforce", href: "/team" }} />;
   }
 
   const st = getAgentLiveState(agent.id, missions, Object.values(approvals), activity, paused, now)!;
@@ -63,7 +63,7 @@ export function AgentWorkspace({ slug }: { slug: string }) {
 
   return (
     <div className="mx-auto w-full max-w-[1320px] px-5 py-8 md:px-10 md:py-10">
-      <Link href="/workforce" className="label inline-flex items-center gap-2 text-fg-3 hover:text-white">
+      <Link href="/team" className="label inline-flex items-center gap-2 text-fg-3 hover:text-white">
         <ArrowLeft size={12} /> Workforce
       </Link>
 
@@ -114,7 +114,7 @@ export function AgentWorkspace({ slug }: { slug: string }) {
         <Panel title="Current objective" className="lg:col-span-2">
           {current ? (
             <div>
-              <Link href={`/missions/${current.id}`} className="text-[12px] text-fg-3 hover:text-white">
+              <Link href={`/jobs/${current.id}`} className="text-[12px] text-fg-3 hover:text-white">
                 Mission {missionCode(current.number)}
               </Link>
               <div className="mt-2 text-[22px] font-medium tracking-[-0.02em] text-white">{current.title}</div>
@@ -142,7 +142,7 @@ export function AgentWorkspace({ slug }: { slug: string }) {
               const c = agentOrFallback(id);
               return (
                 <li key={id}>
-                  <Link href={`/workforce/${c.slug}`} className="flex items-center gap-3 hover:opacity-80">
+                  <Link href={`/team/${c.slug}`} className="flex items-center gap-3 hover:opacity-80">
                     <AgentGlyph agent={c} size={32} animated={false} />
                     <span>
                       <span className="block text-[13px] font-semibold text-white">{c.name}</span>
@@ -183,7 +183,7 @@ export function AgentWorkspace({ slug }: { slug: string }) {
                   <span className="text-[14px] text-white">
                     {t.label} <span className="ml-2 text-[13px] tabular-nums text-fg-2">{t.output}</span>
                   </span>
-                  <Link href={`/missions/${m.id}`} className="text-[12px] text-fg-3 hover:text-white">
+                  <Link href={`/jobs/${m.id}`} className="text-[12px] text-fg-3 hover:text-white">
                     Mission {missionCode(m.number)}
                   </Link>
                 </li>

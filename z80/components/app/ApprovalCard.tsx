@@ -7,7 +7,7 @@ import { Check, X } from "lucide-react";
 import { AgentGlyph } from "@/components/agents/AgentGlyph";
 import { ActorTag } from "@/components/app/primitives";
 import { Button } from "@/components/ui/Button";
-import { agentOrFallback } from "@/data/agents";
+import { agentOrFallback } from "@/data/bots";
 import { generateResults } from "@/lib/services/resultsService";
 import { useWorkspace, workspace } from "@/lib/store/workspace";
 import { useNow } from "@/lib/hooks/useNow";
@@ -47,7 +47,7 @@ export function ApprovalCard({ approvalId, compact, showMission = true }: { appr
           <p className={cn("mt-2 text-white", compact ? "text-[14px]" : "text-[15.5px]")}>{approval.title}</p>
           <p className="mt-1 text-[13px] leading-relaxed text-fg-2">{approval.detail}</p>
           {showMission && mission && (
-            <Link href={`/missions/${mission.id}`} className="mt-2 inline-block text-[12px] text-fg-3 hover:text-fg-1">
+            <Link href={`/jobs/${mission.id}`} className="mt-2 inline-block text-[12px] text-fg-3 hover:text-fg-1">
               Mission {missionCode(mission.number)} · {mission.title}
             </Link>
           )}

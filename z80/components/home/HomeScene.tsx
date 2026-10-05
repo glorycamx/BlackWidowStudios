@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { IntelligenceCanvas } from "@/components/three/IntelligenceCanvas";
 import { blend, FORMS, homeDirector, toNdc, type FormWeights, type SceneTarget, type Vec2 } from "@/lib/scene/director";
 import { homeFlow } from "@/lib/scene/homeFlow";
-import { getAgent } from "@/data/agents";
+import { getAgent } from "@/data/bots";
 import { clamp } from "@/lib/utils";
 import { FRAGMENT_SCALE, fragmentOffset } from "@/components/home/FragmentSection";
 
@@ -57,9 +57,9 @@ export function HomeScene() {
           const g: [number, number, number] = [0, 0, 0];
           Object.entries(flow.layout.nodes).forEach(([id, p]) => {
             const sg = getAgent(id)?.sceneGroup;
-            if (sg === undefined) return;
-            nodes[sg] = toNdc(p.x, p.y);
-            g[sg] = 1;
+            if (sg === undefined || sg > 2) return;
+            nodes[sg as 0 | 1 | 2] = toNdc(p.x, p.y);
+            g[sg as 0 | 1 | 2] = 1;
           });
           const m = toNdc(flow.layout.mission.x, flow.layout.mission.y);
           const clusters = [0, 1, 2].map((i) => nodes[i] ?? m) as [Vec2, Vec2, Vec2];

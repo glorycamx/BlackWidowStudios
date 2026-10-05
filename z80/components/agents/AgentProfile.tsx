@@ -10,16 +10,16 @@ import { AgentStage } from "@/components/agents/AgentStage";
 import { CommandConsole } from "@/components/command/CommandConsole";
 import { Button } from "@/components/ui/Button";
 import { StatusDot } from "@/components/ui/StatusDot";
-import { agentOrFallback } from "@/data/agents";
+import { agentOrFallback } from "@/data/bots";
 import { getIntegration, integrationStatusLabel } from "@/data/integrations";
 import { getMemoryDomain } from "@/data/memory";
 import { EASE } from "@/lib/motion";
 import type { Agent } from "@/types";
 
 const PROMPTS: Record<string, string> = {
-  beacon: "Have Beacon develop a campaign for…",
-  lookout: "Have Lookout find companies that…",
-  helm: "Have Helm organize…",
+  beacon: "Have Content Creator develop a campaign for…",
+  lookout: "Have Lead Hunter find companies that…",
+  helm: "Have Manager organize…",
 };
 
 /** Public profile of an artificial employee. */
@@ -107,7 +107,7 @@ export function AgentProfile({ agent }: { agent: Agent }) {
                 const c = agentOrFallback(id);
                 return (
                   <li key={id}>
-                    <Link href={`/agents/${c.slug}`} className="flex items-center gap-3 hover:opacity-80">
+                    <Link href={`/bots/${c.slug}`} className="flex items-center gap-3 hover:opacity-80">
                       <AgentGlyph agent={c} size={30} animated={false} />
                       <span>
                         <span className="block text-[13px] font-semibold text-white">{c.name}</span>
@@ -131,7 +131,7 @@ export function AgentProfile({ agent }: { agent: Agent }) {
                 id={`agent-${agent.id}`}
                 value={value}
                 onChange={setValue}
-                onSubmit={(t) => router.push(`/command?prompt=${encodeURIComponent(t)}`)}
+                onSubmit={(t) => router.push(`/chat?prompt=${encodeURIComponent(t)}`)}
                 examples={[PROMPTS[agent.id] ?? `Have ${agent.name} work on…`]}
                 hint={`Z80 will assemble the team around ${agent.name}.`}
               />

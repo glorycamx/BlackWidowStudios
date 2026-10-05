@@ -2,7 +2,7 @@
  * agentService — derives each intelligence's live state from the workspace.
  * Pure: swap the inputs for server state when agents run for real.
  */
-import { agents } from "@/data/agents";
+import { agents } from "@/data/bots";
 import type { ActivityEvent, Agent, AgentId, AgentState, Approval, Mission } from "@/types";
 
 export interface AgentLiveState {
@@ -54,7 +54,7 @@ export function getAgentLiveState(
 
   let state: AgentState = "idle";
   let doing =
-    agent.availability !== "available" ? "Not yet available" : agentId === "lookout" ? "Watching the market around the clock" : agentId === "helm" ? "Tracking reminders and follow-ups" : "Standing by for a mission";
+    agent.availability !== "available" ? "Not yet available" : agentId === "lead-hunter" ? "Watching the market around the clock" : agentId === "manager" ? "Tracking reminders and follow-ups" : "Standing by for a mission";
   if (paused.includes(agentId)) {
     state = "paused";
     doing = "Paused by you";
@@ -66,7 +66,7 @@ export function getAgentLiveState(
     doing = lastEvent?.missionId && activeMissions.some((m) => m.id === lastEvent.missionId) ? lastEvent.message : runningTask.label;
   } else if (activeMissions.length) {
     state = "active";
-    doing = agentId === "helm" ? `Coordinating ${activeMissions.length} mission${activeMissions.length === 1 ? "" : "s"}` : `Assigned to ${activeMissions.length} mission${activeMissions.length === 1 ? "" : "s"}`;
+    doing = agentId === "manager" ? `Coordinating ${activeMissions.length} mission${activeMissions.length === 1 ? "" : "s"}` : `Assigned to ${activeMissions.length} mission${activeMissions.length === 1 ? "" : "s"}`;
   }
   return { agent, state, doing, activeMissions, tasksToday, pendingApprovals, lastEvent };
 }

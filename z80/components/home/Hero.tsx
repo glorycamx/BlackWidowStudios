@@ -10,7 +10,7 @@ import { TeamAssembly, type AssemblyLayout } from "@/components/command/TeamAsse
 import { Button } from "@/components/ui/Button";
 import { LiveTicker } from "@/components/home/LiveTicker";
 import { Wordmark } from "@/components/z80/Wordmark";
-import { getAgent } from "@/data/agents";
+import { getAgent } from "@/data/bots";
 import { homeDirector, toNdc } from "@/lib/scene/director";
 import { homeFlow, type HeroPhase } from "@/lib/scene/homeFlow";
 import { workspace } from "@/lib/store/workspace";
@@ -112,14 +112,14 @@ export function Hero() {
   const onDeployed = (missionId: string) => {
     const number = Number(missionId.replace(/\D/g, "")) || 0;
     setTransition({ number });
-    setTimeout(() => router.push(`/missions/${missionId}?deployed=1`), reduce ? 150 : 900);
+    setTimeout(() => router.push(`/jobs/${missionId}?deployed=1`), reduce ? 150 : 900);
   };
 
   const groupsFor = (p: Plan | null): [number, number, number] => {
     const g: [number, number, number] = [0, 0, 0];
     p?.agents.forEach((a) => {
       const sg = getAgent(a.agentId)?.sceneGroup;
-      if (sg !== undefined) g[sg] = 1;
+      if (sg !== undefined && sg < 3) g[sg as 0 | 1 | 2] = 1;
     });
     return g;
   };

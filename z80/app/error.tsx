@@ -15,7 +15,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
         <button onClick={reset} className="inline-flex h-10 items-center rounded-[11px] bg-white px-5 text-[11px] font-medium text-black">
           Try again
         </button>
-        <a href="/command" className="inline-flex h-10 items-center rounded-[11px] px-5 text-[11px] font-medium text-fg-1 hairline">
+        <a href="/chat" className="inline-flex h-10 items-center rounded-[11px] px-5 text-[11px] font-medium text-fg-1 hairline">
           Open command
         </a>
       </div>

@@ -3,7 +3,7 @@
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { availableAgents } from "@/data/agents";
+import { availableAgents } from "@/data/bots";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
@@ -54,7 +54,7 @@ export function IntelligencesSection() {
                 </div>
                 <h3 className="display mt-4 text-[clamp(72px,11vw,168px)]">{agent.name}</h3>
                 <p className="mt-5 max-w-[440px] text-[clamp(20px,2vw,26px)] leading-[1.25] tracking-[-0.02em] text-fg-2">{agent.tagline}</p>
-                <Link href={`/agents/${agent.slug}`} className="mt-8 inline-flex items-center gap-1 text-[17px] text-[#9aa5ff] transition-colors hover:text-white">
+                <Link href={`/bots/${agent.slug}`} className="mt-8 inline-flex items-center gap-1 text-[17px] text-[#9aa5ff] transition-colors hover:text-white">
                   Learn more ›
                 </Link>
               </motion.div>

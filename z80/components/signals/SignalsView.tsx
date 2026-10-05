@@ -10,7 +10,7 @@ import { SignalDetail } from "@/components/signals/LeadDossierView";
 import { KindChip, TEMP_COLOR } from "@/components/signals/SignalParts";
 import { Portal } from "@/components/ui/Portal";
 import { StatusDot } from "@/components/ui/StatusDot";
-import { agentOrFallback } from "@/data/agents";
+import { agentOrFallback } from "@/data/bots";
 import { useMediaQuery } from "@/lib/hooks/useMediaQuery";
 import { useNow } from "@/lib/hooks/useNow";
 import { selectVisibleSignals, useWorkspace, workspace } from "@/lib/store/workspace";
@@ -77,7 +77,7 @@ export function SignalsView() {
 
   const open = (id: string) => {
     setSelected(id);
-    router.replace(`/signals?id=${id}`);
+    router.replace(`/live?id=${id}`);
   };
 
   return (
@@ -197,7 +197,7 @@ export function SignalsView() {
                   signal={current}
                   onClose={() => {
                     setSelected(null);
-                    router.replace("/signals");
+                    router.replace("/live");
                   }}
                 />
               </motion.div>

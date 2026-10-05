@@ -84,7 +84,7 @@ export function ActivityFeed({ events, showMission = true, dense, limit }: { eve
                       ))}
                       <p className="text-[12px] tabular-nums text-fg-3">{new Date(e.at).toLocaleString()}</p>
                       {showMission && m && (
-                        <Link href={`/missions/${m.id}`} className="inline-block text-[12px] text-fg-2 hover:text-white">
+                        <Link href={`/jobs/${m.id}`} className="inline-block text-[12px] text-fg-2 hover:text-white">
                           Mission {missionCode(m.number)} · {m.title} →
                         </Link>
                       )}

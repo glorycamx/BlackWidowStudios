@@ -13,7 +13,7 @@
 export type AgentId = string;
 
 /** Visual signature used by AgentGlyph and the particle scene. */
-export type AgentVisual = "lattice" | "scanner" | "fluid" | "orbit";
+export type AgentVisual = "lattice" | "scanner" | "fluid" | "orbit" | "pulse";
 
 export type AgentAvailability = "available" | "coming-soon";
 
@@ -60,8 +60,12 @@ export interface Agent {
   collaborators: AgentId[];
   accent: AgentAccent;
   visual: AgentVisual;
-  /** Particle-scene cluster index (0-2) for the three showcase intelligences. */
-  sceneGroup?: 0 | 1 | 2;
+  /** Particle-scene cluster index (0-4), one per core bot. */
+  sceneGroup?: 0 | 1 | 2 | 3 | 4;
+  /** Optional name the owner gives this bot. The job title still shows. */
+  nickname?: string;
+  /** Made by the owner in the app. */
+  custom?: boolean;
   availability: AgentAvailability;
   /** Contextual loading copy: "Lookout is researching…" */
   workingVerb: string;

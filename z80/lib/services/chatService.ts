@@ -4,7 +4,7 @@
  * Classifies a message and produces Z80's reply. Objectives become plans.
  * A model-backed implementation replaces `respond` behind POST /api/chat.
  */
-import { agentOrFallback, getAgent } from "@/data/agents";
+import { agentOrFallback, getAgent } from "@/data/bots";
 import { createPlan } from "@/lib/services/planService";
 import type { Approval, Mission, Organization, Plan } from "@/types";
 import { plural } from "@/lib/utils";
@@ -82,15 +82,15 @@ export function agentReply(agentId: string, text: string, ctx: ChatContext): str
   const focus = active[0] ? `I'm on mission ${String(active[0].number).padStart(4, "0")} — ${active[0].title.toLowerCase()}.` : "I'm available.";
   const asksForWork = text.trim().split(/\s+/).length > 4;
   switch (agent.id) {
-    case "helm":
+    case "manager":
       return asksForWork
         ? `Noted. ${focus} I'll fold this into the plan and route it to the right intelligence. You'll see it in Activity.`
         : `${focus} Everything is on schedule.`;
-    case "lookout":
+    case "lead-hunter":
       return asksForWork
         ? `On it. ${focus} I'll add this to my research queue and flag anything worth acting on.`
         : `${focus} Ask me to find, research or qualify anything.`;
-    case "beacon":
+    case "content-creator":
       return asksForWork
         ? `I like where this is going. ${focus} I'll draft a few directions and send them to you for review.`
         : `${focus} Give me a brief and I'll bring ideas.`;

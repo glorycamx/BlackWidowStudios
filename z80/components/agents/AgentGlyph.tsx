@@ -130,15 +130,54 @@ export function AgentGlyph({ agent, size = 40, animated = true, className, muted
         ))}
       </>
     );
-  } else {
+  } else if (agent.visual === "pulse") {
+    // Broadcast rings that ping outward every few seconds.
     body = (
-      <g className={cn(animated && "motion-safe:animate-[glyph-rotate_14s_linear_infinite]")} style={{ transformOrigin: "24px 24px" }}>
-        <circle cx={24} cy={24} r={13} fill="none" stroke={c} strokeOpacity={0.4} strokeWidth={0.6} strokeDasharray="1 2" />
-        <circle cx={37} cy={24} r={1.4} fill={c} />
-        <circle cx={24} cy={24} r={1.2} fill={c} opacity={0.7} />
+      <>
+        {[0, 1, 2].map((k) => (
+          <circle
+            key={k}
+            cx={24}
+            cy={24}
+            r={6}
+            fill="none"
+            stroke={c}
+            strokeWidth={0.8}
+            className={animated ? "motion-safe:animate-[glyph-ping_3s_ease-out_infinite]" : undefined}
+            style={{ transformOrigin: "24px 24px", animationDelay: `${k}s`, opacity: animated ? undefined : 0.5 - k * 0.15, transform: animated ? undefined : `scale(${1 + k * 0.9})` }}
+          />
+        ))}
+        <circle cx={24} cy={24} r={2.2} fill="#fff" />
+        <circle cx={24} cy={24} r={4} fill={c} fillOpacity={0.35} />
+      </>
+    );
+  } else {
+    // A small constellation; points light up one by one as it "finds" them.
+    const pts: [number, number][] = Array.from({ length: 9 }, () => {
+      const a = r() * Math.PI * 2;
+      const d = 5 + r() * 12;
+      return [Math.round((24 + Math.cos(a) * d) * 100) / 100, Math.round((24 + Math.sin(a) * d) * 100) / 100];
+    });
+    body = (
+      <g>
+        {pts.slice(1).map(([x, y], i) => (
+          <line key={`l${i}`} x1={pts[i][0]} y1={pts[i][1]} x2={x} y2={y} stroke={c} strokeOpacity={0.22} strokeWidth={0.5} />
+        ))}
+        {pts.map(([x, y], i) => (
+          <circle
+            key={i}
+            cx={x}
+            cy={y}
+            r={i % 3 === 0 ? 1.4 : 0.9}
+            fill={i % 3 === 0 ? "#fff" : c}
+            className={animated ? "motion-safe:animate-[glyph-reveal_4.5s_ease-in-out_infinite]" : undefined}
+            style={{ animationDelay: `${i * 0.45}s`, transformOrigin: `${x}px ${y}px` }}
+          />
+        ))}
       </g>
     );
   }
+
 
   return (
     <svg

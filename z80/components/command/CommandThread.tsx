@@ -8,7 +8,7 @@ import { AgentGlyph } from "@/components/agents/AgentGlyph";
 import { ApprovalCard } from "@/components/app/ApprovalCard";
 import { ActorTag } from "@/components/app/primitives";
 import { Button } from "@/components/ui/Button";
-import { agentOrFallback } from "@/data/agents";
+import { agentOrFallback } from "@/data/bots";
 import { useWorkspace, workspace } from "@/lib/store/workspace";
 import { EASE } from "@/lib/motion";
 import { clockTime, missionCode } from "@/lib/utils";
@@ -138,7 +138,7 @@ function Actions({ actions, onReviewPlan, onNewMission }: { actions?: ChatAction
   if (deployedMission) {
     const mm = missions[deployedMission];
     return (
-      <Link href={`/missions/${deployedMission}`} className="mt-5 inline-flex items-center gap-2 text-[12px] text-fg-2 hover:text-white">
+      <Link href={`/jobs/${deployedMission}`} className="mt-5 inline-flex items-center gap-2 text-[12px] text-fg-2 hover:text-white">
         <span className="h-1.5 w-1.5 rounded-full bg-run" />
         Deployed · Mission {mm ? missionCode(mm.number) : ""} <ArrowUpRight size={12} />
       </Link>
@@ -163,19 +163,19 @@ function Actions({ actions, onReviewPlan, onNewMission }: { actions?: ChatAction
             );
           case "open-mission":
             return (
-              <Button key={i} variant="secondary" size="sm" href={`/missions/${a.missionId}`} iconRight={<ArrowUpRight size={12} />}>
+              <Button key={i} variant="secondary" size="sm" href={`/jobs/${a.missionId}`} iconRight={<ArrowUpRight size={12} />}>
                 Open mission
               </Button>
             );
           case "view-results":
             return (
-              <Button key={i} variant="solid" size="sm" magnetic={false} onClick={() => router.push(`/missions/${a.missionId}#results`)}>
+              <Button key={i} variant="solid" size="sm" magnetic={false} onClick={() => router.push(`/jobs/${a.missionId}#results`)}>
                 View results
               </Button>
             );
           case "open-signal":
             return (
-              <Button key={i} variant="secondary" size="sm" href={`/signals?id=${a.signalId}`} iconRight={<ArrowUpRight size={12} />}>
+              <Button key={i} variant="secondary" size="sm" href={`/live?id=${a.signalId}`} iconRight={<ArrowUpRight size={12} />}>
                 Open lead
               </Button>
             );

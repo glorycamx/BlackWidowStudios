@@ -31,9 +31,11 @@
   --color-violet: #8754ff;
   --color-purple: #b542ff;
 
-  --color-helm: #6e9bff;
-  --color-lookout: #7a6bff;
-  --color-beacon: #c252f2;
+  --color-manager: #e6e8f2;
+  --color-hunter: #7a6bff;
+  --color-creator: #c252f2;
+  --color-researcher: #6e9bff;
+  --color-reporter: #5fc8e8;
 
   /* status */
   --color-run: #6e9bff;
@@ -230,3 +232,5 @@
 @keyframes glyph-rotate { to { transform: rotate(360deg); } }
 @keyframes glyph-scan { from { transform: translateX(0); } to { transform: translateX(34px); } }
 @keyframes glyph-flow { to { stroke-dashoffset: -10; } }
+@keyframes glyph-ping { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(3.2); opacity: 0; } }
+@keyframes glyph-reveal { 0%, 100% { opacity: 0.25; } 40%, 60% { opacity: 1; } }

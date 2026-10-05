@@ -119,7 +119,7 @@ function FullCard({ s }: { s: Signal }) {
           </div>
         </dl>
         <p className="mt-4 line-clamp-3 rounded-[10px] bg-white/[0.03] p-3 text-[13px] leading-relaxed text-fg-1">
-          <span className="mr-2 text-[12px] text-beacon">Opener</span>
+          <span className="mr-2 text-[12px] text-creator">Opener</span>
           {l.outreachScript}
         </p>
       </div>
