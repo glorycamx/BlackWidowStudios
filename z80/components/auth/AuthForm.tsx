@@ -50,7 +50,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   return (
     <div className="flex flex-1 items-center justify-center px-5 py-16">
       <motion.div className="w-full max-w-[420px]" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: EASE }}>
-        <p className="label">{mode === "login" ? "Sign in" : "Deploy Z80"}</p>
+        <p className="label">{mode === "login" ? "Sign in" : "Get started"}</p>
         <h1 className="mt-5 text-[40px] font-semibold leading-[1] tracking-[-0.045em] text-white">{mode === "login" ? "Welcome back." : "Give your business another layer of intelligence."}</h1>
         <form className="mt-10 grid gap-4" onSubmit={onSubmit} noValidate>
           {mode === "signup" && <Field label="Your name" name="name" autoComplete="name" placeholder="Alex Rivera" />}

@@ -18,13 +18,14 @@ const WORD_SPOTS = [
 ];
 
 /**
- * STATE 03 — each intelligence gets a full viewport while the particle
- * field becomes its signature: lattice, scanner, fluid.
+ * The showcase: three bots each get a full screen while the particle field
+ * becomes their signature: lattice, scanner, fluid.
  */
 export function IntelligencesSection() {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const showcase = availableAgents.filter((a) => a.sceneGroup !== undefined).sort((a, b) => (a.sceneGroup ?? 0) - (b.sceneGroup ?? 0));
+  // The three bots with their own particle form. Researcher and Reporter appear in Meet your bots.
+  const showcase = availableAgents.filter((a) => a.sceneGroup !== undefined && a.sceneGroup < 3).sort((a, b) => (a.sceneGroup ?? 0) - (b.sceneGroup ?? 0));
   const [idx, setIdx] = useState(0);
 
   useMotionValueEvent(scrollYProgress, "change", (v) => {
@@ -34,7 +35,7 @@ export function IntelligencesSection() {
   const agent = showcase[idx];
 
   return (
-    <section ref={ref} id="intelligences" aria-label="Meet the intelligences" className="relative z-10 h-[420vh]">
+    <section ref={ref} id="intelligences" aria-label="Your bots at work" className="relative z-10 h-[420vh]">
       <div className="sticky top-0 flex h-[100svh] flex-col overflow-hidden">
         <div className="mx-auto flex h-full w-full max-w-[1440px] flex-col px-5 pb-10 pt-24 md:px-10 md:pt-28">
 
@@ -50,12 +51,12 @@ export function IntelligencesSection() {
               >
                 <div className="flex items-center gap-2 text-[15px] font-medium" style={{ color: agent.accent.tint }}>
                   <span className="h-1.5 w-1.5 rounded-full motion-safe:animate-breathe" style={{ background: agent.accent.hex, boxShadow: `0 0 10px ${agent.accent.hex}` }} />
-                  {agent.role.replace(" Intelligence", "")}
+                  {agent.role}
                 </div>
                 <h3 className="display mt-4 text-[clamp(72px,11vw,168px)]">{agent.name}</h3>
                 <p className="mt-5 max-w-[440px] text-[clamp(20px,2vw,26px)] leading-[1.25] tracking-[-0.02em] text-fg-2">{agent.tagline}</p>
                 <Link href={`/bots/${agent.slug}`} className="mt-8 inline-flex items-center gap-1 text-[17px] text-[#9aa5ff] transition-colors hover:text-white">
-                  Learn more ›
+                  Meet {agent.name} ›
                 </Link>
               </motion.div>
             </AnimatePresence>
@@ -86,7 +87,7 @@ export function IntelligencesSection() {
           </div>
 
           {/* Chapter index */}
-          <nav aria-label="Intelligences" className="mt-6 flex items-center gap-4 md:gap-10">
+          <nav aria-label="Bots" className="mt-6 flex items-center gap-4 md:gap-10">
             {showcase.map((a, i) => (
               <button
                 key={a.id}

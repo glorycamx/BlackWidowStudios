@@ -3,14 +3,14 @@
 import { Intro, Reveal, Section } from "@/components/home/Section";
 import { integrations } from "@/data/integrations";
 
-/** STATE 07 — software as the workforce's toolkit. Status comes from data. */
+/** Apps your bots use. Status comes from data. */
 export function IntegrationsSection() {
   const inner = integrations.slice(0, 6);
   const outer = integrations.slice(6);
 
   return (
     <Section id="connections" className="overflow-hidden py-[18vh]">
-      <Intro title={["Works with", "your tools."]} sub="Connect the software you already use. Rolling out during early access." />
+      <Intro title={["Works with", "your apps."]} sub="Your bots use the software you already have. Rolling out during early access." />
       <Reveal delay={0.1}>
         <div className="relative mx-auto mt-14 aspect-square w-full max-w-[520px]" aria-hidden>
           <Ring items={outer} radius={47} duration={140} />

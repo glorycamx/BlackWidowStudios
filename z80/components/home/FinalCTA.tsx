@@ -1,30 +1,23 @@
-"use client";
-
-import { useState } from "react";
-import { CommandConsole } from "@/components/command/CommandConsole";
+import { Button } from "@/components/ui/Button";
 import { Display, Reveal } from "@/components/home/Section";
-import { homeFlow } from "@/lib/scene/homeFlow";
 
-/** The ending returns to the beginning: give the agents a goal. */
+/** The ending: put them to work. */
 export function FinalCTA() {
-  const [value, setValue] = useState("");
   return (
-    <section id="final" aria-label="Deploy your agents" className="relative z-10 flex min-h-[100svh] flex-col items-center justify-center px-5 pb-[30vh] pt-[20vh] text-center">
-      <Display lines={["Put your business", "on autopilot."]} className="text-[clamp(48px,8.4vw,148px)]" />
-      <Reveal delay={0.15} className="mt-14 w-full max-w-[760px] text-left">
-        <CommandConsole
-          id="final-mission"
-          size="final"
-          value={value}
-          onChange={setValue}
-          onSubmit={(t) => {
-            homeFlow.requestMission(t);
-            setValue("");
-          }}
-        />
+    <section id="final" aria-label="Put your bots to work" className="relative z-10 flex min-h-[100svh] flex-col items-center justify-center px-5 pb-[24vh] pt-[20vh] text-center">
+      <Display lines={["Put your bots", "to work tonight."]} className="text-[clamp(48px,8.4vw,148px)]" />
+      <Reveal delay={0.15}>
+        <p className="mx-auto mt-6 max-w-[520px] text-[clamp(18px,1.6vw,22px)] leading-[1.4] text-fg-2">Set it once. They never stop. Or build your own bot in a sentence.</p>
       </Reveal>
       <Reveal delay={0.25}>
-        <p className="label mt-8">Set it once. It never stops.</p>
+        <div className="mt-10 flex flex-wrap justify-center gap-3">
+          <Button variant="primary" size="lg" href="/live">
+            Open the demo
+          </Button>
+          <Button variant="secondary" size="lg" href="/team?create=1">
+            Build your own bot
+          </Button>
+        </div>
       </Reveal>
     </section>
   );

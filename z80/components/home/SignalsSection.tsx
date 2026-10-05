@@ -15,7 +15,7 @@ function sampleLead(i: number): Signal {
   return { id: `home-${i}`, botId: "lead-hunter", kind: "lead", at: 0, read: true, saved: false, dismissed: false, ...s };
 }
 
-/** STATE — the always-on side: leads that arrive on their own, fully researched. */
+/** Speed: leads caught minutes after they happen, fully researched. */
 export function SignalsSection() {
   const reduce = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
@@ -33,15 +33,15 @@ export function SignalsSection() {
   const top = shown[0];
 
   return (
-    <Section id="signals" index="06" label="Always on" className="py-[18vh]">
+    <Section id="speed" label="Speed" className="py-[18vh]">
       <div className="mt-8 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,560px)] lg:gap-20">
         <div>
-          <Display lines={["Leads that", "find you."]} />
+          <Display lines={["Happened 2:07 AM.", "Caught 2:09 AM."]} className="text-[clamp(40px,5.4vw,84px)]" />
           <Reveal delay={0.1}>
-            <p className="mt-6 max-w-[420px] text-[clamp(18px,1.6vw,22px)] leading-[1.4] text-fg-2">Z80 watches your market around the clock. When something changes, your phone lights up.</p>
+            <p className="mt-6 max-w-[440px] text-[clamp(18px,1.6vw,22px)] leading-[1.4] text-fg-2">Lead Hunter checks every few minutes, all night. When a site goes down or a business changes hands, you know before anyone else is awake.</p>
           </Reveal>
           <Reveal delay={0.15}>
-            <p className="mt-4 text-[15px] text-fg-3">No ad spend.</p>
+            <p className="mt-4 text-[15px] text-fg-3">Owner, phone, problem, price and an opener. Ready when you are.</p>
           </Reveal>
         </div>
 
@@ -49,7 +49,7 @@ export function SignalsSection() {
           <div className="label mb-4 flex items-center justify-between text-[10px]">
             <span className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-[#ff6f91] motion-safe:animate-breathe" />
-              Live signals
+              Lead Hunter
             </span>
             <span>Illustration · sample data</span>
           </div>
@@ -88,7 +88,7 @@ function FullCard({ s }: { s: Signal }) {
             <TempChip temp={l.temperature} />
             <span className="text-[12px] text-fg-3">{s.trigger}</span>
           </div>
-          <span className="text-[12px] tabular-nums text-fg-4">just now</span>
+          <span className="text-[12px] tabular-nums text-fg-4">Caught 2 min after</span>
         </div>
         <div className="mt-3 text-[20px] font-semibold tracking-[-0.02em] text-white">{l.business}</div>
         <div className="text-[13px] text-fg-3">

@@ -10,7 +10,7 @@
  * tab is hidden or the canvas is offscreen, and degrades on weak devices.
  */
 import * as THREE from "three";
-import { clusterTriangle, type SceneDirector, type SceneTarget } from "@/lib/scene/director";
+import { CLUSTER_SCALE, clusterLayout, type SceneDirector, type SceneTarget } from "@/lib/scene/director";
 
 export type Quality = "high" | "low";
 
@@ -146,7 +146,7 @@ function build(count: number, arcCount: number, linkCount: number): Built {
     rand[i * 4 + 1] = r();
     rand[i * 4 + 2] = r();
     rand[i * 4 + 3] = r();
-    group[i] = Math.floor(r() * 3);
+    group[i] = Math.floor(r() * GROUPS);
   }
 
   const points = new THREE.BufferGeometry();
@@ -174,7 +174,7 @@ function build(count: number, arcCount: number, linkCount: number): Built {
     const start = r() * Math.PI * 2;
     const len = (0.35 + r() * 1.3) * Math.PI;
     const segs = 40;
-    const g = Math.floor(r() * 3);
+    const g = Math.floor(r() * GROUPS);
     const seed = r();
     const rr = 1.0 + (r() - 0.5) * 0.02;
     for (let k = 0; k < segs; k++) {
@@ -244,10 +244,15 @@ uniform mat3 uRotSoft;
 uniform vec3 uC0;
 uniform vec3 uC1;
 uniform vec3 uC2;
+uniform vec3 uC3;
+uniform vec3 uC4;
 uniform vec3 uGroupAlpha;
+uniform vec2 uGroupAlpha2;
 uniform vec3 uCol0;
 uniform vec3 uCol1;
 uniform vec3 uCol2;
+uniform vec3 uCol3;
+uniform vec3 uCol4;
 uniform float uOpacity;
 uniform float uActivity;
 uniform vec2 uMouse;
@@ -255,9 +260,9 @@ uniform float uMouseStrength;
 uniform vec3 uAttract;
 uniform float uAspect;
 
-vec3 groupCenter(float g) { return g < 0.5 ? uC0 : (g < 1.5 ? uC1 : uC2); }
-vec3 groupColor(float g) { return g < 0.5 ? uCol0 : (g < 1.5 ? uCol1 : uCol2); }
-float groupAlpha(float g) { return g < 0.5 ? uGroupAlpha.x : (g < 1.5 ? uGroupAlpha.y : uGroupAlpha.z); }
+vec3 groupCenter(float g) { return g < 0.5 ? uC0 : (g < 1.5 ? uC1 : (g < 2.5 ? uC2 : (g < 3.5 ? uC3 : uC4))); }
+vec3 groupColor(float g) { return g < 0.5 ? uCol0 : (g < 1.5 ? uCol1 : (g < 2.5 ? uCol2 : (g < 3.5 ? uCol3 : uCol4))); }
+float groupAlpha(float g) { return g < 0.5 ? uGroupAlpha.x : (g < 1.5 ? uGroupAlpha.y : (g < 2.5 ? uGroupAlpha.z : (g < 3.5 ? uGroupAlpha2.x : uGroupAlpha2.y))); }
 
 vec3 rotY(vec3 p, float a) {
   float c = cos(a), s = sin(a);
@@ -272,9 +277,21 @@ vec3 clusterLocal(vec3 s, float g, float t) {
   } else if (g < 1.5) {
     c.y *= 0.36;
     c = rotY(c, t * 0.55);
-  } else {
+  } else if (g < 2.5) {
     c += 0.045 * vec3(sin(t * 1.1 + c.y * 14.0), sin(t * 0.9 + c.z * 12.0), sin(t * 1.3 + c.x * 13.0));
     c = rotY(c, t * 0.22);
+  } else if (g < 3.5) {
+    // Researcher: a tilted orbit of points, slowly turning.
+    c.y *= 0.22;
+    c = rotY(c, t * 0.35);
+    c = vec3(c.x, c.y * 0.8 + c.z * 0.4, c.z * 0.8 - c.y * 0.4);
+  } else {
+    // Reporter: concentric shells that pulse outward.
+    float r = length(s);
+    float shell = floor(r * 3.0 + 0.5) / 3.0;
+    vec3 dir = r > 0.0001 ? s / r : vec3(0.0, 1.0, 0.0);
+    c = dir * shell * 0.34 * (1.0 + 0.1 * sin(t * 2.2 - shell * 5.0));
+    c = rotY(c, t * 0.15);
   }
   return c;
 }
@@ -469,7 +486,9 @@ function glowTexture(): THREE.Texture {
   return tex;
 }
 
-const GROUP_COLORS = [new THREE.Color("#6E9BFF"), new THREE.Color("#7A6BFF"), new THREE.Color("#C252F2")];
+/** One cluster per bot, in roster order: Manager, Lead Hunter, Content Creator, Researcher, Reporter. */
+const GROUPS = 5;
+const GROUP_COLORS = [new THREE.Color("#C9CEE8"), new THREE.Color("#7A6BFF"), new THREE.Color("#C252F2"), new THREE.Color("#6E9BFF"), new THREE.Color("#5FC8E8")];
 
 interface Live {
   w: number[];
@@ -533,7 +552,7 @@ export class IntelligenceEngine {
       scale: t.scale,
       opacity: 0,
       activity: t.activity,
-      clusters: [[-0.5, 0], [0, 0], [0.5, 0]],
+      clusters: [[-0.5, 0], [-0.25, 0], [0, 0], [0.25, 0], [0.5, 0]],
       groupAlpha: [...t.groupAlpha],
       attract: [...t.attract] as [number, number, number],
       lines: t.lines,
@@ -551,10 +570,15 @@ export class IntelligenceEngine {
       uC0: { value: new THREE.Vector3() },
       uC1: { value: new THREE.Vector3() },
       uC2: { value: new THREE.Vector3() },
+      uC3: { value: new THREE.Vector3() },
+      uC4: { value: new THREE.Vector3() },
       uGroupAlpha: { value: new THREE.Vector3(1, 1, 1) },
+      uGroupAlpha2: { value: new THREE.Vector2(1, 1) },
       uCol0: { value: GROUP_COLORS[0] },
       uCol1: { value: GROUP_COLORS[1] },
       uCol2: { value: GROUP_COLORS[2] },
+      uCol3: { value: GROUP_COLORS[3] },
+      uCol4: { value: GROUP_COLORS[4] },
       uOpacity: { value: 0 },
       uActivity: { value: 0 },
       uMouse: { value: new THREE.Vector2(9, 9) },
@@ -588,7 +612,7 @@ export class IntelligenceEngine {
     this.glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: new THREE.Color("#3a4dff"), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0 }));
     this.glow.renderOrder = -1;
     this.scene.add(this.glow);
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < GROUPS; i++) {
       const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: GROUP_COLORS[i], transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0 }));
       s.renderOrder = -1;
       this.clusterGlows.push(s);
@@ -763,12 +787,12 @@ export class IntelligenceEngine {
     L.opacity = ease(L.opacity, t.opacity, 1.6);
     L.activity = ease(L.activity, t.activity, 2.5);
     L.lines = ease(L.lines, t.lines, 2.5);
-    for (let i = 0; i < 3; i++) L.groupAlpha[i] = ease(L.groupAlpha[i], t.groupAlpha[i], 3);
+    for (let i = 0; i < GROUPS; i++) L.groupAlpha[i] = ease(L.groupAlpha[i] ?? 1, t.groupAlpha[i] ?? 1, 3);
     for (let i = 0; i < 3; i++) L.attract[i] = ease(L.attract[i], t.attract[i], 5);
 
     const base = Math.min(this.halfH, this.halfW * 1.15);
-    const tri: [number, number][] = t.clusters ?? clusterTriangle(t.offset, this.halfW / this.halfH);
-    for (let i = 0; i < 3; i++) {
+    const tri: [number, number][] = t.clusters ?? clusterLayout(t.offset, this.halfW / this.halfH);
+    for (let i = 0; i < GROUPS; i++) {
       L.clusters[i][0] = ease(L.clusters[i][0], tri[i][0], 2.4);
       L.clusters[i][1] = ease(L.clusters[i][1], tri[i][1], 2.4);
     }
@@ -788,12 +812,15 @@ export class IntelligenceEngine {
     (u.uW1.value as THREE.Vector3).set(L.w[3], L.w[4], L.w[5]);
     const radius = L.scale * base;
     u.uScale.value = radius;
-    u.uClusterScale.value = 0.95;
+    u.uClusterScale.value = CLUSTER_SCALE;
     (u.uOffset.value as THREE.Vector3).set(L.offset[0] * this.halfW, L.offset[1] * this.halfH, 0);
     (u.uC0.value as THREE.Vector3).set(L.clusters[0][0] * this.halfW, L.clusters[0][1] * this.halfH, 0);
     (u.uC1.value as THREE.Vector3).set(L.clusters[1][0] * this.halfW, L.clusters[1][1] * this.halfH, 0);
     (u.uC2.value as THREE.Vector3).set(L.clusters[2][0] * this.halfW, L.clusters[2][1] * this.halfH, 0);
+    (u.uC3.value as THREE.Vector3).set(L.clusters[3][0] * this.halfW, L.clusters[3][1] * this.halfH, 0);
+    (u.uC4.value as THREE.Vector3).set(L.clusters[4][0] * this.halfW, L.clusters[4][1] * this.halfH, 0);
     (u.uGroupAlpha.value as THREE.Vector3).set(L.groupAlpha[0], L.groupAlpha[1], L.groupAlpha[2]);
+    (u.uGroupAlpha2.value as THREE.Vector2).set(L.groupAlpha[3], L.groupAlpha[4]);
     u.uOpacity.value = L.opacity;
     u.uActivity.value = L.activity;
     (u.uMouse.value as THREE.Vector2).set(m.x, m.y);
@@ -810,7 +837,7 @@ export class IntelligenceEngine {
     this.glow.position.set(L.offset[0] * this.halfW, L.offset[1] * this.halfH, -0.5);
     this.glow.scale.setScalar(radius * 2.5);
     (this.glow.material as THREE.SpriteMaterial).opacity = (L.w[0] * 0.32 + L.w[2] * 0.12 + L.activity * 0.25) * L.opacity;
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < GROUPS; i++) {
       const g = this.clusterGlows[i];
       g.position.set(L.clusters[i][0] * this.halfW, L.clusters[i][1] * this.halfH, -0.4);
       g.scale.setScalar(radius * 1.1);

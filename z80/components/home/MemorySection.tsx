@@ -12,7 +12,7 @@ const W = 620;
 const H = 620;
 const C = { x: W / 2, y: H / 2 };
 
-/** STATE 06 — organization memory as a living graph. */
+/** Memory: what your bots know about your business, as a living graph. */
 export function MemorySection() {
   const reduce = useReducedMotion();
   const [active, setActive] = useState<string | null>(null);
@@ -21,7 +21,7 @@ export function MemorySection() {
     const a = (-90 + (360 / domains.length) * i) * (Math.PI / 180);
     return { ...d, x: Math.round((C.x + Math.cos(a) * 190) * 100) / 100, y: Math.round((C.y + Math.sin(a) * 190) * 100) / 100 };
   });
-  const agents = availableAgents.filter((a) => a.sceneGroup !== undefined);
+  const agents = availableAgents.filter((a) => a.sceneGroup !== undefined && a.sceneGroup < 3);
   const agentPts = agents.map((a, i) => {
     const ang = (-60 + i * 120 + 30) * (Math.PI / 180);
     return { a, x: Math.round((C.x + Math.cos(ang) * 285) * 100) / 100, y: Math.round((C.y + Math.sin(ang) * 285) * 100) / 100 };
@@ -34,7 +34,7 @@ export function MemorySection() {
         <div>
           <Display lines={["It knows", "your business."]} className="text-[clamp(44px,6vw,96px)]" />
           <Reveal delay={0.1}>
-            <p className="mt-6 max-w-[420px] text-[clamp(18px,1.6vw,22px)] leading-[1.4] text-fg-2">One memory. Every agent gets smarter.</p>
+            <p className="mt-6 max-w-[420px] text-[clamp(18px,1.6vw,22px)] leading-[1.4] text-fg-2">One memory. Every bot gets smarter.</p>
           </Reveal>
         </div>
 

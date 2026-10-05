@@ -54,7 +54,7 @@ export function PublicNav() {
               Sign in
             </Button>
             <Button variant="solid" size="sm" href="/signup">
-              Deploy Z80
+              Get started
             </Button>
           </div>
           <button
@@ -96,7 +96,7 @@ export function PublicNav() {
             </ul>
             <motion.div className="mt-auto" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
               <Button variant="primary" size="lg" href="/signup" className="w-full" magnetic={false} onClick={() => setOpen(false)}>
-                Deploy Z80
+                Get started
               </Button>
             </motion.div>
           </motion.div>

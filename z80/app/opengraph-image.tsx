@@ -5,7 +5,7 @@ export const alt = site.title;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-/** Generated Open Graph card: wordmark, tagline, intelligence orb. */
+/** Generated Open Graph card: wordmark, one-liner, brand line, orb. */
 export default function OpengraphImage() {
   const dots = Array.from({ length: 220 }, (_, i) => {
     const a = i * 2.39996;
@@ -24,8 +24,8 @@ export default function OpengraphImage() {
             <span style={{ color: "#f1f2f6" }}>Z80</span>
             <span style={{ backgroundImage: "linear-gradient(100deg, #3f7bff, #8754ff, #c847f0)", backgroundClip: "text", color: "transparent" }}>.si</span>
           </div>
-          <div style={{ marginTop: 28, fontSize: 40, color: "#c9cad2", letterSpacing: -1 }}>Super intelligence is here.</div>
-          <div style={{ marginTop: 16, fontSize: 24, color: "#686872" }}>Autonomous agents. Always on.</div>
+          <div style={{ marginTop: 28, fontSize: 52, color: "#ffffff", letterSpacing: -1.5 }}>Your AI bots never clock out.</div>
+          <div style={{ marginTop: 16, fontSize: 24, color: "#686872" }}>Super intelligence is here.</div>
         </div>
       </div>
     ),

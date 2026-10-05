@@ -7,6 +7,8 @@ import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { AgentGlyph } from "@/components/agents/AgentGlyph";
 import { AgentStage } from "@/components/agents/AgentStage";
+import { BotScreen } from "@/components/bots/BotScreen";
+import { describeTrigger, routineTemplates } from "@/data/routines";
 import { CommandConsole } from "@/components/command/CommandConsole";
 import { Button } from "@/components/ui/Button";
 import { StatusDot } from "@/components/ui/StatusDot";
@@ -17,16 +19,19 @@ import { EASE } from "@/lib/motion";
 import type { Agent } from "@/types";
 
 const PROMPTS: Record<string, string> = {
-  beacon: "Have Content Creator develop a campaign for…",
-  lookout: "Have Lead Hunter find companies that…",
-  helm: "Have Manager organize…",
+  "content-creator": "Keep my Instagram posting every weekday at 8 AM",
+  "lead-hunter": "Every morning, find roofers whose websites went down",
+  manager: "Text me every evening at 6 with what got done",
+  researcher: "Watch my competitors' prices and tell me when they change",
+  reporter: "Check AI news every 10 minutes and flag what matters",
 };
 
-/** Public profile of an artificial employee. */
+/** Public profile of one bot. */
 export function AgentProfile({ agent }: { agent: Agent }) {
   const router = useRouter();
   const [value, setValue] = useState("");
   const available = agent.availability === "available";
+  const keeps = routineTemplates.filter((r) => r.botId === agent.id);
 
   return (
     <main id="main" className="relative">
@@ -36,21 +41,21 @@ export function AgentProfile({ agent }: { agent: Agent }) {
         </div>
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent md:via-black/20" />
         <div className="relative mx-auto flex min-h-[100svh] max-w-[1440px] flex-col justify-end px-5 pb-16 pt-28 md:justify-center md:px-10 md:pb-10">
-          <Link href="/#intelligences" className="label inline-flex items-center gap-2 text-fg-3 hover:text-white">
-            <ArrowLeft size={12} /> Intelligences
+          <Link href="/#bots" className="label inline-flex items-center gap-2 text-fg-3 hover:text-white">
+            <ArrowLeft size={12} /> Your bots
           </Link>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: EASE, delay: 0.2 }} className="mt-10 max-w-[640px]">
-            <div className="label flex items-center gap-2" style={{ color: agent.accent.tint }}>
-              {agent.designation}
+            <div className="flex items-center gap-2 text-[15px] font-medium" style={{ color: agent.accent.tint }}>
+              {agent.tagline}
             </div>
-            <h1 className="display mt-5 text-[clamp(72px,12vw,180px)] uppercase">{agent.name}</h1>
-            <p className="mt-5 font-mono text-[13px] text-fg-1">{agent.role}</p>
+            <h1 className="display mt-5 text-[clamp(64px,10vw,150px)]">{agent.name}</h1>
+            <p className="mt-5 text-[19px] text-fg-1">{agent.role}.</p>
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
               <span className="label flex items-center gap-2 text-[10px]">
                 Status
                 <span className="flex items-center gap-2" style={{ color: available ? agent.accent.tint : undefined }}>
                   <StatusDot color={available ? agent.accent.hex : "#686872"} size={5} live={available} />
-                  {available ? "Active" : "Coming soon"}
+                  {available ? "On shift, around the clock" : "Coming soon"}
                 </span>
               </span>
               <span className="label">{agent.personality.join(" · ")}</span>
@@ -59,7 +64,7 @@ export function AgentProfile({ agent }: { agent: Agent }) {
             {available && (
               <div className="mt-10">
                 <Button variant="primary" size="lg" href="#put-to-work" data-deploy>
-                  Deploy {agent.name}
+                  Put {agent.name} to work
                 </Button>
               </div>
             )}
@@ -68,6 +73,25 @@ export function AgentProfile({ agent }: { agent: Agent }) {
       </section>
 
       <section className="relative z-10 mx-auto max-w-[1440px] px-5 py-[14vh] md:px-10">
+        {available && (
+          <div className="mb-[10vh] grid gap-10 lg:grid-cols-2 lg:items-center">
+            <div>
+              <h2 className="text-[clamp(32px,4vw,56px)] font-semibold leading-[1] tracking-[-0.045em] text-white">Watch it work.</h2>
+              <p className="mt-4 max-w-[440px] text-[17px] leading-relaxed text-fg-2">This is {agent.name} in the demo, right now. It checks something every few seconds, even when nothing turns up.</p>
+              {keeps.length > 0 && (
+                <ul className="mt-8 space-y-2.5">
+                  {keeps.map((r) => (
+                    <li key={r.key} className="flex items-baseline justify-between gap-4 border-b border-line pb-2.5 text-[15px] text-white">
+                      {r.title}
+                      <span className="shrink-0 text-[12px] text-fg-3">{describeTrigger(r.trigger)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <BotScreen bot={agent} />
+          </div>
+        )}
         <div className="grid gap-px overflow-hidden rounded-[16px] bg-line md:grid-cols-2 lg:grid-cols-4">
           <Block title="Specialties">
             <ul className="space-y-2.5">
@@ -78,7 +102,7 @@ export function AgentProfile({ agent }: { agent: Agent }) {
               ))}
             </ul>
           </Block>
-          <Block title="Can access">
+          <Block title="Apps">
             <ul className="space-y-2.5">
               {agent.tools.map((t) => {
                 const i = getIntegration(t);
@@ -91,7 +115,7 @@ export function AgentProfile({ agent }: { agent: Agent }) {
               })}
             </ul>
           </Block>
-          <Block title="Memory">
+          <Block title="What it knows">
             <ul className="space-y-2.5">
               {agent.memory.map((m) => (
                 <li key={m} className="text-[15px] text-white">
@@ -101,7 +125,7 @@ export function AgentProfile({ agent }: { agent: Agent }) {
               ))}
             </ul>
           </Block>
-          <Block title="Collaborates with">
+          <Block title="Works with">
             <ul className="space-y-4">
               {agent.collaborators.map((id) => {
                 const c = agentOrFallback(id);
@@ -133,7 +157,7 @@ export function AgentProfile({ agent }: { agent: Agent }) {
                 onChange={setValue}
                 onSubmit={(t) => router.push(`/chat?prompt=${encodeURIComponent(t)}`)}
                 examples={[PROMPTS[agent.id] ?? `Have ${agent.name} work on…`]}
-                hint={`Z80 will assemble the team around ${agent.name}.`}
+                hint={`Manager hands it to ${agent.name}. Ongoing asks become routines.`}
               />
             </div>
           </div>

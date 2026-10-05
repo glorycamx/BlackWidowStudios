@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { ChevronRight, Plus } from "lucide-react";
 import { AgentGlyph } from "@/components/agents/AgentGlyph";
 import { PageHeader, PageWrap } from "@/components/app/primitives";
@@ -24,6 +25,10 @@ export function WorkforceRoster() {
   const roster = useRoster();
   const paused = useWorkspace((s) => s.pausedAgents);
   const [creating, setCreating] = useState(false);
+  const params = useSearchParams();
+  useEffect(() => {
+    if (params.get("create")) setCreating(true);
+  }, [params]);
   const working = roster.filter((a) => a.availability === "available");
   const onShift = working.filter((a) => !paused.includes(a.id)).length;
 

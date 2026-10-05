@@ -6,9 +6,12 @@ export function Footer() {
   return (
     <footer className="relative z-10 border-t border-line">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-8 px-5 py-10 md:flex-row md:items-center md:justify-between md:px-10">
-        <Link href="/" aria-label="Z80.si home" className="text-[18px]">
-          <Wordmark />
-        </Link>
+        <div>
+          <Link href="/" aria-label="Z80.si home" className="text-[18px]">
+            <Wordmark />
+          </Link>
+          <p className="mt-2 text-[13px] text-fg-3">Your AI bots never clock out.</p>
+        </div>
         <nav aria-label="Footer">
           <ul className="flex flex-wrap gap-x-7 gap-y-3">
             {footerNav.map((l) => (

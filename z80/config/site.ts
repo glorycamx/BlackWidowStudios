@@ -2,26 +2,27 @@
 export const site = {
   name: "Z80.si",
   shortName: "Z80",
-  title: "Z80 — Autonomous AI agents that run 24/7",
-  titleTemplate: "%s — Z80",
+  title: "Z80: Your AI bots never clock out",
+  titleTemplate: "%s · Z80",
   description:
-    "Super intelligence is here. Autonomous AI agents that find opportunities, do the work and run your business around the clock.",
+    "Z80 bots find leads, post your content and watch your market around the clock, then text you when something needs a yes. Or build your own bot in a sentence.",
   tagline: "Super intelligence is here.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://z80.si",
   locale: "en_US",
-  keywords: ["autonomous AI agents", "AI agents 24/7", "AI workforce", "superintelligence", "Z80"],
+  keywords: ["AI bots 24/7", "always-on AI", "AI lead finder", "AI content posting", "build your own AI bot", "Z80"],
 } as const;
 
 export const publicNav = [
-  { label: "Product", href: "/#fragment" },
-  { label: "Intelligences", href: "/#intelligences" },
-  { label: "Solutions", href: "/#solutions" },
+  { label: "How it works", href: "/#how" },
+  { label: "Your bots", href: "/#bots" },
+  { label: "Last night", href: "/#night" },
   { label: "Company", href: "/company" },
 ] as const;
 
 export const footerNav = [
-  { label: "Product", href: "/#fragment" },
-  { label: "Intelligences", href: "/#intelligences" },
+  { label: "How it works", href: "/#how" },
+  { label: "Your bots", href: "/#bots" },
+  { label: "Demo", href: "/live" },
   { label: "Pricing", href: "/pricing" },
   { label: "Security", href: "/security" },
   { label: "Privacy", href: "/privacy" },

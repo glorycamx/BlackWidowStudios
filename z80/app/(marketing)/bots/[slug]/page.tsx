@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const a = getAgentBySlug(slug);
   if (!a) return {};
-  return { title: `${a.name} — ${a.role}`, description: `${a.tagline} ${a.shortDescription}` };
+  return { title: `${a.name}: ${a.role}`, description: `${a.tagline} ${a.shortDescription}` };
 }
 
 export default async function AgentPage({ params }: { params: Promise<{ slug: string }> }) {

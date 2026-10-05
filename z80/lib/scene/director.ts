@@ -21,10 +21,10 @@ export interface SceneTarget {
   opacity: number;
   /** 0 idle → 1 intense analysis. */
   activity: number;
-  /** Cluster centers in NDC; null = triangle around `offset`. */
-  clusters: [Vec2, Vec2, Vec2] | null;
-  /** Per-cluster alpha (team edits). */
-  groupAlpha: [number, number, number];
+  /** Cluster centers in NDC, one per bot (5); null = default layout around `offset`. */
+  clusters: Vec2[] | null;
+  /** Per-cluster alpha, one per bot (5). */
+  groupAlpha: number[];
   /** Attraction point in NDC + strength 0..1 (DEPLOY hover). */
   attract: [number, number, number];
   /** Network line visibility multiplier. */
@@ -51,7 +51,7 @@ export const DEFAULT_TARGET: SceneTarget = {
   opacity: 1,
   activity: 0,
   clusters: null,
-  groupAlpha: [1, 1, 1],
+  groupAlpha: [1, 1, 1, 1, 1],
   attract: [0, 0, 0],
   lines: 1,
 };
@@ -89,22 +89,27 @@ export function toNdc(x: number, y: number): Vec2 {
   return [(x / window.innerWidth) * 2 - 1, -((y / window.innerHeight) * 2 - 1)];
 }
 
+/** Cluster size relative to the formation (matches the engine shader). */
+export const CLUSTER_SCALE = 0.72;
+
 /**
- * Default team-cluster positions (NDC) around a formation offset, for a given
- * viewport aspect. Shared by the engine and DOM labels so they line up.
+ * Default positions (NDC) for the five bot clusters around a formation
+ * offset: a pentagon with Manager on top. Shared by the engine and DOM
+ * labels so they line up.
  */
-export function clusterTriangle(offset: Vec2, aspect: number): [Vec2, Vec2, Vec2] {
+export function clusterLayout(offset: Vec2, aspect: number): Vec2[] {
   const bx = Math.min(1 / aspect, 1.15); // base / halfW
   const by = Math.min(1, 1.15 * aspect); // base / halfH
-  return [
-    [offset[0] - 0.62 * bx, offset[1] - 0.28 * by],
-    [offset[0], offset[1] + 0.42 * by],
-    [offset[0] + 0.62 * bx, offset[1] - 0.28 * by],
-  ];
+  const R = 0.66;
+  return [0, 1, 2, 3, 4].map((i) => {
+    // Order: Manager top, Lead Hunter upper left, Content Creator upper right, Researcher lower left, Reporter lower right.
+    const angle = [90, 162, 18, 234, 306][i] * (Math.PI / 180);
+    return [offset[0] + Math.cos(angle) * R * bx, offset[1] + Math.sin(angle) * R * by] as Vec2;
+  });
 }
 
 /** Cluster radius in px for a formation scale (matches engine shader). */
 export function clusterRadiusPx(scale: number, aspect: number, viewportH: number): number {
   const by = Math.min(1, 1.15 * aspect);
-  return scale * by * 0.95 * 0.34 * (viewportH / 2);
+  return scale * by * CLUSTER_SCALE * 0.34 * (viewportH / 2);
 }

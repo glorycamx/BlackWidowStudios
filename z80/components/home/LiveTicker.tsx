@@ -5,14 +5,14 @@ import { useEffect, useState } from "react";
 import { agentOrFallback } from "@/data/bots";
 import { EASE } from "@/lib/motion";
 
-/** Sample of what the agents do on their own. Illustrative, labelled as such. */
+/** Sample of what the bots do on their own. Illustrative, labelled as such. */
 const LINES: { agent: string; text: string }[] = [
-  { agent: "lead-hunter", text: "found a hot lead in Nashua, NH" },
-  { agent: "content-creator", text: "wrote 3 personalized openers" },
-  { agent: "manager", text: "scheduled 2 follow-ups for 9:00 AM" },
-  { agent: "lead-hunter", text: "noticed a competitor's site went down" },
-  { agent: "content-creator", text: "drafted this week's posts" },
-  { agent: "manager", text: "flagged a proposal expiring tomorrow" },
+  { agent: "lead-hunter", text: "caught a website going down in Nashua" },
+  { agent: "content-creator", text: "posted to Instagram at 7:58 PM, on the minute" },
+  { agent: "researcher", text: "found an upsell for a client" },
+  { agent: "reporter", text: "read 19 AI stories, saved one for you" },
+  { agent: "manager", text: "lined up your morning text" },
+  { agent: "lead-hunter", text: "spotted a business that just changed hands" },
 ];
 
 export function LiveTicker() {
