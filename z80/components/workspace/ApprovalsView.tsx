@@ -27,7 +27,7 @@ export function ApprovalsView() {
             </motion.div>
           ))}
         </AnimatePresence>
-        {pending.length === 0 && <EmptyState title="Nothing needs you." body="Your workforce will bring you anything that requires a decision." action={{ label: "Open command", href: "/chat" }} />}
+        {pending.length === 0 && <EmptyState title="Nothing needs you." body="Your bots bring you anything that needs a yes. Each card says exactly what happens if you approve." action={{ label: "Open command", href: "/chat" }} />}
       </div>
       {resolved.length > 0 && (
         <section className="mt-16">

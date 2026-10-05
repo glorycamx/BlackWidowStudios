@@ -1,5 +1,6 @@
 "use client";
 
+import { jobLabel } from "@/lib/copy";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { useMemo, useState } from "react";
@@ -38,7 +39,7 @@ export function MissionsList() {
   if (!missions.length) {
     return (
       <PageWrap>
-        <EmptyState title="Nothing running." body="What should your workforce accomplish?" action={{ label: "Create mission", href: "/chat?focus=1" }} />
+        <EmptyState title="Nothing running." body="Jobs are one-off work your bots do for you. Ask Manager in Chat." action={{ label: "Start a job", href: "/chat?focus=1" }} />
       </PageWrap>
     );
   }
@@ -46,9 +47,9 @@ export function MissionsList() {
   return (
     <PageWrap>
       <PageHeader
-        label={`${missions.length} missions`}
-        title="Missions"
-        sub="Every objective you deploy."
+        label={`${missions.length} jobs`}
+        title="Jobs"
+        sub="One-off work your bots are doing or finished."
         actions={
           <Button variant="solid" icon={<Plus size={14} />} href="/chat?focus=1">
             New mission
@@ -56,7 +57,7 @@ export function MissionsList() {
         }
       />
       <div className="mt-10 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div role="tablist" aria-label="Filter missions" className="flex gap-1">
+        <div role="tablist" aria-label="Filter jobs" className="flex gap-1">
           {FILTERS.map((f) => (
             <button
               key={f.id}
@@ -70,12 +71,12 @@ export function MissionsList() {
           ))}
         </div>
         <label className="relative">
-          <span className="sr-only">Search missions</span>
+          <span className="sr-only">Search jobs</span>
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-3" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search missions"
+            placeholder="Search jobs"
             className="h-9 w-full rounded-[10px] bg-transparent pl-9 pr-3 text-[13.5px] text-white placeholder:text-fg-3 hairline focus:outline-none md:w-[260px]"
           />
         </label>
@@ -85,7 +86,7 @@ export function MissionsList() {
         {list.map((m, i) => (
           <motion.li key={m.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.03, ease: EASE }} className="border-b border-line">
             <Link href={`/jobs/${m.id}`} className="group grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-3 px-1 py-5 transition-colors hover:bg-white/[0.015] md:grid-cols-[70px_1fr_180px_150px_90px]">
-              <span className="hidden text-[13px] tabular-nums text-fg-3 md:block">{missionCode(m.number)}</span>
+              <span className="hidden text-[13px] tabular-nums text-fg-3 md:block">{jobLabel(m.number)}</span>
               <span className="min-w-0">
                 <span className="block truncate text-[15.5px] text-white">{m.title}</span>
                 <span className="mt-1 block truncate text-[12.5px] text-fg-3">{m.objective}</span>
@@ -106,7 +107,7 @@ export function MissionsList() {
             </Link>
           </motion.li>
         ))}
-        {!list.length && <li className="py-16 text-center text-[14px] text-fg-3">No missions match.</li>}
+        {!list.length && <li className="py-16 text-center text-[14px] text-fg-3">No jobs match.</li>}
       </ul>
     </PageWrap>
   );

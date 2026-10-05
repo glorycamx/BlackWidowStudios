@@ -18,7 +18,7 @@ export function MemoryView() {
       <PageHeader
         label="Memory"
         title={org?.name ?? "Your company"}
-        sub="Everything your workforce knows about the business."
+        sub="What your bots know about your business."
       />
       {org?.description && <p className="mt-6 max-w-[560px] text-[15px] text-fg-1">{org.description}</p>}
       <div className="mt-12 grid gap-px overflow-hidden rounded-[16px] bg-line md:grid-cols-2 xl:grid-cols-3">

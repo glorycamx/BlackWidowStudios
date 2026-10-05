@@ -1,5 +1,6 @@
 "use client";
 
+import { jobLabel } from "@/lib/copy";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
@@ -48,7 +49,7 @@ export function ApprovalCard({ approvalId, compact, showMission = true }: { appr
           <p className="mt-1 text-[13px] leading-relaxed text-fg-2">{approval.detail}</p>
           {showMission && mission && (
             <Link href={`/jobs/${mission.id}`} className="mt-2 inline-block text-[12px] text-fg-3 hover:text-fg-1">
-              Mission {missionCode(mission.number)} · {mission.title}
+              {jobLabel(mission.number)} · {mission.title}
             </Link>
           )}
 

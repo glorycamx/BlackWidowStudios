@@ -1,5 +1,6 @@
 "use client";
 
+import { jobLabel } from "@/lib/copy";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -44,7 +45,7 @@ export function MissionView({ id }: { id: string }) {
 
   if (!mission) {
     return (
-      <EmptyState title="Mission not found" body="It may have been cleared from this demo workspace." action={{ label: "Create mission", href: "/chat?focus=1" }} />
+      <EmptyState title="Job not found" body="It may have been cleared from this demo workspace." action={{ label: "Start a job", href: "/chat?focus=1" }} />
     );
   }
 
@@ -70,7 +71,7 @@ export function MissionView({ id }: { id: string }) {
       <header className="mt-6 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-4">
-            <span className="label text-fg-1">Mission {missionCode(mission.number)}</span>
+            <span className="label text-fg-1">{jobLabel(mission.number)}</span>
             <MissionStatusBadge status={mission.status} />
           </div>
           <h1 className="mt-4 max-w-[22ch] text-[clamp(30px,4vw,52px)] font-semibold leading-[1] tracking-[-0.045em] text-white">{mission.title}</h1>
@@ -147,7 +148,7 @@ export function MissionView({ id }: { id: string }) {
             <div className="flex items-start gap-3">
               <TriangleAlert size={18} className="mt-0.5 text-err" />
               <div>
-                <div className="label text-err">Mission interrupted</div>
+                <div className="label text-err">Job interrupted</div>
                 <p className="mt-2 text-[15px] text-white">
                   {agentOrFallback(mission.interruption.agentId).name} {mission.interruption.message}
                 </p>

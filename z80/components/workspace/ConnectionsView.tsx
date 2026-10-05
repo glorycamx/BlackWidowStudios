@@ -30,11 +30,11 @@ export function ConnectionsView() {
       <PageHeader
         label={`${connected.length} connected`}
         title="Connections"
-        sub="The tools your workforce can use."
+        sub="The apps your bots can use, and how they reach you."
       />
       {connected.length === 0 && (
         <div className="mt-6 panel">
-          <EmptyState title="Your workforce needs tools." body="Connect the software your business already uses." />
+          <EmptyState title="Your bots need apps." body="Connect the software your business already uses." />
         </div>
       )}
       <div className="mt-12 space-y-12">

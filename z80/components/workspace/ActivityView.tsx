@@ -61,7 +61,7 @@ export function ActivityView() {
         ))}
       </div>
       {groups.length === 0 ? (
-        <EmptyState title="Nothing yet." body="When your workforce acts, every step appears here." action={{ label: "Create mission", href: "/chat?focus=1" }} />
+        <EmptyState title="Nothing yet." body="Every step your bots take shows up here." action={{ label: "Open Chat", href: "/chat?focus=1" }} />
       ) : (
         <div className="mt-8 space-y-10">
           {groups.map((g) => (

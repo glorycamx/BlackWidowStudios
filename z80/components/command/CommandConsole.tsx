@@ -320,7 +320,7 @@ function SubmitButton({ enabled, onClick, energy }: { enabled: boolean; onClick(
       type="button"
       onClick={onClick}
       disabled={!enabled}
-      aria-label="Submit mission"
+      aria-label="Send"
       className={cn(
         "group relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full transition-all duration-300 ease-[var(--ease-z)]",
         enabled ? "bg-white text-black shadow-[0_0_28px_-4px_rgba(130,120,255,0.8)]" : "bg-white/[0.06] text-fg-3",

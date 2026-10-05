@@ -81,7 +81,7 @@ function Prospects({ rows, missionNumber }: { rows: Prospect[]; missionNumber: n
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `z80-mission-${missionNumber}-prospects.csv`;
+    a.download = `z80-job-${missionNumber}-prospects.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };

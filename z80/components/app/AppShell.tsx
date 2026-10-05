@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { Activity, Brain, CheckCircle2, Command, MoreHorizontal, Plug, Radar, Search, Settings, Target, Users } from "lucide-react";
+import { Activity, Brain, CalendarDays, CheckCircle2, Command, MoreHorizontal, Plug, Radar, Repeat, Search, Settings, Target, Users } from "lucide-react";
 import { SignalToasts } from "@/components/signals/SignalToasts";
 import { NAV_LABELS } from "@/lib/copy";
 import { Kbd } from "@/components/ui/Kbd";
@@ -19,6 +19,8 @@ const NAV = [
   { href: "/live", label: NAV_LABELS.live, icon: Radar },
   { href: "/chat", label: NAV_LABELS.chat, icon: Command },
   { href: "/team", label: NAV_LABELS.team, icon: Users },
+  { href: "/routines", label: NAV_LABELS.routines, icon: Repeat },
+  { href: "/calendar", label: NAV_LABELS.calendar, icon: CalendarDays },
   { href: "/jobs", label: NAV_LABELS.jobs, icon: Target },
   { href: "/memory", label: NAV_LABELS.memory, icon: Brain },
   { href: "/apps", label: NAV_LABELS.apps, icon: Plug },

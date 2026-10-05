@@ -1,5 +1,5 @@
 /**
- * chatService — Z80's conversational layer (MOCK).
+ * chatService: Manager's side of Chat (MOCK).
  *
  * Classifies a message and produces Z80's reply. Objectives become plans.
  * A model-backed implementation replaces `respond` behind POST /api/chat.
@@ -37,11 +37,11 @@ export function teamSentence(plan: Plan): string {
 
 export function respond(text: string, ctx: ChatContext): ChatReply {
   const t = text.trim();
-  if (GREET.test(t)) return { text: "Ready when you are. Describe the outcome you need, and I'll assemble the team for it." };
-  if (THANKS.test(t)) return { text: "Anytime. Your workforce keeps moving — I'll tell you when a decision needs you." };
+  if (GREET.test(t)) return { text: "Hi. Tell me what your bots should keep doing, or give them a one-off job." };
+  if (THANKS.test(t)) return { text: "Anytime. The team keeps working. I'll text you when something needs a yes." };
   if (HELP.test(t)) {
     return {
-      text: "Tell me what you want accomplished, in plain language. I break it into tasks, choose the intelligences to do the work, and coordinate them. Anything that leaves your company — emails, posts, spend — waits for your approval.",
+      text: "Tell me what you want in plain English. If it's ongoing, like \"every morning\" or \"keep an eye on\", I set it up as a routine and a bot runs it around the clock. If it's one-off, I put the right bots on a job. Anything that leaves your company, like emails, posts or spend, waits for your yes unless you say otherwise.",
     };
   }
   if (APPROVALS.test(t) && t.length < 60) {
@@ -55,15 +55,15 @@ export function respond(text: string, ctx: ChatContext): ChatReply {
   }
   if (STATUS.test(t) && t.length < 80) {
     const running = ctx.missions.filter((m) => m.status === "running" || m.status === "awaiting-approval");
-    if (!running.length) return { text: "Nothing is running. What should your workforce accomplish?" };
+    if (!running.length) return { text: "No jobs running. Your routines are still on. What else should your bots do?" };
     return {
       text: running
-        .map((m) => `Mission ${String(m.number).padStart(4, "0")} — ${m.title}: ${Math.round(m.progress * 100)}%${m.status === "awaiting-approval" ? ", waiting on your approval" : ""}.`)
+        .map((m) => `Job ${m.number}, ${m.title}: ${Math.round(m.progress * 100)}%${m.status === "awaiting-approval" ? ", waiting on your approval" : ""}.`)
         .join("\n"),
     };
   }
   if (t.split(/\s+/).length < 3) {
-    return { text: "Tell me a little more about the outcome you want — who it's for and what done looks like." };
+    return { text: "Tell me a bit more. Who is it for, and what does done look like?" };
   }
   const plan = createPlan(t, ctx.org);
   const count = plan.agents.length;
@@ -71,20 +71,20 @@ export function respond(text: string, ctx: ChatContext): ChatReply {
     plan,
     text: `Got it. ${plan.reasoningSummary}
 
-I'll put ${count === 1 ? "one agent" : `${count} agents`} on this. They keep working on it around the clock and only come to you for a yes. Deploy?`,
+I'll put ${count === 1 ? "one bot" : `${count} bots`} on this job. They work on it without stopping and only come to you for a yes. Put them to work?`,
   };
 }
 
-/** A direct reply from a specific intelligence (Message Agent). MOCK. */
+/** A direct reply from one bot (its direct line). MOCK. */
 export function agentReply(agentId: string, text: string, ctx: ChatContext): string {
   const agent = agentOrFallback(agentId);
   const active = ctx.missions.filter((m) => m.status !== "complete" && m.agents.some((a) => a.agentId === agentId));
-  const focus = active[0] ? `I'm on mission ${String(active[0].number).padStart(4, "0")} — ${active[0].title.toLowerCase()}.` : "I'm available.";
+  const focus = active[0] ? `I'm on job ${active[0].number}: ${active[0].title.toLowerCase()}.` : "My routines are running.";
   const asksForWork = text.trim().split(/\s+/).length > 4;
   switch (agent.id) {
     case "manager":
       return asksForWork
-        ? `Noted. ${focus} I'll fold this into the plan and route it to the right intelligence. You'll see it in Activity.`
+        ? `Noted. ${focus} I'll fold this into the plan and hand it to the right bot. You'll see it in Activity.`
         : `${focus} Everything is on schedule.`;
     case "lead-hunter":
       return asksForWork
@@ -95,6 +95,7 @@ export function agentReply(agentId: string, text: string, ctx: ChatContext): str
         ? `I like where this is going. ${focus} I'll draft a few directions and send them to you for review.`
         : `${focus} Give me a brief and I'll bring ideas.`;
     default:
-      return `${agent.name} is not available yet.`;
+      if (agent.availability !== "available") return `${agent.name} is not available yet.`;
+      return asksForWork ? `Got it. ${focus} I'll work that in and tell you what I find.` : `${focus} Anything you want me to keep an eye on?`;
   }
 }

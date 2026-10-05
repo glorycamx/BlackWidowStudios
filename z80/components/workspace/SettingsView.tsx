@@ -45,7 +45,7 @@ export function SettingsView() {
       <PageHeader label="Workspace" title="Settings" />
       <nav aria-label="More" className="mt-8 grid grid-cols-2 gap-2 lg:hidden">
         {[
-          ["Workforce", "/team"],
+          ["Your team", "/team"],
           ["Approvals", "/approvals"],
           ["Memory", "/memory"],
           ["Connections", "/apps"],
@@ -102,7 +102,7 @@ export function SettingsView() {
           <div className="mt-5 flex items-center justify-between gap-6 border-t border-line pt-5">
             <div>
               <div className="text-[14.5px] text-white">Demo speed</div>
-              <div className="mt-0.5 text-[13px] text-fg-3">How fast simulated missions run.</div>
+              <div className="mt-0.5 text-[13px] text-fg-3">How fast the simulation runs: jobs, routines and checks.</div>
             </div>
             <div role="radiogroup" aria-label="Demo speed" className="flex rounded-[9px] p-[3px] hairline">
               {[1, 2, 4].map((sp) => (
@@ -165,7 +165,7 @@ export function SettingsView() {
 
         <Panel title="Demo workspace">
           <div className="flex flex-col gap-4">
-            <p className="text-[13.5px] text-fg-2">All missions, activity and memory in this demo live in your browser.</p>
+            <p className="text-[13.5px] text-fg-2">All jobs, routines, activity and memory in this demo live in your browser.</p>
             <div className="flex flex-wrap gap-2">
               <Button variant="secondary" size="sm" onClick={() => workspace.resetDemo()}>
                 Reset demo workspace

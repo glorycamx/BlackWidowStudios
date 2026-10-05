@@ -323,7 +323,10 @@ export type ChatAction =
   | { kind: "view-results"; missionId: string }
   | { kind: "new-mission" }
   | { kind: "approval"; approvalId: string }
-  | { kind: "open-signal"; signalId: string };
+  | { kind: "open-signal"; signalId: string }
+  | { kind: "confirm-routine"; botId: string; title: string; trigger: Trigger; engine: RoutineEngine; done?: string }
+  | { kind: "confirm-bot"; name: string; job: string; keepDoing: string; trigger: Trigger; done?: string }
+  | { kind: "create-bot" };
 
 export interface ChatMessage {
   id: string;

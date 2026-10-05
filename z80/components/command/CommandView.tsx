@@ -11,13 +11,15 @@ import { selectPendingApprovals, selectVisibleSignals, useWorkspace, workspace }
 import { useNow } from "@/lib/hooks/useNow";
 import Link from "next/link";
 import { EASE } from "@/lib/motion";
-import { greeting } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { CreateBotDialog } from "@/components/bots/CreateBotDialog";
+import { TeamChat } from "@/components/command/TeamChat";
 
 const SUGGESTIONS = [
-  "Keep finding businesses in my area that need a new website.",
-  "I want more commercial roofing jobs every month.",
-  "Watch my top five competitors and tell me where we can win.",
-  "Run our content operation every week.",
+  "Text me every morning at 7 with new hot leads",
+  "Keep my posting calendar full for the next two weeks",
+  "Watch my competitors' prices and tell me when they change",
+  "Find 20 roofers in Nashua whose sites are slow",
 ];
 
 export function CommandView() {
@@ -33,6 +35,8 @@ export function CommandView() {
   const overnight = { leads: recent.length, hot: recent.filter((x) => x.lead?.temperature === "hot").length, decisions };
   const [value, setValue] = useState("");
   const [review, setReview] = useState<string | null>(null);
+  const [tab, setTab] = useState<"manager" | "team">(params.get("tab") === "team" ? "team" : "manager");
+  const [creating, setCreating] = useState(false);
   const consoleRef = useRef<CommandConsoleHandle>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const handled = useRef(false);
@@ -69,11 +73,25 @@ export function CommandView() {
 
   return (
     <div className="mx-auto grid w-full max-w-[1320px] xl:grid-cols-[minmax(0,1fr)_300px]">
-      <section aria-label="Command" className="relative flex min-h-[calc(100dvh-8.5rem)] flex-col px-5 md:px-10 lg:min-h-dvh">
-        {empty ? (
+      <section aria-label="Chat" className="relative flex min-h-[calc(100dvh-8.5rem)] flex-col px-5 md:px-10 lg:min-h-dvh">
+        <div role="tablist" aria-label="Chat" className="mx-auto mt-6 flex w-full max-w-[760px] gap-1">
+          {(
+            [
+              ["manager", "Manager"],
+              ["team", "Team chat"],
+            ] as const
+          ).map(([id, label]) => (
+            <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className={cn("h-8 rounded-[9px] px-3 text-[13px] transition-colors", tab === id ? "bg-white/[0.08] text-white" : "text-fg-3 hover:text-fg-1")}>
+              {label}
+            </button>
+          ))}
+        </div>
+        {tab === "team" ? (
+          <TeamChat />
+        ) : empty ? (
           <div className="mx-auto flex w-full max-w-[760px] flex-1 flex-col justify-center py-12">
             <motion.p className="label" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              Command{org?.name ? ` · ${org.name}` : ""}
+              Chat with Manager{org?.name ? ` · ${org.name}` : ""}
             </motion.p>
             <motion.h1
               className="mt-6 text-[clamp(42px,6vw,80px)] font-semibold leading-[0.95] tracking-[-0.05em] text-white"
@@ -81,9 +99,9 @@ export function CommandView() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: EASE }}
             >
-              {greeting()}
+              What should your bots
               <br />
-              <span className="text-fg-3">Your agents kept working.</span>
+              <span className="text-fg-3">keep doing?</span>
             </motion.h1>
             <motion.div className="mt-8 grid grid-cols-3 gap-2" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.08, ease: EASE }}>
               {[
@@ -99,7 +117,7 @@ export function CommandView() {
             </motion.div>
             <motion.div className="mt-8" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1, ease: EASE }}>
               <CommandConsole ref={consoleRef} id="command-input" value={value} onChange={setValue} onSubmit={send} examples={MISSION_EXAMPLES} />
-              <p className="mt-3 px-2 text-[14px] text-fg-4">Give them a new goal. They take it from there.</p>
+              <p className="mt-3 px-2 text-[14px] text-fg-4">Ongoing asks become routines that run around the clock. One-offs become jobs.</p>
             </motion.div>
             <motion.ul className="mt-6 grid gap-2 sm:grid-cols-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
               {SUGGESTIONS.map((s) => (
@@ -109,13 +127,17 @@ export function CommandView() {
                   </button>
                 </li>
               ))}
+              <li>
+                <button onClick={() => setCreating(true)} className="h-full w-full rounded-[12px] border border-dashed border-white/15 px-4 py-3 text-left text-[13.5px] leading-snug text-fg-2 transition-colors hover:bg-white/[0.025] hover:text-white">
+                  Create a bot that…
+                </button>
+              </li>
             </motion.ul>
           </div>
         ) : (
           <>
             <div className="mx-auto w-full max-w-[760px] flex-1 pb-8 pt-10">
-              <div className="label mb-10 flex items-center justify-between">
-                <span>Command</span>
+              <div className="mb-10 flex items-center justify-end">
                 <button onClick={() => workspace.clearConversation()} className="text-[12px] text-fg-4 hover:text-fg-2">
                   New conversation
                 </button>
@@ -125,7 +147,7 @@ export function CommandView() {
             </div>
             <div className="sticky bottom-[4.5rem] z-10 mx-auto w-full max-w-[760px] pb-4 pt-2 lg:bottom-0 lg:pb-6">
               <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-10 bottom-0 bg-gradient-to-t from-black via-black/90 to-transparent" />
-              <CommandConsole ref={consoleRef} id="command-input" size="compact" value={value} onChange={setValue} onSubmit={send} disabled={thinking} hint="Talk to your agents." />
+              <CommandConsole ref={consoleRef} id="command-input" size="compact" value={value} onChange={setValue} onSubmit={send} disabled={thinking} hint="Talk to Manager." />
             </div>
           </>
         )}
@@ -138,6 +160,7 @@ export function CommandView() {
       </aside>
 
       <PlanDialog planId={review} onClose={() => setReview(null)} />
+      <CreateBotDialog open={creating} onClose={() => setCreating(false)} />
     </div>
   );
 }

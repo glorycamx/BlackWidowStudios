@@ -215,11 +215,11 @@ export function advanceMission(
         m.progress = 1;
         m.tasks = m.tasks.map((t) => (t.status === "skipped" ? t : { ...t, status: "complete" }));
         m.results = generateResults(m);
-        emissions.push({ type: "activity", event: { missionId: m.id, actor: "z80", kind: "system", message: `Mission ${String(m.number).padStart(4, "0")} complete.` } });
+        emissions.push({ type: "activity", event: { missionId: m.id, actor: "z80", kind: "system", message: `Job ${m.number} done.` } });
         emissions.push({
           type: "chat",
           message: {
-            author: "z80",
+            author: "manager",
             text: `${m.results.headline}\n${m.results.summary}`,
             missionId: m.id,
             actions: [
@@ -287,7 +287,7 @@ export function interruptMission(mission: Mission): { mission: Mission; emission
   return {
     mission: m,
     emissions: [
-      { type: "activity", event: { missionId: m.id, actor: agentId, kind: "system", message: "Lost access to Google Drive. Mission interrupted." } },
+      { type: "activity", event: { missionId: m.id, actor: agentId, kind: "system", message: "Lost access to Google Drive. Job paused." } },
       { type: "sound", name: "approval" },
     ],
   };
@@ -306,7 +306,7 @@ export function recoverMission(mission: Mission, mode: "reconnect" | "continue")
           missionId: m.id,
           actor: mode === "reconnect" ? "user" : agentId,
           kind: "system",
-          message: mode === "reconnect" ? "Google Drive reconnected. Mission resumed." : "Continuing without Google Drive.",
+          message: mode === "reconnect" ? "Google Drive reconnected. Job back on." : "Continuing without Google Drive.",
         },
       },
     ],

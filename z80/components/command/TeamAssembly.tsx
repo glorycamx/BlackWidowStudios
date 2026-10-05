@@ -177,7 +177,7 @@ export function TeamAssembly({ plan: initial, onDeployed, onBack, backLabel = "E
         <div className="min-w-0">
           <motion.div className="label flex items-center gap-2 text-fg-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
             <StatusDot color="var(--color-indigo)" size={5} />
-            {count === 1 ? "1 intelligence recommended" : `${count} intelligences recommended`}
+            {count === 1 ? "1 bot recommended" : `${count} bots recommended`}
           </motion.div>
           <motion.h2
             className="mt-3 max-w-[28ch] text-[26px] font-semibold leading-[1.08] tracking-[-0.035em] text-white md:text-[34px]"
@@ -327,7 +327,7 @@ export function TeamAssembly({ plan: initial, onDeployed, onBack, backLabel = "E
                 exit={{ opacity: 0, y: 6 }}
                 transition={{ duration: 0.2 }}
               >
-                {available.length === 0 && <li className="px-3 py-3 text-[13px] text-fg-3">Every intelligence is on this team.</li>}
+                {available.length === 0 && <li className="px-3 py-3 text-[13px] text-fg-3">Every bot is on this team.</li>}
                 {available.map((a) => {
                   const soon = a.availability !== "available";
                   return (
@@ -371,7 +371,7 @@ function MissionCore({ deploying }: { deploying: boolean }) {
         transition={deploying ? { duration: 0.9, ease: EASE } : { duration: 4, repeat: Infinity, ease: "easeInOut" }}
       />
       <div className="relative text-center">
-        <div className="label text-fg-1">Mission</div>
+        <div className="label text-fg-1">Job</div>
         <div className="mt-1.5 text-[12px] tabular-nums text-fg-3">{deploying ? "Deploying" : "Objective"}</div>
       </div>
     </div>
@@ -548,7 +548,7 @@ function MobileNetwork({
       <div className="absolute bottom-6 left-[13px] top-3 w-px bg-gradient-to-b from-indigo/60 via-white/15 to-transparent" aria-hidden />
       <div className="relative mb-4 flex items-center gap-3">
         <span className="absolute -left-[22px] flex h-3 w-3 items-center justify-center rounded-full bg-indigo shadow-[0_0_14px_#645bff]" />
-        <span className="label text-fg-1">Mission</span>
+        <span className="label text-fg-1">Job</span>
         <span className="text-[12px] tabular-nums text-fg-3">{deploying ? "Deploying" : "Objective set"}</span>
       </div>
       <ul className="space-y-3">
@@ -630,7 +630,7 @@ function DeployButton({ count, deploying, onClick, compact }: { count: number; d
         </span>
       }
     >
-      {deploying ? "Deploying…" : `Deploy ${count === 1 ? "1 agent" : `${count} agents`}`}
+      {deploying ? "Starting…" : `Put ${count === 1 ? "1 bot" : `${count} bots`} to work`}
     </Button>
   );
 }

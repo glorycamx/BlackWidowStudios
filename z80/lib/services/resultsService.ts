@@ -118,6 +118,6 @@ export function generateResults(mission: Mission): MissionResults {
     case "brief":
       return { kind: "brief", headline: "Your brief is ready.", summary: "5 competitors analyzed. 3 gaps worth acting on.", findings: findings() };
     default:
-      return { kind: "generic", headline: "Mission complete.", summary: "Deliverables are organized in the mission." };
+      return { kind: "generic", headline: "Job done.", summary: "Everything it made is saved in the job." };
   }
 }

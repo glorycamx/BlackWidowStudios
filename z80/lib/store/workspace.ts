@@ -11,7 +11,7 @@ import { useRef, useSyncExternalStore } from "react";
 import { defaultPermissions } from "@/data/permissions";
 import { memoryDomains } from "@/data/memory";
 import { registerCustomBots, specToAgent, agentOrFallback, CUSTOM_COLORS } from "@/data/bots";
-import { LEGACY_BOT_IDS, routineFromTemplate, routineTemplates, emptyStats } from "@/data/routines";
+import { describeTrigger, LEGACY_BOT_IDS, routineFromTemplate, routineTemplates, emptyStats } from "@/data/routines";
 import { seedSkills } from "@/data/skills";
 import { requestChat, requestPlan } from "@/lib/api";
 import { agentReply } from "@/lib/services/chatService";
@@ -26,6 +26,8 @@ import {
 } from "@/lib/services/missionService";
 import { createLeadPlan, createPlan, retargetPlan } from "@/lib/services/planService";
 import * as clock from "@/lib/sim/clock";
+import { isRoutineRequest, parseBotSpec, parseRoutine } from "@/lib/sim/parse";
+import { jobLabel } from "@/lib/copy";
 import { addQuietChecks, loadBeatCounts, makeBeat, pushBeat, resetBeats } from "@/lib/sim/heartbeats";
 import { backfill, FEED_CAP, NOTICE_CAP, scheduleNext, step, TEAM_CAP, type SimStep } from "@/lib/sim/scheduler";
 import { channelLabel, fillCalendar } from "@/lib/sim/generators";
@@ -540,6 +542,34 @@ function catchUp(from: number, now: number, showAway: boolean) {
 
 let hiddenSince = 0;
 
+/** "text me about my leads" → "text you about your leads", lower-cased first letter. */
+function toYou(t: string) {
+  const s = t.replace(/\bme\b/gi, "you").replace(/\bmy\b/gi, "your").replace(/\bI\b/g, "you");
+  return s.charAt(0).toLowerCase() + s.slice(1);
+}
+
+/** Manager's reply for routines and new bots, or null to fall through to planning. */
+function managerQuickReply(t: string): Omit<ChatMessage, "id" | "at"> | null {
+  if (/^(please )?(create|make|build|add|set up|i want|i need)( me)? (a |an |my own )?(new )?bot\b/i.test(t)) {
+    const b = parseBotSpec(t);
+    return {
+      author: "manager",
+      text: `Here's the bot I'd make.\n\n${b.name}: ${b.job.charAt(0).toLowerCase()}${b.job.slice(1)}. ${describeTrigger(b.trigger)}.\n\nIt goes on shift the moment you say so. Anything it sends waits for your yes.`,
+      actions: [{ kind: "confirm-bot", ...b }],
+    };
+  }
+  if (isRoutineRequest(t)) {
+    const r = parseRoutine(t);
+    const who = botName(state, r.botId);
+    return {
+      author: "manager",
+      text: `That's ongoing, so I'll make it a routine.\n\n${who} will: ${toYou(r.title)}. ${describeTrigger(r.trigger)}.\n\nStart it?`,
+      actions: [{ kind: "confirm-routine", ...r }],
+    };
+  }
+  return null;
+}
+
 export const workspace = {
   /** Load persisted workspace (or seed the demo). Call once on the client. */
   init() {
@@ -631,8 +661,9 @@ export const workspace = {
     if (seen) patch.lastSeenAt = now;
     if (Object.keys(patch).length) setState(patch);
 
-    // Hot leads: if the opener routine is on, start a job. It still waits for your yes before sending.
-    const openers = state.routines.find((r) => r.engine === "lead-openers" && r.status === "on");
+    // Hot leads get an opener either way. With "Do it without asking" on, an outreach job starts too
+    // (sending still follows your permissions). Off, you tap Start outreach yourself.
+    const openers = state.routines.find((r) => r.engine === "lead-openers" && r.status === "on" && r.doWithoutAsking);
     if (openers && !state.pausedAgents.includes(openers.botId)) for (const f of hot) workspace.deploySignal(f.id, { auto: true });
   },
 
@@ -641,6 +672,14 @@ export const workspace = {
     const t = text.trim();
     if (!t) return;
     setState((s) => ({ chat: [...s.chat, chatMessage({ author: "user", text: t })], thinking: true }));
+    // Ongoing asks become routines; "a bot that…" becomes a new bot. Both wait for a tap to start.
+    const quick = managerQuickReply(t);
+    if (quick) {
+      await new Promise((r) => setTimeout(r, 900));
+      setState((cur) => ({ chat: [...cur.chat, chatMessage(quick)], thinking: false }));
+      playSound("message", state.settings.sound);
+      return;
+    }
     const started = Date.now();
     const s = state;
     const reply = await requestChat(t, {
@@ -654,7 +693,7 @@ export const workspace = {
     setState((cur) => {
       const plans = reply.plan ? { ...cur.plans, [reply.plan.id]: reply.plan } : cur.plans;
       const msg = chatMessage({
-        author: "z80",
+        author: "manager",
         text: reply.text,
         planId: reply.plan?.id,
         team: reply.plan?.agents.map((a) => a.agentId),
@@ -701,14 +740,14 @@ export const workspace = {
       chat: [
         ...s.chat,
         chatMessage({
-          author: "z80",
-          text: `Agents deployed. Mission ${String(number).padStart(4, "0")} is live with ${names === 1 ? "one agent" : `${names} agents`}. They work on their own from here. I'll only interrupt you for a yes.`,
+          author: "manager",
+          text: `Your bots are on it. ${jobLabel(number)} is running with ${names === 1 ? "one bot" : `${names} bots`}. They work on their own from here. I'll only interrupt you for a yes.`,
           missionId: mission.id,
           actions: [{ kind: "open-mission", missionId: mission.id }],
         }),
       ],
       activity: [
-        { id: uid("ev"), actor: "user", kind: "system", at: Date.now(), missionId: mission.id, message: `Deployed mission ${String(number).padStart(4, "0")}: ${plan.title}.` },
+        { id: uid("ev"), actor: "user", kind: "system", at: Date.now(), missionId: mission.id, message: `Started ${jobLabel(number)}: ${plan.title}.` },
         ...s.activity,
       ],
     }));
@@ -845,6 +884,34 @@ export const workspace = {
         : {}),
     }));
     return missionId;
+  },
+
+  /** Tap "Start it" on a routine or bot Manager proposed in Chat. */
+  confirmChatAction(messageId: string) {
+    const m = state.chat.find((x) => x.id === messageId);
+    const a = m?.actions?.find((x) => x.kind === "confirm-routine" || x.kind === "confirm-bot");
+    if (!m || !a || (a.kind !== "confirm-routine" && a.kind !== "confirm-bot") || a.done) return;
+    let done = "";
+    if (a.kind === "confirm-routine") done = workspace.addRoutine({ botId: a.botId, title: a.title, trigger: a.trigger, engine: a.engine }).id;
+    else done = workspace.createBot({ name: a.name, job: a.job, keepDoing: a.keepDoing, trigger: a.trigger });
+    setState((s) => ({ chat: s.chat.map((x) => (x.id === messageId ? { ...x, actions: x.actions?.map((y) => (y === a ? { ...a, done } : y)) } : x)) }));
+  },
+
+  /** Say something in Team chat. Manager passes it to the right bot. */
+  sendTeamMessage(text: string) {
+    const t = text.trim();
+    if (!t) return;
+    const now = clock.now();
+    const to = parseRoutine(t).botId;
+    const toName = botName(state, to);
+    setState((s) => ({ teamChat: appendTeam(s.teamChat, [{ id: uid("tm"), author: "user", at: now, text: t }]) }));
+    setTimeout(() => {
+      const at = clock.now();
+      const replies: TeamMessage[] = [{ id: uid("tm"), author: "manager", to, at, text: to === "manager" ? "Got it. I'll take care of it." : `Passing this to ${toName}.` }];
+      if (to !== "manager") replies.push({ id: uid("tm"), author: to, to: "user", at: at + 1500, text: "On it. I'll post here when I have something." });
+      setState((s) => ({ teamChat: appendTeam(s.teamChat, replies) }));
+      playSound("message", state.settings.sound);
+    }, 900);
   },
 
   markSignalRead(id: string) {

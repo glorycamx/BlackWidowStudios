@@ -9,7 +9,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  return { title: getAgentBySlug(slug)?.name ?? "Intelligence" };
+  return { title: getAgentBySlug(slug)?.name ?? "Bot" };
 }
 
 export default async function AgentWorkspacePage({ params }: { params: Promise<{ slug: string }> }) {

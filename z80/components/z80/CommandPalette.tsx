@@ -1,5 +1,6 @@
 "use client";
 
+import { jobLabel } from "@/lib/copy";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -90,16 +91,16 @@ export function CommandPalette() {
 
   const items = useMemo<Item[]>(() => {
     const base: Item[] = [
-      { id: "new", label: "New mission", hint: "Describe an outcome", group: "Command", icon: <Plus size={15} />, run: go("/chat?focus=1") },
+      { id: "new", label: "New job", hint: "Describe an outcome", group: "Command", icon: <Plus size={15} />, run: go("/chat?focus=1") },
       { id: "signals", label: "Open signals", hint: "Hot leads and briefings", group: "Navigate", icon: <Radar size={15} />, run: go("/live") },
-      { id: "workforce", label: "Open workforce", group: "Navigate", icon: <Users size={15} />, run: go("/team") },
+      { id: "workforce", label: "Your team", group: "Navigate", icon: <Users size={15} />, run: go("/team") },
       { id: "approvals", label: "View approvals", group: "Navigate", icon: <CheckCircle2 size={15} />, run: go("/approvals") },
-      { id: "missions", label: "Search missions", group: "Navigate", icon: <Search size={15} />, run: go("/jobs") },
+      { id: "missions", label: "Search jobs", group: "Navigate", icon: <Search size={15} />, run: go("/jobs") },
       ...availableAgents.map((a) => ({
         id: `msg-${a.id}`,
         label: `Message ${a.name}`,
         hint: a.role,
-        group: "Intelligences",
+        group: "Bots",
         icon: <MessageSquare size={15} style={{ color: a.accent.hex }} />,
         run: go(`/team/${a.slug}?message=1`),
       })),
@@ -122,14 +123,14 @@ export function CommandPalette() {
     const ms: Item[] = missions.slice(0, 12).map((m) => ({
       id: `mission-${m.id}`,
       label: m.title,
-      hint: `Mission ${missionCode(m.number)}`,
-      group: "Missions",
+      hint: jobLabel(m.number),
+      group: "Jobs",
       icon: <ArrowRight size={15} />,
       run: go(`/jobs/${m.id}`),
     }));
     const all = [...base, ...ms];
     const query = q.trim().toLowerCase();
-    if (!query) return all.filter((i) => i.group !== "Missions").concat(ms.slice(0, 3));
+    if (!query) return all.filter((i) => i.group !== "Jobs").concat(ms.slice(0, 3));
     return all.filter((i) => `${i.label} ${i.hint ?? ""} ${i.group}`.toLowerCase().includes(query));
   }, [q, missions, go, sound, close]);
 
