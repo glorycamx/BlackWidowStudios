@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion, useInView, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useInView } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Display, Reveal, Section } from "@/components/home/Section";
 import { TEMP_COLOR, TempChip } from "@/components/signals/SignalParts";
@@ -8,6 +8,7 @@ import { aiLead, websiteLead } from "@/lib/services/signalService";
 import { EASE } from "@/lib/motion";
 import { hashString, prng } from "@/lib/utils";
 import type { Signal } from "@/types";
+import { useReducedMotionSafe } from "@/lib/hooks/useReducedMotionSafe";
 
 function sampleLead(i: number): Signal {
   const r = prng(hashString(`home-lead:${i}`));
@@ -17,7 +18,7 @@ function sampleLead(i: number): Signal {
 
 /** Speed: leads caught minutes after they happen, fully researched. */
 export function SignalsSection() {
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionSafe();
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { margin: "-20% 0px" });
   const pool = useMemo(() => Array.from({ length: 12 }, (_, i) => sampleLead(i + 1)), []);

@@ -3,7 +3,7 @@
  *
  * PLACEHOLDER: final prices and limits have not been set. Every number below
  * is `null` (rendered as "To be announced") until it is decided. Edit this
- * file only — components read from it and never hard-code plan details.
+ * file only. Components read from it and never hard-code plan details.
  */
 export interface PricingTier {
   id: string;
@@ -29,8 +29,8 @@ export const pricing: { currency: string; note: string; tiers: PricingTier[] } =
       priceMonthly: null,
       priceNote: "per month",
       limits: [
-        { label: "Intelligences", value: "3" },
-        { label: "Active missions", value: null },
+        { label: "Bots", value: "5" },
+        { label: "Routines", value: null },
         { label: "Seats", value: "1" },
       ],
       features: ["Command center", "Organization memory", "Approval gates", "Activity history"],
@@ -39,15 +39,15 @@ export const pricing: { currency: string; note: string; tiers: PricingTier[] } =
     {
       id: "growth",
       name: "Growth",
-      audience: "For teams deploying multiple intelligences.",
+      audience: "For teams running bots across the business.",
       priceMonthly: null,
       priceNote: "per month",
       limits: [
-        { label: "Intelligences", value: "All available" },
-        { label: "Active missions", value: null },
+        { label: "Bots", value: "All available" },
+        { label: "Routines", value: null },
         { label: "Seats", value: null },
       ],
-      features: ["Everything in Starter", "Parallel missions", "Shared approvals", "Team permissions"],
+      features: ["Everything in Starter", "Unlimited jobs", "Shared approvals", "Team permissions"],
       cta: "Join early access",
       highlighted: true,
     },
@@ -58,11 +58,11 @@ export const pricing: { currency: string; note: string; tiers: PricingTier[] } =
       priceMonthly: null,
       priceNote: "custom",
       limits: [
-        { label: "Intelligences", value: "All + custom" },
-        { label: "Active missions", value: "Custom" },
+        { label: "Bots", value: "All + build your own" },
+        { label: "Routines", value: "Custom" },
         { label: "Seats", value: "Custom" },
       ],
-      features: ["Everything in Growth", "Custom intelligences", "Workspace isolation controls", "Dedicated onboarding"],
+      features: ["Everything in Growth", "Build your own bots", "Workspace isolation controls", "Dedicated onboarding"],
       cta: "Talk to us",
     },
   ],

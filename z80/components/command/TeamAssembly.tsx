@@ -372,7 +372,7 @@ function MissionCore({ deploying }: { deploying: boolean }) {
       />
       <div className="relative text-center">
         <div className="label text-fg-1">Job</div>
-        <div className="mt-1.5 text-[12px] tabular-nums text-fg-3">{deploying ? "Deploying" : "Objective"}</div>
+        <div className="mt-1.5 text-[12px] tabular-nums text-fg-3">{deploying ? "Starting" : "The job"}</div>
       </div>
     </div>
   );
@@ -549,7 +549,7 @@ function MobileNetwork({
       <div className="relative mb-4 flex items-center gap-3">
         <span className="absolute -left-[22px] flex h-3 w-3 items-center justify-center rounded-full bg-indigo shadow-[0_0_14px_#645bff]" />
         <span className="label text-fg-1">Job</span>
-        <span className="text-[12px] tabular-nums text-fg-3">{deploying ? "Deploying" : "Objective set"}</span>
+        <span className="text-[12px] tabular-nums text-fg-3">{deploying ? "Starting" : "Ready"}</span>
       </div>
       <ul className="space-y-3">
         {team.map((a, i) => {

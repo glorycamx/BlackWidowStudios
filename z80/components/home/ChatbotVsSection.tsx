@@ -1,9 +1,10 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { Intro, Reveal, Section } from "@/components/home/Section";
 import { EASE } from "@/lib/motion";
 import { hashString, prng } from "@/lib/utils";
+import { useReducedMotionSafe } from "@/lib/hooks/useReducedMotionSafe";
 
 const ROWS = [
   ["Waits for you to ask", "Works while you sleep"],
@@ -16,7 +17,7 @@ const HOURS = ["12 AM", "6 AM", "12 PM", "6 PM", "12 AM"];
 
 /** The difference, in one picture: two days, side by side. */
 export function ChatbotVsSection() {
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionSafe();
   const r = prng(hashString("z80-day"));
   const ticks = Array.from({ length: 96 }, (_, i) => ({ x: (i / 95) * 100, h: 30 + r() * 70, find: r() > 0.86 }));
   return (
@@ -36,10 +37,10 @@ export function ChatbotVsSection() {
                 key={i}
                 className="absolute bottom-0 w-[2px] -translate-x-1/2 rounded-full"
                 style={{ left: `${t.x.toFixed(2)}%`, background: t.find ? "#ff6f91" : "linear-gradient(to top, #7a6bff, #c252f2)" }}
-                initial={reduce ? false : { height: 0 }}
+                initial={{ height: 0 }}
                 whileInView={{ height: `${t.h.toFixed(1)}%` }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: reduce ? 0 : i * 0.008, ease: EASE }}
+                transition={reduce ? { duration: 0 } : { duration: 0.6, delay: i * 0.008, ease: EASE }}
               />
             ))}
           </Day>

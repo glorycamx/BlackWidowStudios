@@ -13,6 +13,9 @@ import LoginPage from "@/app/(auth)/login/page";
 import SignupPage from "@/app/(auth)/signup/page";
 import OnboardingPage from "@/app/(auth)/onboarding/page";
 import CommandPage from "@/app/(app)/chat/page";
+import LivePage from "@/app/(app)/live/page";
+import RoutinesPage from "@/app/(app)/routines/page";
+import CalendarPage from "@/app/(app)/calendar/page";
 import MissionsPage from "@/app/(app)/jobs/page";
 import WorkforcePage from "@/app/(app)/team/page";
 import ApprovalsPage from "@/app/(app)/approvals/page";
@@ -44,6 +47,9 @@ const auth: Record<string, () => ReactNode> = {
 };
 
 const product: Record<string, () => ReactNode> = {
+  "/live": () => <LivePage />,
+  "/routines": () => <RoutinesPage />,
+  "/calendar": () => <CalendarPage />,
   "/chat": () => <CommandPage />,
   "/jobs": () => <MissionsPage />,
   "/team": () => <WorkforcePage />,
@@ -54,7 +60,29 @@ const product: Record<string, () => ReactNode> = {
   "/settings": () => <SettingsPage />,
 };
 
-function Route({ path }: { path: string }) {
+/** Same aliases as next.config.ts redirects. */
+const ALIAS: [RegExp, string][] = [
+  [/^\/signals$/, "/live"],
+  [/^\/command$/, "/chat"],
+  [/^\/workforce$/, "/team"],
+  [/^\/missions$/, "/jobs"],
+  [/^\/connections$/, "/apps"],
+  [/^\/workforce\/(.+)$/, "/team/$1"],
+  [/^\/missions\/(.+)$/, "/jobs/$1"],
+  [/^\/agents\/(.+)$/, "/bots/$1"],
+  [/^\/(team|bots)\/helm$/, "/$1/manager"],
+  [/^\/(team|bots)\/lookout$/, "/$1/lead-hunter"],
+  [/^\/(team|bots)\/beacon$/, "/$1/content-creator"],
+];
+
+function resolve(path: string) {
+  let p = path;
+  for (const [re, to] of ALIAS) p = p.replace(re, to);
+  return p;
+}
+
+function Route({ path: raw }: { path: string }) {
+  const path = resolve(raw);
   if (marketing[path]) return <MarketingLayout>{marketing[path]()}</MarketingLayout>;
   if (auth[path]) return <AuthLayout>{auth[path]()}</AuthLayout>;
   if (product[path]) return <AppLayout>{product[path]()}</AppLayout>;

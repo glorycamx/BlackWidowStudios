@@ -1,8 +1,10 @@
-# Z80.si: autonomous AI agents
+# Z80.si: AI bots that never clock out
 
-**Super intelligence is here.** Z80 agents don't wait for prompts. They run 24/7 on their own: they watch the market, find opportunities, research them, write the outreach and do the work. They only come to you when a decision needs a person.
+**Your AI bots never clock out.** Chatbots wait for you to ask. Z80 bots find leads, post your content, and watch your market around the clock, then text you when something needs a yes. Or build your own bot in a sentence.
 
-This repository is a product demo. Agent work and incoming signals are **simulated** by a mock service layer that you can replace with real implementations.
+The brand line under the wordmark stays: **Super intelligence is here.**
+
+This repository is a product demo. Everything the bots do is **simulated** in the browser by `lib/sim/`, behind a small interface a real backend can replace.
 
 ## Run it
 
@@ -16,69 +18,74 @@ npm run typecheck
 
 Node 20+. No environment variables are required. See `.env.example` for the slots that real integrations will use.
 
-## The demo flow
+## Try it
 
-1. Go to `/`. Type an objective into the hero console, or press **Deploy your team** to type the demo mission for you.
-2. Z80 analyzes the objective and the sphere fragments into the recommended team.
-3. Inspect each intelligence, change its role, add or remove agents, then press **Deploy**.
-4. You land in mission control (`/missions/m248`). Agents work, activity streams in, and Helm asks for approval.
-5. Approve (or hold). The mission completes and shows its results: prospects with personalized openers, which you can export as CSV.
+1. Open `/live`. Your bots have been on shift all night: the feed shows what they found, each with **Happened** and **Caught** times. The Right now strip ticks every few seconds with each bot's latest check.
+2. Open a bot (`/team/lead-hunter`) to **watch it work**, see its routines with countdowns, switch **Do it without asking**, and teach it a skill.
+3. In `/chat`, tell Manager something ongoing ("Text me every morning at 7 with new hot leads"). It becomes a routine. Say "Create a bot that watches Reddit for people asking for a web designer" and a new bot goes on shift.
+4. `/calendar` shows posts going out on the exact minute. "Add a test post in 1 minute" lets you watch one.
+5. Hide the tab for a few minutes, come back, and read **While you were away**.
+6. Add `?at=03:00` to any URL (or use Settings, Time travel) to see the bots at 3 AM. Nothing is saved in that mode.
 
-Use **4×** in the mission header to speed things up. Use **Settings → Reset demo workspace** to start over.
+Settings has demo speed (1x, 2x, 4x), morning text and recap times, quiet hours, browser alerts, and Reset demo workspace.
 
 ## Map
 
 | Route | What it is |
 | --- | --- |
-| `/` | Cinematic homepage: hero command, team assembly, scroll story |
-| `/agents/[slug]` | Public intelligence profiles with their particle form |
-| `/command` | One chat, multiple intelligences. Plans, deploys, agent messages, approvals |
-| `/signals` | Always-on watches and their live feed: hot-lead dossiers, AI briefings, reminders, autopilot |
-| `/missions`, `/missions/[id]` | Mission list; live topology/timeline, approvals, execution feed, results |
-| `/workforce`, `/workforce/[slug]` | Roster; agent workspace with pause, permissions and a direct line |
-| `/approvals`, `/activity` | Human checkpoints; the audit trail |
-| `/memory`, `/connections`, `/settings` | Organization memory, integrations, preferences and demo controls |
-| `/login`, `/signup`, `/onboarding` | Auth screens (mock) and conversational onboarding |
-| `/pricing`, `/security`, `/company`, `/privacy`, `/terms` | Editorial pages |
+| `/` | Homepage: five bot clusters, Chatbot vs Z80, While you slept, Meet your bots, how it works |
+| `/bots/[slug]` | Public bot profiles with their particle form and a live Watch it work screen |
+| `/live` | Home after login: while you were away, Right now, today's counters, the feed |
+| `/chat` | Talk to Manager. Ongoing asks become routines, one-offs become jobs. Team chat tab |
+| `/team`, `/team/[slug]` | Your team, Create your own bot, and each bot's page |
+| `/routines` | Every routine, plus the next 24 hours as lanes |
+| `/calendar` | Content calendar: week and list, approve, edit, skip |
+| `/jobs`, `/jobs/[id]` | One-off jobs with their live timeline, approvals and results |
+| `/approvals`, `/activity` | Needs you; the full history including quiet checks |
+| `/memory`, `/apps`, `/settings` | What the bots know, apps and how bots reach you, preferences |
 
-Press **⌘K / Ctrl+K** anywhere to open the command palette.
+Old routes (`/signals`, `/command`, `/workforce`, `/missions`, `/connections`, `/agents/*`) redirect. Press **Cmd K / Ctrl K** anywhere for the command palette.
 
 ## Architecture
 
 ```
-app/                    routes: (marketing) public, (app) product, (auth), api/
+app/                    routes: (marketing), (app), (auth), api/
 components/
   three/                particle engine (raw Three.js + GLSL) and canvas wrapper
   home/                 homepage sections and the scroll-driven scene director
-  command/              console, analysis, team assembly, command thread
-  missions/ workforce/ workspace/ app/   product screens and shared app UI
-config/                 site/SEO metadata, pricing (editable, placeholder values)
-data/                   agents, integrations, permissions, memory, use cases
-lib/services/           planService, missionService (simulator), chat, agent, results
-lib/store/workspace.ts  client store: state, persistence and the simulation clock
-lib/ai/provider.ts      server-side boundary for a real model provider
-lib/auth/               auth provider boundary (mock, not secure)
-lib/scene/              director bridging the DOM and the particle engine
+  live/ bots/ routines/ calendar/ command/ missions/ workforce/ workspace/ app/
+config/                 site/SEO metadata, pricing (placeholder values)
+data/                   bots roster, default routines, skills, apps, permissions, memory
+lib/sim/                the always-on simulation: clock, heartbeats, generators,
+                        scheduler, backfill, plain-English parsing, BotRuntime
+lib/services/           planner, job engine, chat, lead and news pools
+lib/store/workspace.ts  client store: state, persistence (z80.workspace.v4) and the tick
+lib/time.ts             every user-facing time: local, 12-hour, AM/PM
 types/                  the domain model
 ```
 
-### Watches and signals (the always-on side)
+### How the bots run
 
-Watches (`data/watches.ts`) are standing orders that run around the clock: website opportunities, AI implementation opportunities, AI news and reminders. Each one produces **signals**: a hot-lead dossier (business, owner, contact, current site, priority, temperature, problems, Google presence, reviews, value, demo angle, recommended offer and price, upsells, Beacon's outreach script and the next move), a briefing or a reminder. New signals raise a toast, appear in the command thread and the activity log, and can be turned into an outreach mission in one click. With **autopilot** on, every hot lead gets an outreach mission drafted immediately, and it still waits for approval before anything is sent.
+- **Routines** (`data/routines.ts`) are jobs a bot keeps doing: always on, every few minutes, or on a schedule. Each one is powered by a simulated engine.
+- **Heartbeats** (`lib/sim/heartbeats.ts`) are quiet proof of work ("Checked 48 local business sites. All up.") kept in their own small store, out of the feed.
+- **Generators** (`lib/sim/generators.ts`) produce finds: lead dossiers, posts, money for Researcher, briefs for Reporter, the morning text and evening recap. Every find carries when it happened and when it was caught.
+- **Scheduler** (`lib/sim/scheduler.ts`) runs due routines, posts on the minute, hands work between bots in team chat, and backfills what happened while the app was closed.
+- **BotRuntime** (`lib/sim/runtime.ts`) is the seam: list bots and routines, create a routine or bot from plain English, subscribe to finds, approve, pause. A server can implement the same interface.
 
-In this build `lib/services/signalService.ts` simulates the feed with generated sample data (555-01xx numbers, `.example` domains). Real monitors emit the same `Signal` shape.
+Nothing is sent, posted or spent without a yes unless that routine has **Do it without asking** on, and jobs still follow the workspace permissions. Sample businesses use the reserved `.example` domain and 555-01xx numbers.
 
 ### Replacing the mocks
 
 - **Planning and chat.** `POST /api/z80/plan` and `POST /api/chat` call `getPlanner()` and `getChatResponder()` in `lib/ai/provider.ts`. Implement those with a real model, reading `Z80_AI_API_KEY` server-side, and return the same `Plan` shape. The client (`lib/api.ts`) falls back to the local mock if a request fails.
-- **Missions.** `lib/services/missionService.ts` is pure: `advanceMission` turns a mission plus elapsed time into the next mission plus *emissions* (activity, chat, approvals, sounds). A real backend can stream the same emissions; `POST /api/missions` and `POST /api/missions/:id/action` document the shapes.
+- **Jobs.** `lib/services/missionService.ts` is pure: `advanceMission` turns a job plus elapsed time into the next job plus *emissions* (activity, chat, approvals, sounds). A real backend can stream the same emissions; `POST /api/missions` and `POST /api/missions/:id/action` document the shapes.
 - **Auth.** Implement `AuthProvider` in `lib/auth/index.ts` (Clerk, Auth0, Supabase…). The current provider is a display-name stub and verifies nothing.
 - **Integrations.** `data/integrations.ts` is the source of truth for what the site claims. Everything is `coming-soon`/`planned` except the simulated Public Web. Flip an entry to `live` when it ships.
-- **Agents.** Add an entry to `data/agents.ts`; it appears in the roster, palette, planner add-menu and routes. `sceneGroup` binds an agent to the particle scene.
+- **Bots.** Add an entry to `data/bots.ts`; it appears in the roster, palette, planner and routes. `sceneGroup` (0 to 4) binds a bot to its particle cluster. Owners can also create bots at runtime.
+- **Always-on work.** Replace `lib/sim` behind `BotRuntime` with real monitors that emit the same `FeedItem`, `Heartbeat` and `TeamMessage` shapes.
 
 ### The particle engine
 
-One `Points` draw call and one `LineSegments` draw call. Each particle carries six precomputed formations: sphere, team clusters, a lattice (Helm), a scanner (Lookout), flowing ribbons (Beacon) and the ambient field. The vertex shader blends between them by weights, so morphs cost nothing on the CPU. The DOM steers the engine through a small `SceneDirector`; the engine eases toward its targets every frame.
+One `Points` draw call and one `LineSegments` draw call. Each particle carries six precomputed formations: sphere, five bot clusters, a lattice (Manager), a scanner (Lead Hunter), flowing ribbons (Content Creator) and the ambient field. In the cluster formation, Researcher is a tilted orbit and Reporter is a set of pulsing shells. The vertex shader blends between them by weights, so morphs cost nothing on the CPU. The DOM steers the engine through a small `SceneDirector`; the engine eases toward its targets every frame.
 
 It is loaded with a dynamic import, so Three.js never ships in the initial bundle or on pages that don't use it. It pauses when the tab is hidden or the canvas is offscreen. It uses fewer particles on phones and low-core devices, and lowers its resolution if frames run slow. With `prefers-reduced-motion`, it renders still frames only when the scene changes.
 

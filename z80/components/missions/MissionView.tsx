@@ -64,7 +64,7 @@ export function MissionView({ id }: { id: string }) {
       </AnimatePresence>
 
       <Link href="/jobs" className="label inline-flex items-center gap-2 text-fg-3 hover:text-white">
-        <ArrowLeft size={12} /> Missions
+        <ArrowLeft size={12} /> Jobs
       </Link>
 
       {/* Header */}

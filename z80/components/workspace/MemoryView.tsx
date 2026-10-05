@@ -31,6 +31,15 @@ export function MemoryView() {
                 <div>
                   <h2 className="text-[13px] font-semibold text-white">{d.label}</h2>
                   <p className="mt-1.5 text-[13px] text-fg-3">{d.summary}</p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {availableAgents
+                      .filter((a) => a.memory.includes(d.id))
+                      .map((a) => (
+                        <span key={a.id} className="rounded-full bg-white/[0.05] px-2 py-0.5 text-[11px]" style={{ color: a.accent.tint }}>
+                          {a.name}
+                        </span>
+                      ))}
+                  </div>
                 </div>
                 <div className="flex gap-1.5 pt-1" aria-label={`Used by ${users.map((u) => u.name).join(", ")}`}>
                   {users.map((u) => (

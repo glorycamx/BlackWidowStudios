@@ -1,24 +1,24 @@
 import type { Metadata } from "next";
 import { Editorial, Prose } from "@/components/z80/Editorial";
 
-export const metadata: Metadata = { title: "Security", description: "How Z80 keeps humans in control of an AI workforce." };
+export const metadata: Metadata = { title: "Security", description: "How Z80 keeps you in charge of bots that work around the clock." };
 
 export default function SecurityPage() {
   return (
-    <Editorial label="Security" title="Humans decide. Z80 executes." intro={<p>Giving software access to your business is a serious decision. Control is designed into Z80, not added on top.</p>}>
+    <Editorial label="Security" title="They do the work. You stay the boss." intro={<p>Giving software access to your business is a big decision. Control is built into Z80, not added on top.</p>}>
       <Prose>
-        <h2>Explicit permissions</h2>
-        <p>Every action an intelligence can take is governed by a workspace rule with one of three levels: <strong>autonomous</strong>, <strong>ask first</strong>, or <strong>blocked</strong>. Defaults are conservative — anything that leaves your company asks first, and destructive actions are blocked.</p>
-        <h2>Human approval gates</h2>
-        <p>When a mission reaches an action that requires approval, it stops and waits. You see exactly what will happen before it happens, and you can approve, hold, or deny.</p>
-        <h2>Activity history</h2>
-        <p>Every meaningful action is recorded: which intelligence acted, what it did, and when. The activity log is the audit trail for your workforce.</p>
-        <h2>Revoke access instantly</h2>
-        <p>Pause any intelligence or disconnect any tool at any time. Missions that depend on it wait until you decide what happens next.</p>
-        <h2>Organization-level isolation</h2>
-        <p>Memory, connections and missions belong to a single workspace and are never shared between organizations.</p>
-        <h2>Current status</h2>
-        <p>Z80 is in early access. This site does not claim third-party security certifications. If your organization needs specific assurances, talk to us before connecting production systems.</p>
+        <h2>Clear permissions</h2>
+        <p>Every action a bot can take follows a workspace rule with one of three levels: <strong>do it</strong>, <strong>ask first</strong>, or <strong>blocked</strong>. The defaults are careful. Anything that leaves your company asks first, and anything destructive is blocked.</p>
+        <h2>Your yes, first</h2>
+        <p>When a job or routine reaches something that needs approval, it stops and waits. You see exactly what will happen before it happens, and you can approve, hold, or say no. A routine only acts on its own if you turn on &ldquo;Do it without asking&rdquo; for it.</p>
+        <h2>Every step on record</h2>
+        <p>Every check and every action is logged: which bot did it, what it did, and when. Activity is the full history.</p>
+        <h2>Stop anything, anytime</h2>
+        <p>Pause a routine, pause a bot, or disconnect an app whenever you want. Work that depends on it waits until you decide what happens next.</p>
+        <h2>Your workspace is yours</h2>
+        <p>Memory, apps, routines and jobs belong to one workspace and are never shared between companies.</p>
+        <h2>Where we are</h2>
+        <p>Z80 is in early access. This site does not claim third-party security certifications. If your company needs specific assurances, talk to us before connecting real systems.</p>
       </Prose>
     </Editorial>
   );

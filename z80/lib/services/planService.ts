@@ -163,7 +163,7 @@ function prospectTasks(c: Ctx): PlannedTask[] {
       dependsOn: ["discover"],
       steps: [
         step("Auditing websites for speed, mobile layout and booking.", 1700),
-        step(`Detected outdated mobile layout on ${outdated} sites.`, 1900, ["Signals: no responsive layout, copyright older than 3 years, no online booking, load time over 4s"]),
+        step(`Detected outdated mobile layout on ${outdated} sites.`, 1900, ["Clues: no mobile layout, copyright older than 3 years, no online booking, load time over 4s"]),
         step(`${qualified} passed initial qualification.`, 1800),
       ],
       handoff: { to: "content-creator", message: `${qualified} companies qualified. Sending website weaknesses and owner data.` },
@@ -239,7 +239,7 @@ function prospectTasks(c: Ctx): PlannedTask[] {
           detail: `${c.n} prospects and personalized messages are ready. Nothing is sent until you approve.`,
           blocking: true,
         },
-        handoff: { to: "user", message: "Campaign prepared. Review before deployment?" },
+        handoff: { to: "user", message: "Campaign ready. Want to review it before it goes out?" },
       },
       {
         id: "launch",
@@ -432,19 +432,19 @@ function genericTasks(c: Ctx, agents: AgentId[], objective: string): PlannedTask
 }
 
 const WHY: Record<string, Partial<Record<ResultKind, string>> & { default: string }> = {
-  helm: {
-    prospects: "Multi-step mission with handoffs and an approval gate. Manager keeps it coordinated and validates the final list.",
+  manager: {
+    prospects: "A job with handoffs and an approval step. Manager keeps it on track and checks the final list.",
     campaign: "Campaigns need a schedule and a human checkpoint. Manager owns both.",
     brief: "Manager structures findings into a brief you can act on.",
     default: "Breaks the objective into tasks and keeps the work moving.",
   },
-  lookout: {
-    prospects: "Finding and qualifying companies is research-heavy. Lead Hunter is the fastest researcher in the workforce.",
+  "lead-hunter": {
+    prospects: "Finding and qualifying companies is research-heavy. Lead Hunter is the fastest researcher on the team.",
     campaign: "Strong creative starts with knowing the audience and the competition.",
     brief: "Competitive research is Lead Hunter's core specialty.",
     default: "Gathers the information the rest of the team needs.",
   },
-  beacon: {
+  "content-creator": {
     prospects: "Personalized outreach converts. Content Creator writes a specific reason to reply for every company.",
     campaign: "Creative direction and copy are Content Creator's core specialty.",
     brief: "Content Creator turns research into a clear, persuasive brief.",
@@ -453,9 +453,9 @@ const WHY: Record<string, Partial<Record<ResultKind, string>> & { default: strin
 };
 
 const OUTPUT: Record<string, (c: Ctx, kind: ResultKind) => string> = {
-  helm: (c, k) => (k === "prospects" ? `Validated list of ${c.n} prospects, CRM-ready` : k === "brief" ? "Structured brief and next steps" : "Coordinated plan, schedule and status reports"),
-  lookout: (c, k) => (k === "prospects" ? `${c.n} qualified companies with decision makers` : k === "brief" ? "Competitor map and 3 gaps" : "Audience and competitor research"),
-  beacon: (c, k) => (k === "prospects" ? `${c.n} personalized openers + 3-touch sequence` : k === "brief" ? "Readable recommendations" : "3 directions, 12 campaign assets"),
+  manager: (c, k) => (k === "prospects" ? `Validated list of ${c.n} prospects, CRM-ready` : k === "brief" ? "Structured brief and next steps" : "Coordinated plan, schedule and status reports"),
+  "lead-hunter": (c, k) => (k === "prospects" ? `${c.n} qualified companies with decision makers` : k === "brief" ? "Competitor map and 3 gaps" : "Audience and competitor research"),
+  "content-creator": (c, k) => (k === "prospects" ? `${c.n} personalized openers + 3-touch sequence` : k === "brief" ? "Readable recommendations" : "3 directions, 12 campaign assets"),
 };
 
 const TOOL_RELEVANCE: Record<ResultKind, string[]> = {
@@ -472,7 +472,7 @@ function assignmentFor(agentId: AgentId, tasks: PlannedTask[], c: Ctx, kind: Res
   const objectives = own.filter((t) => t.kind !== "approval").map((t) => t.label);
   if (agentId === "manager") objectives.unshift("Coordinate the operation");
   if (agentId === "manager" && own.some((t) => t.kind === "approval")) objectives.push("Request your approval");
-  if (!objectives.length) objectives.push("Support the mission on request");
+  if (!objectives.length) objectives.push("Help out when asked");
   const relevant = TOOL_RELEVANCE[kind];
   const tools = (agent?.tools ?? []).filter((t) => relevant.includes(t)).slice(0, 3);
   const perms = new Set<string>();
@@ -490,11 +490,11 @@ function assignmentFor(agentId: AgentId, tasks: PlannedTask[], c: Ctx, kind: Res
   return {
     agentId,
     roleId: agent?.roles[0]?.id ?? "default",
-    why: WHY[agentId]?.[kind] ?? WHY[agentId]?.default ?? "Selected for this mission.",
+    why: WHY[agentId]?.[kind] ?? WHY[agentId]?.default ?? "Picked for this job.",
     objectives: [...new Set(objectives)],
     tools,
     permissions,
-    estimatedOutput: OUTPUT[agentId]?.(c, kind) ?? "Mission deliverables",
+    estimatedOutput: OUTPUT[agentId]?.(c, kind) ?? "What the job produces",
   };
 }
 
@@ -505,7 +505,7 @@ function makeTitle(e: ObjectiveEntities, kind: ResultKind, objective: string): s
     return e.outbound ? `Build outbound pipeline for ${target}` : `Find ${e.count ?? ""} ${target}`.replace(/\s+/g, " ").trim();
   }
   if (kind === "campaign") return /content|posts?|calendar/i.test(objective) ? "Run the content operation" : "Launch the next campaign";
-  if (kind === "brief") return /competitor/i.test(objective) ? "Competitive intelligence brief" : "Market research brief";
+  if (kind === "brief") return /competitor/i.test(objective) ? "Competitor brief" : "Market research brief";
   const first = objective.split(/[,.:;!?]| and | then /i)[0].trim();
   const words = first.split(/\s+/).slice(0, 6).join(" ");
   return words.charAt(0).toUpperCase() + words.slice(1);
@@ -538,11 +538,11 @@ export function createPlan(objective: string, org?: Organization | null): Plan {
   if (agents.includes("manager")) {
     tasks.push({
       id: "decompose",
-      label: "Decompose objective",
+      label: "Plan the work",
       agentId: "manager",
       kind: "decompose",
       dependsOn: [],
-      steps: [step(`Mission decomposed into ${body.length + 1} tasks.`, 900)],
+      steps: [step(`Work planned: ${body.length + 1} steps.`, 900)],
     });
   }
   tasks.push(...body);
@@ -556,7 +556,7 @@ export function createPlan(objective: string, org?: Organization | null): Plan {
     id: uid("plan"),
     objective: objective.trim(),
     title: makeTitle(e, kind, objective),
-    analysis: `${agents.length === 1 ? "1 intelligence" : `${agents.length} intelligences`} recommended${orgLine}.`,
+    analysis: `${agents.length === 1 ? "1 bot" : `${agents.length} bots`} recommended${orgLine}.`,
     reasoningSummary: `The plan: ${lead.slice(0, -1).join(", ")}${lead.length > 1 ? ", then " : ""}${lead[lead.length - 1] ?? "organize the work"}.${
       tasks.some((t) => t.approval?.kind === "review") ? " Nothing leaves the company until you approve it." : ""
     }`,
@@ -594,7 +594,7 @@ export function retargetPlan(plan: Plan, agentIds: AgentId[], roles: Record<Agen
     ...plan,
     tasks,
     agents: assignments,
-    analysis: `${keep.length === 1 ? "1 intelligence" : `${keep.length} intelligences`} assigned.`,
+    analysis: `${keep.length === 1 ? "1 bot" : `${keep.length} bots`} assigned.`,
   };
 }
 
@@ -654,15 +654,15 @@ export function createLeadPlan(signalId: string, lead: LeadDossier): Plan {
   ];
   const entities: ObjectiveEntities = { intents: ["sales"], mentionsCrm: false, outbound: true, count: 1, target: lead.business, location: lead.location };
   const why: Record<string, string> = {
-    lookout: "Found the signal. Re-verifies the account before anyone reaches out.",
-    beacon: "Turns the dossier into a message written for this owner.",
-    helm: "Holds the send for your approval, then schedules the follow-up.",
+    "lead-hunter": "Found the lead. Double-checks it before anyone reaches out.",
+    "content-creator": "Turns the dossier into a message written for this owner.",
+    manager: "Holds the send for your approval, then schedules the follow-up.",
   };
   return {
     id: uid("plan"),
     objective: `Reach out to ${lead.owner} at ${lead.business}. ${lead.demoAngle}`,
     title: `Outreach: ${lead.business}`,
-    analysis: "3 intelligences assigned.",
+    analysis: "3 bots assigned.",
     reasoningSummary: `The plan: verify ${lead.business}, finalize the opener for ${first}, then send after you approve.`,
     entities,
     agents: (["manager", "lead-hunter", "content-creator"] as AgentId[]).map((id) => ({

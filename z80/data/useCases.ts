@@ -23,7 +23,7 @@ export const useCases: UseCase[] = [
     prompt: "Find 50 businesses in my area that need a new website and build a personalized outreach campaign.",
     steps: [
       { label: "Find leads", agents: ["lead-hunter"], detail: "Scan the market for companies that fit." },
-      { label: "Research accounts", agents: ["lead-hunter"], detail: "Owners, signals, timing." },
+      { label: "Research accounts", agents: ["lead-hunter"], detail: "Owners, buying moments, timing." },
       { label: "Personalize outreach", agents: ["content-creator"], detail: "A real reason to reply, per company." },
       { label: "Update CRM", agents: ["manager"], detail: "Clean records, right stages." },
       { label: "Alert salesperson", agents: ["manager"], detail: "Hot accounts, ready for a call." },

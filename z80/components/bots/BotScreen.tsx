@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
+import { useReducedMotionSafe } from "@/lib/hooks/useReducedMotionSafe";
 import { Lock } from "lucide-react";
 import { useBeats } from "@/lib/sim/heartbeats";
 import { useNow } from "@/lib/hooks/useNow";
@@ -15,7 +16,7 @@ import type { Agent } from "@/types";
  */
 export function BotScreen({ bot, paused, className, compact }: { bot: Agent; paused?: boolean; className?: string; compact?: boolean }) {
   const beat = useBeats((b) => b.latest[bot.id]);
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionSafe();
   const now = useNow(1000);
   const url = paused ? "Paused" : beat?.url ?? "z80.si";
   const r = prng(hashString(url + (beat?.id ?? "")));

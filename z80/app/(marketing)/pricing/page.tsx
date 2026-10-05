@@ -14,7 +14,7 @@ function price(v: number | null, note: string) {
 
 export default function PricingPage() {
   return (
-    <Editorial label="Pricing" title="Pay for the workforce, not the tools." intro={<p>{pricing.note}</p>}>
+    <Editorial label="Pricing" title="Pay for the bots, not the tools." intro={<p>{pricing.note}</p>}>
       <div className="grid gap-4 lg:grid-cols-3">
         {pricing.tiers.map((t) => {
           const p = price(t.priceMonthly, t.priceNote);

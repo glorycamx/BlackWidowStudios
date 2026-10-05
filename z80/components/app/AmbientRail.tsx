@@ -53,7 +53,7 @@ export function AmbientRail() {
 
       <section>
         <div className="flex items-center justify-between">
-          <h2 className="label">Live signals</h2>
+          <h2 className="label">Latest finds</h2>
           <Link href="/live" className="text-[12px] text-fg-3 hover:text-white">
             All →
           </Link>

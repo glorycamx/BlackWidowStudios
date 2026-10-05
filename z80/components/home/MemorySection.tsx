@@ -1,12 +1,13 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { Display, Reveal, Section } from "@/components/home/Section";
 import { availableAgents } from "@/data/bots";
 import { memoryDomains } from "@/data/memory";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
+import { useReducedMotionSafe } from "@/lib/hooks/useReducedMotionSafe";
 
 const W = 620;
 const H = 620;
@@ -14,7 +15,7 @@ const C = { x: W / 2, y: H / 2 };
 
 /** Memory: what your bots know about your business, as a living graph. */
 export function MemorySection() {
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionSafe();
   const [active, setActive] = useState<string | null>(null);
   const domains = memoryDomains;
   const pts = domains.map((d, i) => {

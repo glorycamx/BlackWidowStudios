@@ -56,7 +56,7 @@ function getSpeech(): (new () => SpeechRec) | null {
  * charges with energy as the objective takes shape.
  */
 export const CommandConsole = forwardRef<CommandConsoleHandle, Props>(function CommandConsole(
-  { value, onChange, onSubmit, examples = MISSION_EXAMPLES, size = "hero", disabled, label = "Goal", hint = "Give your agents a goal. They take it from there.", className, id = "mission-input" },
+  { value, onChange, onSubmit, examples = MISSION_EXAMPLES, size = "hero", disabled, label = "Goal", hint = "Tell Manager what you need. Your bots take it from there.", className, id = "mission-input" },
   ref,
 ) {
   const taRef = useRef<HTMLTextAreaElement>(null);

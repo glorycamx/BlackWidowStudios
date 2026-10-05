@@ -7,7 +7,7 @@ export default function NotFound() {
       <Link href="/" className="text-[22px]" aria-label="Z80.si home">
         <Wordmark />
       </Link>
-      <p className="label mt-16">404 · Signal lost</p>
+      <p className="label mt-16">404 · Page not found</p>
       <h1 className="mt-5 text-[clamp(36px,5vw,64px)] font-semibold leading-[1] tracking-[-0.045em] text-white">This page isn&apos;t part of the network.</h1>
       <div className="mt-10 flex gap-3">
         <Link href="/" className="inline-flex h-10 items-center rounded-[11px] bg-white px-5 text-[11px] font-medium text-black">

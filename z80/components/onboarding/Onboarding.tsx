@@ -16,7 +16,7 @@ const GOALS = [
   { id: "admin", label: "Less admin", ask: "What takes up the most time each week?", hint: "e.g. Chasing project updates and writing reports" },
   { id: "research", label: "Faster research", ask: "What do you need to know more about?", hint: "e.g. The five competitors we lose deals to" },
   { id: "followup", label: "Better follow-up", ask: "Who isn't getting followed up with today?", hint: "e.g. Last month's customers and quotes that went quiet" },
-  { id: "other", label: "Something else", ask: "What should your agents work on, around the clock?", hint: "Give your agents a goal." },
+  { id: "other", label: "Something else", ask: "What should your bots keep doing, around the clock?", hint: "Tell them in plain English." },
 ] as const;
 
 type GoalId = (typeof GOALS)[number]["id"];
@@ -72,7 +72,7 @@ export function Onboarding() {
     if (started.current) return;
     started.current = true;
     void (async () => {
-      await say("Let's build your workforce.", 500);
+      await say("Let's set up your bots.", 500);
       await say("What does your company do?", 800);
       setTimeout(() => inputRef.current?.focus(), 100);
     })();
@@ -89,7 +89,7 @@ export function Onboarding() {
       await say("Got it. What would make the biggest difference to your business right now?", 900);
     } else if (step === 2 && goal) {
       setStep(3);
-      await say("Here's the workforce I'd start with.", 900);
+      await say("Here are the bots I'd start with.", 900);
       workspace.setOrg({ name: "Your company", description: company, focus: GOALS.find((g) => g.id === goal)?.label ?? "" });
       const p = await workspace.plan(objectiveFor(goal, t));
       setPlan(p);
@@ -113,7 +113,7 @@ export function Onboarding() {
     <div className="mx-auto flex w-full max-w-[1240px] flex-1 flex-col px-5 pb-12 md:px-10">
       <div className="mx-auto w-full max-w-[720px] pt-8">
         <div className="flex items-center justify-between">
-          <p className="label">Let&apos;s build your workforce</p>
+          <p className="label">Let&apos;s set up your bots</p>
           <div className="flex gap-1.5" aria-label={`Step ${progress + 1} of 4`}>
             {[0, 1, 2, 3].map((i) => (
               <span key={i} className={cn("h-[3px] w-8 rounded-full transition-colors duration-500", i <= progress ? "bg-white" : "bg-white/10")} />
@@ -181,7 +181,7 @@ export function Onboarding() {
       <AnimatePresence>
         {plan && (
           <motion.div className="mt-16" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: EASE }}>
-            <p className="label mb-6 text-fg-1">Your initial workforce</p>
+            <p className="label mb-6 text-fg-1">Your first bots</p>
             <TeamAssembly plan={plan} onDeployed={(id) => router.push(`/jobs/${id}?deployed=1`)} />
           </motion.div>
         )}

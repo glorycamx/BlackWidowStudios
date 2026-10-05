@@ -97,7 +97,7 @@ export function SettingsView() {
           <div className="flex items-center justify-between gap-6 py-1">
             <div>
               <div className="text-[14.5px] text-white">Interface sound</div>
-              <div className="mt-0.5 text-[13px] text-fg-3">Subtle tones for deploys, completions, approvals and replies.</div>
+              <div className="mt-0.5 text-[13px] text-fg-3">Soft tones for new jobs, finished work, approvals and replies.</div>
             </div>
             <Toggle
               on={settings.sound}

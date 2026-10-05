@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { useState } from "react";
 import { Check } from "lucide-react";
 import { AgentGlyph } from "@/components/agents/AgentGlyph";
@@ -8,6 +8,7 @@ import { agentOrFallback } from "@/data/bots";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import type { Mission, MissionTask, TaskStatus } from "@/types";
+import { useReducedMotionSafe } from "@/lib/hooks/useReducedMotionSafe";
 
 const W = 1000;
 const H = 600;
@@ -35,7 +36,7 @@ const STATUS_TEXT: Record<TaskStatus, string> = {
  * packets moving along active work, agents traveling between their tasks.
  */
 export function MissionTopology({ mission, entering }: { mission: Mission; entering?: boolean }) {
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionSafe();
   const nodes = layout(mission.tasks);
   const byId = Object.fromEntries(nodes.map((n) => [n.t.id, n]));
   const [hover, setHover] = useState<string | null>(null);

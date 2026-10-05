@@ -92,7 +92,7 @@ export function CommandPalette() {
   const items = useMemo<Item[]>(() => {
     const base: Item[] = [
       { id: "new", label: "New job", hint: "Describe an outcome", group: "Command", icon: <Plus size={15} />, run: go("/chat?focus=1") },
-      { id: "signals", label: "Open signals", hint: "Hot leads and briefings", group: "Navigate", icon: <Radar size={15} />, run: go("/live") },
+      { id: "signals", label: "Open Live", hint: "Hot leads, posts and briefs", group: "Navigate", icon: <Radar size={15} />, run: go("/live") },
       { id: "workforce", label: "Your team", group: "Navigate", icon: <Users size={15} />, run: go("/team") },
       { id: "approvals", label: "View approvals", group: "Navigate", icon: <CheckCircle2 size={15} />, run: go("/approvals") },
       { id: "missions", label: "Search jobs", group: "Navigate", icon: <Search size={15} />, run: go("/jobs") },

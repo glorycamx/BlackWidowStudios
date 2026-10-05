@@ -259,6 +259,36 @@ function applyEmissions(emissions: Emission[], s: WorkspaceState, now = Date.now
   };
 }
 
+const JOB_CAP = 40;
+
+/** Keep memory bounded: drop the oldest finished jobs past the cap. */
+function trimJobs(missions: Record<string, Mission>, order: string[]): { missions: Record<string, Mission>; missionOrder: string[] } {
+  if (order.length <= JOB_CAP) return { missions, missionOrder: order };
+  const keep = [...order];
+  const next = { ...missions };
+  for (let i = keep.length - 1; i >= 0 && keep.length > JOB_CAP; i--) {
+    const m = next[keep[i]];
+    if (!m || m.status === "complete") {
+      delete next[keep[i]];
+      keep.splice(i, 1);
+    }
+  }
+  return { missions: next, missionOrder: keep };
+}
+
+const PLAN_CAP = 60;
+
+/** Keep the newest plans (insertion order) and their deploy links. */
+function trimPlans(plans: Record<string, Plan>, deployed: Record<string, string>): { plans: Record<string, Plan>; deployedPlans: Record<string, string> } {
+  const ids = Object.keys(plans);
+  if (ids.length <= PLAN_CAP) return { plans, deployedPlans: deployed };
+  const keep = new Set(ids.slice(-PLAN_CAP));
+  return {
+    plans: Object.fromEntries(Object.entries(plans).filter(([id]) => keep.has(id))),
+    deployedPlans: Object.fromEntries(Object.entries(deployed).filter(([id]) => keep.has(id))),
+  };
+}
+
 /** Activity log lines and sounds for new finds. */
 function findEmissions(finds: FeedItem[]): Emission[] {
   const out: Emission[] = [];
@@ -307,7 +337,8 @@ function armRoutines(routines: Routine[], now: number, speed: number): Routine[]
   return routines.map((r) => {
     if (r.status !== "on") return r;
     if (r.trigger.kind === "event") return { ...r, nextRunAt: 0 };
-    if (r.nextRunAt && r.nextRunAt > now && r.trigger.kind === "schedule") return r;
+    // Keep countdowns that are still ahead (a reload shouldn't reset them).
+    if (r.nextRunAt && r.nextRunAt > now) return r;
     return { ...r, nextRunAt: scheduleNext(r, now, speed, true) };
   });
 }
@@ -734,9 +765,8 @@ export const workspace = {
     const mission = createMission(plan, number);
     const names = plan.agents.length;
     setState((s) => ({
-      missions: { ...s.missions, [mission.id]: mission },
-      deployedPlans: { ...s.deployedPlans, [planId]: mission.id },
-      missionOrder: [mission.id, ...s.missionOrder.filter((id) => id !== mission.id)],
+      ...trimPlans(s.plans, { ...s.deployedPlans, [planId]: mission.id }),
+      ...trimJobs({ ...s.missions, [mission.id]: mission }, [mission.id, ...s.missionOrder.filter((id) => id !== mission.id)]),
       nextMissionNumber: number + 1,
       chat: [
         ...s.chat,

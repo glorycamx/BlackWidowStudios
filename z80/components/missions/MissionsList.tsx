@@ -52,7 +52,7 @@ export function MissionsList() {
         sub="One-off work your bots are doing or finished."
         actions={
           <Button variant="solid" icon={<Plus size={14} />} href="/chat?focus=1">
-            New mission
+            New job
           </Button>
         }
       />
