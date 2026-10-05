@@ -7,3 +7,8 @@ out
 next-env.d.ts
 *.tsbuildinfo
 preview/dist
+
+# Cloudflare build output
+.open-next
+.wrangler
+.dev.vars
