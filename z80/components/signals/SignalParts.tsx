@@ -24,9 +24,20 @@ export function TempChip({ temp, className }: { temp: LeadTemperature; className
   );
 }
 
+const KIND_LABEL: Record<Signal["kind"], string> = {
+  lead: "Lead",
+  brief: "Brief",
+  reminder: "Reminder",
+  post: "Posted",
+  opportunity: "Money",
+  digest: "Update",
+  handoff: "Team",
+  approval: "Needs you",
+};
+
 export function KindChip({ signal }: { signal: Signal }) {
   if (signal.lead) return <TempChip temp={signal.lead.temperature} />;
-  const label = signal.kind === "news" ? "Briefing" : "Reminder";
+  const label = KIND_LABEL[signal.kind];
   return <span className="inline-flex h-5 items-center rounded-full px-2 text-[12px] text-fg-2 bg-white/[0.06]">{label}</span>;
 }
 

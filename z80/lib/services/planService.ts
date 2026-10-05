@@ -680,3 +680,6 @@ export function createLeadPlan(signalId: string, lead: LeadDossier): Plan {
     lead: { signalId, business: lead.business, owner: lead.owner, script: lead.outreachScript },
   };
 }
+
+/* Routines and custom bots: plain-English parsing lives in lib/sim/parse. */
+export { isRoutineRequest, parseBotSpec, parseRoutine } from "@/lib/sim/parse";

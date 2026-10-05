@@ -45,9 +45,11 @@ export function pad(n: number, width = 2): string {
   return String(n).padStart(width, "0");
 }
 
+/** Local 12-hour time with seconds, e.g. "8:14:22 PM". */
 export function clockTime(ts: number): string {
   const d = new Date(ts);
-  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  const h = d.getHours() % 12 || 12;
+  return `${h}:${pad(d.getMinutes())}:${pad(d.getSeconds())} ${d.getHours() < 12 ? "AM" : "PM"}`;
 }
 
 export function relativeTime(ts: number, now = Date.now()): string {

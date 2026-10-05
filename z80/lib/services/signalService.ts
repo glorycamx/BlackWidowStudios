@@ -1,15 +1,14 @@
 /**
- * signalService — what the always-on watches find.
+ * signalService: the lead and news pools behind the bots' finds.
  *
  * MOCK GENERATOR. Produces realistic, deterministic sample signals so the
  * demo has a live feed. Every business, contact and headline here is
  * generated sample data (phone numbers use the reserved 555-01xx range and
  * sites use the reserved .example domain). A real deployment replaces
- * `generateSignal` with live monitors that emit the same Signal shape.
+ * the generators in lib/sim with live monitors that emit the same FeedItem shape.
  */
-import { getWatchTemplate } from "@/data/watches";
-import type { LeadDossier, LeadTemperature, Signal, Watch } from "@/types";
-import { hashString, pick, prng, uid } from "@/lib/utils";
+import type { LeadDossier, LeadTemperature } from "@/types";
+import { pick } from "@/lib/utils";
 
 const FIRST = ["Dana", "Marcus", "Priya", "Tom", "Elena", "Jordan", "Kevin", "Rosa", "Sam", "Hannah", "Luis", "Grace", "Owen", "Nadia", "Paul", "Tessa", "Victor", "Amy", "Caleb", "Irene"];
 const LAST = ["Mercer", "Okafor", "Lindqvist", "Brennan", "Castillo", "Duarte", "Hale", "Ibarra", "Kowalski", "Nguyen", "Ashford", "Pryor", "Sutter", "Wexler", "Yates", "Moreau", "Delgado", "Fischer", "Rourke", "Whitlock"];
@@ -56,10 +55,10 @@ const WEB_TRIGGERS: WebTrigger[] = [
   {
     trigger: "Website went down",
     temp: "hot",
-    headline: () => "Site has been offline since early this morning",
-    problems: ["Site offline for 6+ hours", "No uptime monitoring", "Contact form unreachable while down", "Built on an unsupported theme"],
+    headline: () => "Site went offline. Visitors see an error page",
+    problems: ["Site offline right now", "No uptime monitoring", "Contact form unreachable while down", "Built on an unsupported theme"],
     angle: "Show their site back up on a fast, monitored build, with a 60-second before/after video.",
-    opener: (f, b) => `${f}, heads up: ${b}'s website has been down since early this morning, so anyone searching for you right now hits an error page. We can get you back online today on a faster site that tells us before it ever goes down again. Want me to send a quick preview?`,
+    opener: (f, b) => `${f}, heads up: ${b}'s website is down right now, so anyone searching for you right now hits an error page. We can get you back online today on a faster site that tells us before it ever goes down again. Want me to send a quick preview?`,
   },
   {
     trigger: "Business changed hands",
@@ -111,8 +110,8 @@ const WEB_TRIGGERS: WebTrigger[] = [
   },
 ];
 
-function websiteLead(r: () => number): { trigger: string; title: string; summary: string; lead: LeadDossier } {
-  const t = pick(r, WEB_TRIGGERS);
+export function websiteLead(r: () => number, only?: string): { trigger: string; title: string; summary: string; lead: LeadDossier } {
+  const t = WEB_TRIGGERS.find((x) => x.trigger === only) ?? pick(r, WEB_TRIGGERS);
   const industry = pick(r, WEB_INDUSTRIES);
   const business = businessName(r, industry);
   const { first, last } = person(r);
@@ -212,8 +211,8 @@ const AI_TRIGGERS: { trigger: string; temp: LeadTemperature; headline: string; p
   },
 ];
 
-function aiLead(r: () => number): { trigger: string; title: string; summary: string; lead: LeadDossier } {
-  const t = pick(r, AI_TRIGGERS);
+export function aiLead(r: () => number, only?: string): { trigger: string; title: string; summary: string; lead: LeadDossier } {
+  const t = AI_TRIGGERS.find((x) => x.trigger === only) ?? pick(r, AI_TRIGGERS);
   const industry = pick(r, AI_INDUSTRIES);
   const business = businessName(r, industry);
   const { first, last } = person(r);
@@ -247,7 +246,7 @@ function aiLead(r: () => number): { trigger: string; title: string; summary: str
 /* AI news (sample briefings)                                           */
 /* ------------------------------------------------------------------ */
 
-const NEWS: { title: string; summary: string; why: string }[] = [
+export const NEWS: { title: string; summary: string; why: string }[] = [
   { title: "Voice agents keep getting cheaper to run", summary: "Per-minute costs for AI phone agents continue to fall as models get faster.", why: "An AI receptionist offer can now be priced well below a part-time hire." },
   { title: "More small-business tools ship built-in AI assistants", summary: "Booking, invoicing and CRM tools are adding assistants by default.", why: "Clients will ask how to use them. A setup-and-training package sells itself." },
   { title: "Search results lean harder on reviews and fresh content", summary: "Local results increasingly reward recent reviews and active profiles.", why: "Review widgets and content plans are an easy upsell on every website deal." },
@@ -257,53 +256,10 @@ const NEWS: { title: string; summary: string; why: string }[] = [
 ];
 
 /* ------------------------------------------------------------------ */
-/* Public API                                                          */
+/* Public helpers                                                      */
 /* ------------------------------------------------------------------ */
 
-function base(watch: Watch, at: number): Omit<Signal, "kind" | "trigger" | "title" | "summary"> {
-  return { id: uid("sig"), watchId: watch.id, at, read: false, saved: false, dismissed: false };
-}
-
-/** Produce the next signal for a watch. `seq` makes output deterministic per watch. */
-export function generateSignal(watch: Watch, seq: number, at: number, recentLeads: Signal[] = []): Signal | null {
-  const r = prng(hashString(`${watch.id}:${seq}`));
-  switch (watch.kind) {
-    case "website-opportunities": {
-      const s = websiteLead(r);
-      return { ...base(watch, at), kind: "lead", ...s };
-    }
-    case "ai-opportunities": {
-      const s = aiLead(r);
-      return { ...base(watch, at), kind: "lead", ...s };
-    }
-    case "ai-news": {
-      const n = NEWS[seq % NEWS.length];
-      return { ...base(watch, at), kind: "news", trigger: "Sample briefing", title: n.title, summary: n.summary, news: { source: "Simulated feed", whyItMatters: n.why } };
-    }
-    case "reminders": {
-      const leads = recentLeads.filter((x) => x.kind === "lead" && x.lead && !x.dismissed);
-      if (!leads.length) return null;
-      const target = leads[Math.floor(r() * leads.length)];
-      const l = target.lead!;
-      const variant = Math.floor(r() * 3);
-      const first = l.owner.split(" ")[0];
-      const rem = [
-        { trigger: "Follow-up due", title: `Follow up with ${first} at ${l.business}`, summary: "Demo sent 3 days ago, no reply yet. A short call usually closes the gap.", due: "Today, 4:00 PM" },
-        { trigger: "Proposal expiring", title: `Proposal for ${l.business} expires tomorrow`, summary: `${l.recommended.offer} at ${l.recommended.price}. Nudge before it lapses.`, due: "Tomorrow" },
-        { trigger: "Lead went quiet", title: `${l.business} went quiet`, summary: "5 days since the last reply. Try a different angle: lead with the review count.", due: "This week" },
-      ][variant];
-      return { ...base(watch, at), kind: "reminder", trigger: rem.trigger, title: rem.title, summary: rem.summary, reminder: { due: rem.due, relatedSignalId: target.id } };
-    }
-  }
-}
-
-/** Seconds until a watch's next simulated signal (jittered). */
-export function nextDelayMs(watch: Watch, seq: number): number {
-  const t = getWatchTemplate(watch.kind);
-  const every = (t?.demoEverySec ?? 45) * 1000;
-  const r = prng(hashString(`${watch.id}:delay:${seq}`));
-  return Math.round(every * (0.7 + r() * 0.6));
-}
+export { businessName, person, pick as pickFrom, PLACES, TOWNS, WEB_INDUSTRIES };
 
 export function temperatureLabel(t: LeadTemperature) {
   return t === "hot" ? "Hot lead" : t === "warm" ? "Warm lead" : "Cool lead";

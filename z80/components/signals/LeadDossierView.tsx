@@ -40,7 +40,7 @@ function Field({ label, children, className }: { label: string; children: React.
 export function SignalDetail({ signal, onClose }: { signal: Signal; onClose?: () => void }) {
   const now = useNow(20000);
   const mission = useWorkspace((s) => (signal.missionId ? s.missions[signal.missionId] : undefined));
-  const related = useWorkspace((s) => (signal.reminder?.relatedSignalId ? s.signals.find((x) => x.id === signal.reminder?.relatedSignalId) : undefined));
+  const related = useWorkspace((s) => (signal.reminder?.relatedId ? s.feed.find((x) => x.id === signal.reminder?.relatedId) : undefined));
   const l = signal.lead;
 
   return (
@@ -115,11 +115,44 @@ export function SignalDetail({ signal, onClose }: { signal: Signal; onClose?: ()
         </div>
       )}
 
-      {signal.news && (
+      {signal.brief && (
         <div className="space-y-5 p-5 md:p-6">
-          <Field label="Why it matters to you">{signal.news.whyItMatters}</Field>
-          <p className="text-[12px] tabular-nums text-fg-4">Source: {signal.news.source}. Sample headline. Connect a news source for live briefings.</p>
+          {signal.digest && (
+            <ul className="space-y-2">
+              {signal.digest.lines.map((l, i) => (
+                <li key={i} className="text-[15px] leading-snug text-white">{l.text}</li>
+              ))}
+            </ul>
+          )}
+          <Field label="Why it matters to you">{signal.brief.whyItMatters}</Field>
+          <Field label="What to do">{signal.brief.whatToDo}</Field>
+          <p className="text-[12px] tabular-nums text-fg-4">Source: {signal.brief.source}. Sample headline. Connect a news source for live briefs.</p>
         </div>
+      )}
+
+      {signal.opportunity && (
+        <div className="space-y-5 p-5 md:p-6">
+          {signal.opportunity.client && <Field label="Client">{signal.opportunity.client}</Field>}
+          <Field label="Why it matters">{signal.opportunity.whyItMatters}</Field>
+          <Field label="Next step">{signal.opportunity.nextStep}</Field>
+          {signal.opportunity.value && <Field label="Worth about">{signal.opportunity.value}</Field>}
+        </div>
+      )}
+
+      {signal.digest && !signal.brief && (
+        <ul className="space-y-3 p-5 md:p-6">
+          {signal.digest.lines.map((l, i) => (
+            <li key={i} className="text-[15px] leading-snug text-white">
+              {l.href ? (
+                <Link href={l.href} className="hover:underline">
+                  {l.text}
+                </Link>
+              ) : (
+                l.text
+              )}
+            </li>
+          ))}
+        </ul>
       )}
 
       {signal.reminder && (

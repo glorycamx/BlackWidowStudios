@@ -4,15 +4,15 @@ import { AnimatePresence, motion, useInView, useReducedMotion } from "motion/rea
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Display, Reveal, Section } from "@/components/home/Section";
 import { TEMP_COLOR, TempChip } from "@/components/signals/SignalParts";
-import { getWatchTemplate } from "@/data/watches";
-import { generateSignal } from "@/lib/services/signalService";
+import { aiLead, websiteLead } from "@/lib/services/signalService";
 import { EASE } from "@/lib/motion";
-import type { Signal, Watch } from "@/types";
+import { hashString, prng } from "@/lib/utils";
+import type { Signal } from "@/types";
 
-
-function demoWatch(kind: "website-opportunities" | "ai-opportunities"): Watch {
-  const t = getWatchTemplate(kind)!;
-  return { id: `home-${kind}`, kind, name: t.name, agentId: t.agentId, description: t.description, triggers: t.triggers, cadence: t.cadence, status: "live", autopilot: false, createdAt: 0, nextAt: 0 };
+function sampleLead(i: number): Signal {
+  const r = prng(hashString(`home-lead:${i}`));
+  const s = i % 3 === 2 ? aiLead(r) : websiteLead(r);
+  return { id: `home-${i}`, botId: "lead-hunter", kind: "lead", at: 0, read: true, saved: false, dismissed: false, ...s };
 }
 
 /** STATE — the always-on side: leads that arrive on their own, fully researched. */
@@ -20,11 +20,7 @@ export function SignalsSection() {
   const reduce = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { margin: "-20% 0px" });
-  const pool = useMemo(() => {
-    const web = demoWatch("website-opportunities");
-    const ai = demoWatch("ai-opportunities");
-    return Array.from({ length: 12 }, (_, i) => generateSignal(i % 3 === 2 ? ai : web, i + 1, 0) as Signal);
-  }, []);
+  const pool = useMemo(() => Array.from({ length: 12 }, (_, i) => sampleLead(i + 1)), []);
   const [n, setN] = useState(3);
 
   useEffect(() => {

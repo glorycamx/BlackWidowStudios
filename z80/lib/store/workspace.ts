@@ -1,15 +1,18 @@
 "use client";
 
 /**
- * Workspace store — the client-side state for the product demo.
+ * Workspace store: the client-side state for the product demo.
  *
  * A tiny external store (no dependency) read through `useWorkspace(selector)`.
- * All business logic lives in lib/services; this file only wires services to
- * state, persists to localStorage, and drives the mission simulator clock.
+ * Business logic lives in lib/services and lib/sim; this file wires them to
+ * state, persists to localStorage, and drives the clock.
  */
 import { useRef, useSyncExternalStore } from "react";
 import { defaultPermissions } from "@/data/permissions";
 import { memoryDomains } from "@/data/memory";
+import { registerCustomBots, specToAgent, agentOrFallback, CUSTOM_COLORS } from "@/data/bots";
+import { LEGACY_BOT_IDS, routineFromTemplate, routineTemplates, emptyStats } from "@/data/routines";
+import { seedSkills } from "@/data/skills";
 import { requestChat, requestPlan } from "@/lib/api";
 import { agentReply } from "@/lib/services/chatService";
 import {
@@ -22,22 +25,34 @@ import {
   type Emission,
 } from "@/lib/services/missionService";
 import { createLeadPlan, createPlan, retargetPlan } from "@/lib/services/planService";
-import { generateSignal, nextDelayMs } from "@/lib/services/signalService";
-import { watchTemplates } from "@/data/watches";
+import * as clock from "@/lib/sim/clock";
+import { addQuietChecks, loadBeatCounts, makeBeat, pushBeat, resetBeats } from "@/lib/sim/heartbeats";
+import { backfill, FEED_CAP, NOTICE_CAP, scheduleNext, step, TEAM_CAP, type SimStep } from "@/lib/sim/scheduler";
+import { channelLabel, fillCalendar } from "@/lib/sim/generators";
 import { playSound } from "@/lib/sound";
-import { uid } from "@/lib/utils";
+import { startOfDay } from "@/lib/time";
+import { hashString, prng, uid } from "@/lib/utils";
 import type {
   ActivityEvent,
   AgentId,
+  AgentVisual,
   Approval,
+  AwaySummary,
   ChatMessage,
+  CustomBotSpec,
+  FeedItem,
   Mission,
+  Notice,
   Organization,
   PermissionLevel,
   PermissionRule,
   Plan,
-  Signal,
-  Watch,
+  Routine,
+  ScheduledPost,
+  Skill,
+  TeamMessage,
+  Trigger,
+  RoutineEngine,
   WorkspaceSettings,
 } from "@/types";
 
@@ -51,9 +66,9 @@ export interface WorkspaceState {
   approvals: Record<string, Approval>;
   /** Newest first. */
   activity: ActivityEvent[];
-  /** Oldest first. The single Command conversation. */
+  /** Oldest first. The conversation with Manager. */
   chat: ChatMessage[];
-  /** Direct threads with individual intelligences. */
+  /** Direct threads with individual bots. */
   threads: Record<AgentId, ChatMessage[]>;
   plans: Record<string, Plan>;
   /** planId → missionId once deployed. */
@@ -67,37 +82,49 @@ export interface WorkspaceState {
   pausedAgents: AgentId[];
   settings: WorkspaceSettings;
   nextMissionNumber: number;
-  /** Z80 is composing a reply. */
+  /** Manager is composing a reply. */
   thinking: boolean;
-  /** Always-on standing orders. */
-  watches: Watch[];
-  /** Newest first. */
-  signals: Signal[];
-  /** Per-watch signal counter (drives deterministic generation). */
-  watchSeq: Record<string, number>;
+  /** Jobs each bot keeps doing. */
+  routines: Routine[];
+  /** What the bots found or did. Newest first. */
+  feed: FeedItem[];
+  /** The content calendar, oldest first. */
+  posts: ScheduledPost[];
+  /** Bots talking to each other. Oldest first. */
+  teamChat: TeamMessage[];
+  skills: Skill[];
+  customBots: CustomBotSpec[];
+  nicknames: Record<string, string>;
+  /** Bell and toasts. Newest first. */
+  notices: Notice[];
+  /** Last moment the app was open and visible. */
+  lastSeenAt: number;
+  /** Set when the bots did things while you were away. */
+  away: AwaySummary | null;
+  /** Non-null while time traveling (nothing is saved in that mode). */
+  traveling: string | null;
 }
 
-const SIGNAL_CAP = 150;
-
-function defaultWatches(now = 0): Watch[] {
-  return watchTemplates.map((t) => ({
-    id: `w-${t.kind}`,
-    kind: t.kind,
-    name: t.name,
-    agentId: t.agentId,
-    description: t.description,
-    triggers: t.triggers,
-    cadence: t.cadence,
-    status: "live",
-    autopilot: t.kind === "website-opportunities",
-    createdAt: now,
-    nextAt: 0,
-  }));
-}
-
-const STORAGE_KEY = "z80.workspace.v3";
+const STORAGE_KEY = "z80.workspace.v4";
+const LEGACY_KEY = "z80.workspace.v3";
 const ACTIVITY_CAP = 600;
 const CHAT_CAP = 300;
+/** Gaps shorter than this don't count as "away". */
+const AWAY_MS = 2 * 60e3;
+
+export const DEFAULT_SETTINGS: WorkspaceSettings = {
+  sound: false,
+  demoSpeed: 1,
+  morningTextAt: "06:00",
+  recapAt: "18:00",
+  quietFrom: "22:00",
+  quietTo: "06:00",
+  browserAlerts: false,
+};
+
+function defaultRoutines(now: number): Routine[] {
+  return routineTemplates.map((t) => routineFromTemplate(t, now - 14 * 86400e3));
+}
 
 function emptyState(): WorkspaceState {
   return {
@@ -117,12 +144,20 @@ function emptyState(): WorkspaceState {
     permissions: defaultPermissions,
     connections: {},
     pausedAgents: [],
-    settings: { sound: false, demoSpeed: 1 },
+    settings: DEFAULT_SETTINGS,
     nextMissionNumber: 248,
     thinking: false,
-    watches: defaultWatches(),
-    signals: [],
-    watchSeq: {},
+    routines: defaultRoutines(0),
+    feed: [],
+    posts: [],
+    teamChat: [],
+    skills: seedSkills(0),
+    customBots: [],
+    nicknames: {},
+    notices: [],
+    lastSeenAt: 0,
+    away: null,
+    traveling: null,
   };
 }
 
@@ -146,16 +181,17 @@ function setState(patch: Partial<WorkspaceState> | ((s: WorkspaceState) => Parti
 }
 
 function schedulePersist() {
-  if (!state.hydrated || typeof window === "undefined") return;
+  if (!state.hydrated || state.traveling || typeof window === "undefined") return;
   // Throttle, not debounce: the mission clock changes state every 200ms,
   // so a debounce would never fire while anything is running.
   if (persistTimer) return;
   persistTimer = setTimeout(() => {
     persistTimer = null;
     try {
-      const { hydrated: _h, thinking: _t, ...rest } = state;
+      const { hydrated: _h, thinking: _t, traveling: _v, ...rest } = state;
       void _h;
       void _t;
+      void _v;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(rest));
     } catch {
       /* storage full or unavailable — demo keeps working in memory */
@@ -221,29 +257,75 @@ function applyEmissions(emissions: Emission[], s: WorkspaceState, now = Date.now
   };
 }
 
-function signalEmissions(sig: Signal, w: Watch): Emission[] {
+/** Activity log lines and sounds for new finds. */
+function findEmissions(finds: FeedItem[]): Emission[] {
   const out: Emission[] = [];
-  if (sig.kind === "lead" && sig.lead) {
-    out.push({
-      type: "activity",
-      event: {
-        actor: w.agentId,
-        kind: "result",
-        message: `New ${sig.lead.temperature} lead: ${sig.lead.business}. ${sig.trigger}.`,
-        detail: [sig.summary, `${sig.lead.recommended.offer} · ${sig.lead.recommended.price}`],
-      },
-    });
-    if (sig.lead.temperature === "hot") {
-      out.push({ type: "chat", message: { author: w.agentId, text: `New hot lead: ${sig.lead.business} (${sig.lead.location}). ${sig.trigger}: ${sig.summary.toLowerCase()}.`, actions: [{ kind: "open-signal", signalId: sig.id }] } });
-      out.push({ type: "sound", name: "approval" });
-    } else out.push({ type: "sound", name: "message" });
-  } else if (sig.kind === "news") {
-    out.push({ type: "activity", event: { actor: w.agentId, kind: "result", message: `AI briefing: ${sig.title}.`, detail: [sig.news?.whyItMatters ?? ""] } });
-  } else {
-    out.push({ type: "activity", event: { actor: w.agentId, kind: "action", message: `Reminder: ${sig.title}.` } });
-    out.push({ type: "sound", name: "message" });
+  for (const f of finds) {
+    if (f.kind === "lead" && f.lead) {
+      out.push({ type: "activity", event: { actor: f.botId, kind: "result", message: `New ${f.lead.temperature} lead: ${f.lead.business}. ${f.trigger}.`, detail: [f.summary, `${f.lead.recommended.offer} · ${f.lead.recommended.price}`] } });
+      out.push({ type: "sound", name: f.lead.temperature === "hot" ? "approval" : "message" });
+    } else if (f.kind === "post") {
+      out.push({ type: "activity", event: { actor: f.botId, kind: "action", message: `${f.title}, on the minute.` } });
+    } else if (f.kind === "digest") {
+      out.push({ type: "activity", event: { actor: f.botId, kind: "action", message: `Sent your ${f.trigger.toLowerCase()}.` } });
+    } else {
+      out.push({ type: "activity", event: { actor: f.botId, kind: "result", message: `${f.trigger}: ${f.title}.` } });
+    }
   }
   return out;
+}
+
+function mergeNotices(cur: Notice[], add: Notice[]): Notice[] {
+  if (!add.length) return cur;
+  const ids = new Set(cur.map((n) => n.id));
+  const fresh = add.filter((n) => !ids.has(n.id));
+  if (!fresh.length) return cur;
+  return [...fresh.reverse(), ...cur].slice(0, NOTICE_CAP);
+}
+
+function appendTeam(cur: TeamMessage[], add: TeamMessage[]): TeamMessage[] {
+  if (!add.length) return cur;
+  const next = [...cur, ...add].sort((a, b) => a.at - b.at);
+  return next.length > TEAM_CAP ? next.slice(-TEAM_CAP) : next;
+}
+
+function simSlice(s: WorkspaceState) {
+  return {
+    routines: s.routines,
+    feed: s.feed,
+    posts: s.posts,
+    pendingApprovals: Object.values(s.approvals).filter((a) => a.status === "pending").length,
+    pausedBots: s.pausedAgents,
+  };
+}
+
+/** Give every routine a next run time, staggered so they don't all fire at once. */
+function armRoutines(routines: Routine[], now: number, speed: number): Routine[] {
+  return routines.map((r) => {
+    if (r.status !== "on") return r;
+    if (r.trigger.kind === "event") return { ...r, nextRunAt: 0 };
+    if (r.nextRunAt && r.nextRunAt > now && r.trigger.kind === "schedule") return r;
+    return { ...r, nextRunAt: scheduleNext(r, now, speed, true) };
+  });
+}
+
+function summarize(res: SimStep, from: number, to: number, checks: number): AwaySummary {
+  const f = res.finds;
+  const leads = f.filter((x) => x.kind === "lead");
+  const ranked = [...f]
+    .filter((x) => x.kind !== "post")
+    .sort((a, b) => (b.lead?.temperature === "hot" ? 1 : 0) - (a.lead?.temperature === "hot" ? 1 : 0) || b.at - a.at);
+  return {
+    from,
+    to,
+    leads: leads.length,
+    hot: leads.filter((x) => x.lead?.temperature === "hot").length,
+    posts: f.filter((x) => x.kind === "post").length,
+    briefs: f.filter((x) => x.kind === "brief").length,
+    opportunities: f.filter((x) => x.kind === "opportunity").length,
+    checks,
+    top: ranked.slice(0, 3).map((x) => x.id),
+  };
 }
 
 /* ------------------------------------------------------------------ */
@@ -256,10 +338,11 @@ const SEED_ORG: Organization = {
   focus: "More customers",
 };
 
-function seedState(now = Date.now()): WorkspaceState {
+function seedState(now = clock.now()): WorkspaceState {
   const base = emptyState();
   base.org = SEED_ORG;
   base.onboarded = true;
+  base.skills = seedSkills(now);
   const seeds: { n: number; objective: string; until: "approval" | "complete"; ago: number }[] = [
     { n: 244, objective: "Research my top five competitors and tell me where we can win.", until: "complete", ago: 26 * 3600e3 },
     { n: 245, objective: "Organize our open projects and send me a status report.", until: "complete", ago: 3 * 3600e3 },
@@ -285,29 +368,144 @@ function seedState(now = Date.now()): WorkspaceState {
     base.missionOrder.unshift(m.id);
   }
   base.activity.sort((a, b) => b.at - a.at);
+  base.activity.sort((a, b) => b.at - a.at);
   base.connections = { web: true };
-  // A morning's worth of signals, so the feed is alive on first visit.
-  base.watches = defaultWatches(now - 7 * 86400e3);
-  const plan: [string, number][] = [
-    ["w-website-opportunities", 290],
-    ["w-ai-news", 240],
-    ["w-ai-opportunities", 205],
-    ["w-website-opportunities", 150],
-    ["w-ai-news", 95],
-    ["w-website-opportunities", 64],
-    ["w-ai-opportunities", 38],
-    ["w-reminders", 21],
-    ["w-website-opportunities", 9],
-  ];
-  for (const [wid, minsAgo] of plan) {
-    const w = base.watches.find((x) => x.id === wid)!;
-    const seq = (base.watchSeq[wid] ?? 0) + 1;
-    base.watchSeq[wid] = seq;
-    const sig = generateSignal(w, seq, now - minsAgo * 60e3, base.signals);
-    if (sig) base.signals.unshift({ ...sig, read: minsAgo > 60 });
-  }
+
+  // The bots have been on shift all night: replay from midnight (at least 9 hours).
+  base.routines = defaultRoutines(now);
+  const from = Math.min(startOfDay(now), now - 9 * 3600e3);
+  const cc = base.routines.find((r) => r.engine === "keep-drafted")!;
+  base.posts = fillCalendar([], from, from, 8, cc.id, cc.doWithoutAsking);
+  // One post a couple of minutes out, so you can watch it go out on the minute.
+  const soon = Math.ceil((now + 150e3) / 60e3) * 60e3;
+  base.posts = [
+    ...base.posts,
+    { id: `p-${soon}`, channel: "instagram" as const, scheduledFor: soon, status: "scheduled" as const, caption: "Fresh this week: we rebuilt a bakery's site and online orders doubled. Small changes, big week.", visualHint: "Bakery counter with a phone showing the order page", routineId: "r-post-schedule" },
+  ].sort((a, b) => a.scheduledFor - b.scheduledFor);
+  const res = backfill(simSlice(base), from, now, { maxFinds: 48 });
+  base.routines = res.routines;
+  base.posts = res.posts;
+  base.feed = res.feed.map((f) => ({ ...f, read: f.at < now - 60 * 60e3 || f.kind === "post" }));
+  base.teamChat = res.team.slice(-TEAM_CAP);
+  base.notices = mergeNotices([], res.notices.map((n) => ({ ...n, read: n.at < now - 60 * 60e3 }))).slice(0, 20);
+  const findEvents = findEmissions(res.finds).filter((e): e is Extract<Emission, { type: "activity" }> => e.type === "activity");
+  res.finds.forEach((f, i) => {
+    const e = findEvents[i];
+    if (e) base.activity.push({ ...e.event, id: uid("ev"), at: f.at });
+  });
+  base.activity.sort((a, b) => b.at - a.at);
+  base.activity = base.activity.slice(0, ACTIVITY_CAP);
+  addQuietChecks(
+    Object.fromEntries(Object.entries(res.checks).map(([k, v]) => [k, { ...v, n: Math.round(v.n * Math.min(1, (now - startOfDay(now)) / Math.max(1, now - from))) }])),
+    now,
+    !clock.traveling(),
+  );
+  base.lastSeenAt = now;
   base.hydrated = true;
   return base;
+}
+
+/** Bring v3 data forward: keep what the owner set up, reseed the rest. */
+function migrateV3(raw: string, now: number): WorkspaceState | null {
+  try {
+    const old = JSON.parse(raw) as Partial<WorkspaceState> & { threads?: Record<string, ChatMessage[]> };
+    const mapId = (id: string) => LEGACY_BOT_IDS[id] ?? id;
+    const fresh = seedState(now);
+    const threads: Record<string, ChatMessage[]> = {};
+    for (const [k, v] of Object.entries(old.threads ?? {})) {
+      if (Array.isArray(v)) threads[mapId(k)] = v.map((m) => ({ ...m, author: mapId(String(m.author)), to: m.to ? mapId(String(m.to)) : m.to }));
+    }
+    return {
+      ...fresh,
+      org: old.org ?? fresh.org,
+      onboarded: old.onboarded ?? fresh.onboarded,
+      memory: old.memory && typeof old.memory === "object" ? old.memory : fresh.memory,
+      permissions: Array.isArray(old.permissions) ? old.permissions : fresh.permissions,
+      connections: old.connections && typeof old.connections === "object" ? old.connections : fresh.connections,
+      interest: Array.isArray(old.interest) ? old.interest : fresh.interest,
+      threads,
+      pausedAgents: Array.isArray(old.pausedAgents) ? old.pausedAgents.map(mapId) : [],
+      settings: { ...DEFAULT_SETTINGS, ...(old.settings ?? {}) },
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Parse saved v4 data defensively: anything odd falls back to defaults. */
+function loadV4(raw: string): WorkspaceState | null {
+  try {
+    const saved = JSON.parse(raw) as Partial<WorkspaceState>;
+    if (!saved || typeof saved !== "object") return null;
+    const base = emptyState();
+    const arr = <T,>(v: unknown, d: T[]): T[] => (Array.isArray(v) ? (v as T[]) : d);
+    return {
+      ...base,
+      ...saved,
+      routines: arr(saved.routines, base.routines).map((r) => ({ ...r, stats: { ...emptyStats(), ...(r.stats ?? {}) } })),
+      feed: arr(saved.feed, []),
+      posts: arr(saved.posts, []),
+      teamChat: arr(saved.teamChat, []),
+      skills: arr(saved.skills, base.skills),
+      customBots: arr(saved.customBots, []),
+      notices: arr(saved.notices, []),
+      activity: arr(saved.activity, []),
+      chat: arr(saved.chat, []),
+      missionOrder: arr(saved.missionOrder, []),
+      settings: { ...DEFAULT_SETTINGS, ...(saved.settings ?? {}) },
+      nicknames: saved.nicknames ?? {},
+      hydrated: true,
+      thinking: false,
+      traveling: null,
+      away: saved.away ?? null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Clock-driven work (heartbeats and routines)                          */
+/* ------------------------------------------------------------------ */
+
+const nextBeatAt: Record<string, number> = {};
+const beatCount: Record<string, number> = {};
+
+function beatGap(botId: string, n: number, speed: number) {
+  const r = prng(hashString(`${botId}:hb:${n}`));
+  return (2600 + r() * 4200) / Math.max(1, speed);
+}
+
+/** Every bot on shift checks something every few seconds. */
+function runHeartbeats(s: WorkspaceState, now: number) {
+  const onShift = new Map<string, Routine[]>();
+  for (const r of s.routines) {
+    if (r.status !== "on" || s.pausedAgents.includes(r.botId)) continue;
+    onShift.set(r.botId, [...(onShift.get(r.botId) ?? []), r]);
+  }
+  for (const [botId, list] of onShift) {
+    if (!nextBeatAt[botId]) {
+      nextBeatAt[botId] = now + 300 + Math.random() * 1800;
+      continue;
+    }
+    if (now < nextBeatAt[botId]) continue;
+    const n = (beatCount[botId] = (beatCount[botId] ?? 0) + 1);
+    const routine = list[n % list.length];
+    pushBeat(makeBeat(routine, n + Math.floor(now / 1000), now), !s.traveling);
+    nextBeatAt[botId] = now + beatGap(botId, n, s.settings.demoSpeed);
+  }
+}
+
+function applySimStep(res: SimStep, s: WorkspaceState, now: number, live: boolean): Partial<WorkspaceState> {
+  const patch: Partial<WorkspaceState> = {
+    routines: res.routines,
+    feed: res.feed,
+    posts: res.posts,
+    teamChat: appendTeam(s.teamChat, res.team),
+    notices: mergeNotices(s.notices, res.notices),
+  };
+  if (!live) return patch;
+  return { ...patch, ...applyEmissions(findEmissions(res.finds), { ...s, ...patch }, now) };
 }
 
 /* ------------------------------------------------------------------ */
@@ -318,65 +516,124 @@ function chatMessage(m: Omit<ChatMessage, "id" | "at">): ChatMessage {
   return { ...m, id: uid("msg"), at: Date.now() };
 }
 
+/** Catch up on everything that happened between `from` and now. */
+function catchUp(from: number, now: number, showAway: boolean) {
+  const s = state;
+  const res = backfill(simSlice(s), from, now, { maxFinds: 40 });
+  const checks = Object.values(res.checks).reduce((a, c) => a + c.n, 0);
+  addQuietChecks(res.checks, now, !s.traveling);
+  const patch = applySimStep(res, s, now, false);
+  const away = showAway && (res.finds.length || checks) ? summarize(res, from, now, checks) : s.away;
+  // Backfilled activity uses the time it happened.
+  const backfilledActivity = findEmissions(res.finds)
+    .filter((e): e is Extract<Emission, { type: "activity" }> => e.type === "activity")
+    .map((e, i) => ({ ...e.event, id: uid("ev"), at: res.finds[i]?.at ?? now }));
+  state = {
+    ...state,
+    ...patch,
+    activity: [...backfilledActivity.reverse(), ...s.activity].sort((a, b) => b.at - a.at).slice(0, ACTIVITY_CAP),
+    routines: armRoutines(patch.routines ?? s.routines, now, s.settings.demoSpeed),
+    lastSeenAt: now,
+    away,
+  };
+}
+
+let hiddenSince = 0;
+
 export const workspace = {
   /** Load persisted workspace (or seed the demo). Call once on the client. */
   init() {
     if (state.hydrated) return;
+    const travel = clock.travelFromUrl();
+    const now = clock.now();
     let loaded: WorkspaceState | null = null;
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) loaded = { ...emptyState(), ...JSON.parse(raw), hydrated: true, thinking: false };
-    } catch {
-      loaded = null;
+    if (!travel) {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) loaded = loadV4(raw);
+        else {
+          const legacy = localStorage.getItem(LEGACY_KEY);
+          if (legacy) loaded = migrateV3(legacy, now);
+        }
+      } catch {
+        loaded = null;
+      }
+      loadBeatCounts(now);
     }
-    state = loaded ?? seedState();
-    const now = Date.now();
-    state = {
-      ...state,
-      watches: state.watches.map((w, i) => ({ ...w, nextAt: now + 6000 + i * 4000 + nextDelayMs(w, (state.watchSeq[w.id] ?? 0) + 1) / 3 })),
-    };
+    if (travel) resetBeats();
+    state = loaded ?? seedState(now);
+    state = { ...state, hydrated: true, traveling: travel };
+    registerCustomBots(state.customBots.map(specToAgent));
+    if (loaded && state.lastSeenAt && now - state.lastSeenAt > AWAY_MS) {
+      catchUp(state.lastSeenAt, now, true);
+    } else {
+      state = { ...state, routines: armRoutines(state.routines, now, state.settings.demoSpeed), lastSeenAt: now };
+    }
     emit();
     schedulePersist();
   },
 
-  /** Advance every running mission. Called by the runner. */
+  /** The tab was hidden or shown. Hidden pauses the clock; showing again catches up. */
+  visibility(hidden: boolean) {
+    if (!state.hydrated) return;
+    const now = clock.now();
+    if (hidden) {
+      hiddenSince = now;
+      setState({ lastSeenAt: now });
+      return;
+    }
+    const from = hiddenSince || state.lastSeenAt;
+    hiddenSince = 0;
+    if (from && now - from > AWAY_MS) {
+      catchUp(from, now, true);
+      emit();
+      schedulePersist();
+    } else setState((s) => ({ routines: armRoutines(s.routines, now, s.settings.demoSpeed).map((r, i) => (s.routines[i].nextRunAt > now ? s.routines[i] : r)), lastSeenAt: now }));
+  },
+
+  /** Advance running jobs and the bots' routines. Called every 200ms. */
   tick(dt: number) {
+    if (!state.hydrated || clock.tabHidden()) return;
     const s = state;
-    const now = Date.now();
+    const now = clock.now();
+    runHeartbeats(s, now);
+
     const running = s.missionOrder.filter((id) => s.missions[id]?.status === "running");
-    const dueWatches = s.watches.filter((w) => w.status === "live" && w.nextAt > 0 && now >= w.nextAt);
-    if (!running.length && !dueWatches.length) return;
+    const due = s.routines.some((r) => r.status === "on" && r.nextRunAt > 0 && now >= r.nextRunAt && !s.pausedAgents.includes(r.botId));
+    const postDue = s.posts.some((p) => (p.status === "scheduled" && p.scheduledFor <= now) || (p.status === "needs-ok" && now >= p.scheduledFor - 2 * 3600e3));
+    const seen = now - s.lastSeenAt > 5000;
+    if (!running.length && !due && !postDue && !seen) return;
 
-    const missions = { ...s.missions };
-    const all: Emission[] = [];
-    for (const id of running) {
-      const r = advanceMission(missions[id], dt * s.settings.demoSpeed, s.pausedAgents);
-      missions[id] = r.mission;
-      all.push(...r.emissions);
+    let patch: Partial<WorkspaceState> = {};
+    if (running.length) {
+      const missions = { ...s.missions };
+      const all: Emission[] = [];
+      for (const id of running) {
+        const r = advanceMission(missions[id], dt * s.settings.demoSpeed, s.pausedAgents);
+        missions[id] = r.mission;
+        all.push(...r.emissions);
+      }
+      patch = { missions, ...applyEmissions(all, s) };
     }
 
-    let signals = s.signals;
-    let watches = s.watches;
-    const watchSeq = { ...s.watchSeq };
-    const fresh: Signal[] = [];
-    for (const w of dueWatches) {
-      const seq = (watchSeq[w.id] ?? 0) + 1;
-      watchSeq[w.id] = seq;
-      const sig = generateSignal(w, seq, now, signals);
-      watches = watches.map((x) => (x.id === w.id ? { ...x, nextAt: now + nextDelayMs(w, seq + 1) / s.settings.demoSpeed } : x));
-      if (!sig) continue;
-      fresh.push(sig);
-      signals = [sig, ...signals].slice(0, SIGNAL_CAP);
-      all.push(...signalEmissions(sig, w));
+    let hot: FeedItem[] = [];
+    if (due || postDue) {
+      const res = step(simSlice({ ...s, ...patch }), now, s.settings.demoSpeed);
+      const changed = res.finds.length || res.team.length || res.routines !== s.routines || res.posts !== s.posts || res.notices.some((n) => !s.notices.some((x) => x.id === n.id));
+      if (changed) {
+        patch = { ...patch, ...applySimStep(res, { ...s, ...patch }, now, true) };
+        for (const f of res.finds) {
+          pushBeat({ id: uid("hb"), botId: f.botId, routineId: f.routineId ?? "", at: now, text: `Found one: ${f.title}.`, url: f.lead?.currentWebsite && f.lead.currentWebsite !== "None" ? f.lead.currentWebsite : "z80.si/live" }, !s.traveling);
+        }
+        hot = res.finds.filter((f) => f.lead?.temperature === "hot");
+      }
     }
+    if (seen) patch.lastSeenAt = now;
+    if (Object.keys(patch).length) setState(patch);
 
-    setState({ missions, watches, signals, watchSeq, ...applyEmissions(all, s) });
-
-    // Autopilot: hot leads get an outreach mission drafted immediately.
-    for (const sig of fresh) {
-      const w = watches.find((x) => x.id === sig.watchId);
-      if (w?.autopilot && sig.lead?.temperature === "hot") workspace.deploySignal(sig.id, { auto: true });
-    }
+    // Hot leads: if the opener routine is on, start a job. It still waits for your yes before sending.
+    const openers = state.routines.find((r) => r.engine === "lead-openers" && r.status === "on");
+    if (openers && !state.pausedAgents.includes(openers.botId)) for (const f of hot) workspace.deploySignal(f.id, { auto: true });
   },
 
   /** Send a message in the Command conversation. */
@@ -501,7 +758,7 @@ export const workspace = {
       return {
         pausedAgents: paused ? s.pausedAgents.filter((a) => a !== agentId) : [...s.pausedAgents, agentId],
         activity: [
-          { id: uid("ev"), actor: "user", to: agentId, kind: "system", at: Date.now(), message: paused ? "Resumed intelligence." : "Paused intelligence." },
+          { id: uid("ev"), actor: "user", to: agentId, kind: "system", at: Date.now(), message: paused ? "Back on shift." : "Paused." },
           ...s.activity,
         ],
       };
@@ -562,9 +819,9 @@ export const workspace = {
     setState({ chat: [] });
   },
 
-  /** Turn a lead signal into a single-lead outreach mission. Returns the mission id. */
+  /** Turn a lead into a one-lead outreach job. Returns the job id. */
   deploySignal(signalId: string, opts: { auto?: boolean } = {}): string | null {
-    const sig = state.signals.find((x) => x.id === signalId);
+    const sig = state.feed.find((x) => x.id === signalId);
     if (!sig?.lead) return null;
     if (sig.missionId && state.missions[sig.missionId]) return sig.missionId;
     const plan = createLeadPlan(sig.id, sig.lead);
@@ -572,14 +829,14 @@ export const workspace = {
     const missionId = workspace.deploy(plan.id);
     if (!missionId) return null;
     setState((cur) => ({
-      signals: cur.signals.map((x) => (x.id === signalId ? { ...x, missionId, read: true } : x)),
+      feed: cur.feed.map((x) => (x.id === signalId ? { ...x, missionId, read: true } : x)),
       ...(opts.auto
         ? {
             chat: [
               ...cur.chat,
               chatMessage({
-                author: "z80",
-                text: `Autopilot: ${sig.lead!.business} is a hot lead (${sig.trigger.toLowerCase()}). I deployed an outreach mission. It will wait for your approval before anything is sent.`,
+                author: "manager",
+                text: `${sig.lead!.business} is a hot lead (${sig.trigger.toLowerCase()}). Content Creator wrote the opener and I started a job for it. Nothing gets sent until you say yes.`,
                 missionId,
                 actions: [{ kind: "open-mission", missionId }, { kind: "open-signal", signalId }],
               }),
@@ -590,50 +847,223 @@ export const workspace = {
     return missionId;
   },
 
-  markSignalRead(signalId: string) {
-    if (!state.signals.some((x) => x.id === signalId && !x.read)) return;
-    setState((s) => ({ signals: s.signals.map((x) => (x.id === signalId ? { ...x, read: true } : x)) }));
+  markSignalRead(id: string) {
+    if (!state.feed.some((x) => x.id === id && !x.read)) return;
+    setState((s) => ({ feed: s.feed.map((x) => (x.id === id ? { ...x, read: true } : x)) }));
   },
 
   markAllSignalsRead() {
-    setState((s) => ({ signals: s.signals.map((x) => (x.read ? x : { ...x, read: true })) }));
+    setState((s) => ({ feed: s.feed.map((x) => (x.read ? x : { ...x, read: true })) }));
   },
 
-  toggleSaveSignal(signalId: string) {
-    setState((s) => ({ signals: s.signals.map((x) => (x.id === signalId ? { ...x, saved: !x.saved } : x)) }));
+  toggleSaveSignal(id: string) {
+    setState((s) => ({ feed: s.feed.map((x) => (x.id === id ? { ...x, saved: !x.saved } : x)) }));
   },
 
-  dismissSignal(signalId: string) {
-    setState((s) => ({ signals: s.signals.map((x) => (x.id === signalId ? { ...x, dismissed: true, read: true } : x)) }));
+  dismissSignal(id: string) {
+    setState((s) => ({ feed: s.feed.map((x) => (x.id === id ? { ...x, dismissed: true, read: true } : x)) }));
   },
 
-  toggleWatch(watchId: string) {
+  dismissAway() {
+    setState({ away: null });
+  },
+
+  /* Routines ---------------------------------------------------------- */
+
+  toggleRoutine(id: string) {
+    const now = clock.now();
     setState((s) => ({
-      watches: s.watches.map((w) => (w.id === watchId ? { ...w, status: w.status === "live" ? "paused" : "live", nextAt: Date.now() + 8000 } : w)),
+      routines: s.routines.map((r) => {
+        if (r.id !== id) return r;
+        const on = r.status !== "on";
+        const next = { ...r, status: on ? ("on" as const) : ("paused" as const) };
+        return on ? { ...next, nextRunAt: scheduleNext(next, now, s.settings.demoSpeed, true) } : next;
+      }),
     }));
   },
 
-  setAutopilot(watchId: string, on: boolean) {
-    setState((s) => ({ watches: s.watches.map((w) => (w.id === watchId ? { ...w, autopilot: on } : w)) }));
+  setDoWithoutAsking(id: string, on: boolean) {
+    setState((s) => ({ routines: s.routines.map((r) => (r.id === id ? { ...r, doWithoutAsking: on } : r)) }));
   },
 
-  /** Demo control: make a watch fire on the next tick. */
-  scanNow(watchId: string) {
-    setState((s) => ({ watches: s.watches.map((w) => (w.id === watchId ? { ...w, status: "live", nextAt: Date.now() } : w)) }));
+  /** Demo control: make a routine run on the next tick. */
+  runNow(id: string) {
+    const now = clock.now();
+    setState((s) => ({ routines: s.routines.map((r) => (r.id === id ? { ...r, status: "on", nextRunAt: now } : r)) }));
+  },
+
+  /** Add a routine. It starts within a couple of seconds. */
+  addRoutine(input: { botId: string; title: string; trigger: Trigger; engine?: RoutineEngine; doWithoutAsking?: boolean }): Routine {
+    const now = clock.now();
+    const r: Routine = {
+      id: uid("r"),
+      botId: input.botId,
+      title: input.title,
+      trigger: input.trigger,
+      engine: input.engine ?? "custom",
+      status: "on",
+      doWithoutAsking: input.doWithoutAsking ?? false,
+      createdAt: now,
+      nextRunAt: 0,
+      stats: emptyStats(),
+    };
+    const armed = { ...r, nextRunAt: r.trigger.kind === "schedule" ? scheduleNext(r, now) : r.trigger.kind === "event" ? 0 : now + 2500 };
+    nextBeatAt[r.botId] = Math.min(nextBeatAt[r.botId] ?? Infinity, now + 1200);
+    setState((s) => ({
+      routines: [...s.routines, armed],
+      teamChat: appendTeam(s.teamChat, [{ id: uid("tm"), author: r.botId, to: "user", at: now, text: `Got it. I'll ${r.title.charAt(0).toLowerCase()}${r.title.slice(1)}. Starting now.` }]),
+      activity: [{ id: uid("ev"), actor: "user", to: r.botId, kind: "system" as const, at: now, message: `New routine: ${r.title}.` }, ...s.activity],
+    }));
+    return armed;
+  },
+
+  removeRoutine(id: string) {
+    setState((s) => ({ routines: s.routines.filter((r) => r.id !== id) }));
+  },
+
+  /* Content calendar -------------------------------------------------- */
+
+  approvePost(id: string) {
+    const now = clock.now();
+    setState((s) => {
+      const p = s.posts.find((x) => x.id === id);
+      if (!p || (p.status !== "needs-ok" && p.status !== "draft" && p.status !== "missed")) return {};
+      // Past its time: it goes out now (late), otherwise it waits for its minute.
+      const late = p.scheduledFor <= now;
+      return {
+        posts: s.posts.map((x) => (x.id === id ? (late ? { ...x, status: "posted" as const, postedAt: now } : { ...x, status: "scheduled" as const }) : x)),
+        notices: s.notices.map((n) => (n.id === `n-ok-${id}` ? { ...n, read: true } : n)),
+      };
+    });
+  },
+
+  skipPost(id: string) {
+    setState((s) => ({ posts: s.posts.map((x) => (x.id === id && x.status !== "posted" ? { ...x, status: "skipped" as const } : x)) }));
+  },
+
+  editPost(id: string, caption: string) {
+    const t = caption.trim();
+    if (!t) return;
+    setState((s) => ({
+      posts: s.posts.map((x) => (x.id === id ? { ...x, caption: t } : x)),
+      skills: s.skills.some((k) => k.botId === "content-creator" && k.learned === "edits")
+        ? s.skills
+        : [...s.skills, { id: uid("sk"), botId: "content-creator", name: "Learned from your edits", how: "Keeps captions closer to how you rewrite them.", learned: "edits" as const, createdAt: clock.now() }],
+    }));
+  },
+
+  /** Demo control: add a post one minute from now to watch it go out on the minute. */
+  schedulePostSoon() {
+    const now = clock.now();
+    const at = Math.ceil((now + 60e3) / 60e3) * 60e3;
+    const post: ScheduledPost = { id: `p-${at}-${uid()}`, channel: "linkedin", scheduledFor: at, status: "scheduled", caption: "Small businesses: your website should work as hard as you do. Ours get checked every few minutes, all night.", visualHint: "Night skyline with a lit window", routineId: "r-post-schedule" };
+    setState((s) => ({ posts: [...s.posts, post].sort((a, b) => a.scheduledFor - b.scheduledFor) }));
+    return post;
+  },
+
+  /* Notices ----------------------------------------------------------- */
+
+  markNoticeRead(id: string) {
+    setState((s) => ({ notices: s.notices.map((n) => (n.id === id ? { ...n, read: true } : n)) }));
+  },
+
+  markAllNoticesRead() {
+    setState((s) => ({ notices: s.notices.map((n) => (n.read ? n : { ...n, read: true })) }));
+  },
+
+  /* Bots -------------------------------------------------------------- */
+
+  /** Give a bot a nickname. Empty clears it. */
+  renameBot(botId: string, nickname: string) {
+    const t = nickname.trim().slice(0, 24);
+    setState((s) => {
+      const next = { ...s.nicknames };
+      if (t) next[botId] = t;
+      else delete next[botId];
+      return { nicknames: next };
+    });
+  },
+
+  /** Teach a bot a way of doing something. */
+  teachSkill(botId: string, name: string, how: string) {
+    const n = name.trim();
+    if (!n) return;
+    const now = clock.now();
+    setState((s) => ({
+      skills: [...s.skills, { id: uid("sk"), botId, name: n, how: how.trim() || n, learned: "taught" as const, createdAt: now }],
+      teamChat: appendTeam(s.teamChat, [{ id: uid("tm"), author: botId, to: "user", at: now, text: `Learned "${n}". I'll use it from now on.` }]),
+    }));
+  },
+
+  /** Build your own bot. It goes on shift right away with its first routine. */
+  createBot(input: { name: string; job: string; keepDoing: string; trigger?: Trigger; colorIndex?: number; visual?: AgentVisual }): string {
+    const now = clock.now();
+    const name = input.name.trim() || "New bot";
+    const base = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "bot";
+    const taken = new Set([...state.customBots.map((b) => b.id), "manager", "lead-hunter", "content-creator", "researcher", "reporter", "receptionist", "bookkeeper"]);
+    let id = base;
+    for (let i = 2; taken.has(id); i++) id = `${base}-${i}`;
+    const spec: CustomBotSpec = {
+      id,
+      name,
+      job: input.job.trim() || input.keepDoing.trim(),
+      colorIndex: input.colorIndex ?? state.customBots.length % CUSTOM_COLORS.length,
+      visual: input.visual ?? "orbit",
+      createdAt: now,
+    };
+    const customBots = [...state.customBots, spec];
+    registerCustomBots(customBots.map(specToAgent));
+    setState((s) => ({
+      customBots,
+      teamChat: appendTeam(s.teamChat, [{ id: uid("tm"), author: "manager", to: id, at: now, text: `Welcome to the team, ${name}. You're on shift now.` }]),
+    }));
+    const title = input.keepDoing.trim().replace(/\.$/, "") || spec.job;
+    workspace.addRoutine({ botId: id, title: title.charAt(0).toUpperCase() + title.slice(1), trigger: input.trigger ?? { kind: "always" } });
+    return id;
+  },
+
+  /* Time travel ------------------------------------------------------- */
+
+  /** Demo: jump to a local time today. Reloads into a fresh, unsaved workspace. */
+  travel(at: string | null) {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (at) url.searchParams.set("at", at);
+    else url.searchParams.delete("at");
+    window.location.assign(url.toString());
   },
 
   /** Restore the seeded demo workspace. */
   resetDemo() {
     const settings = state.settings;
-    state = { ...seedState(), settings };
+    resetBeats();
+    for (const k of Object.keys(nextBeatAt)) delete nextBeatAt[k];
+    registerCustomBots([]);
+    const now = clock.now();
+    const fresh = seedState(now);
+    state = { ...fresh, settings, traveling: state.traveling, routines: armRoutines(fresh.routines, now, settings.demoSpeed) };
     emit();
     schedulePersist();
   },
 
-  /** Empty workspace — shows the product's empty states. */
+  /** Empty workspace: shows the product's empty states. The bots stay on shift. */
   clearWorkspace() {
     const settings = state.settings;
-    state = { ...emptyState(), hydrated: true, settings, org: state.org, onboarded: state.onboarded };
+    const now = clock.now();
+    resetBeats();
+    registerCustomBots([]);
+    state = {
+      ...emptyState(),
+      hydrated: true,
+      settings,
+      org: state.org,
+      onboarded: state.onboarded,
+      traveling: state.traveling,
+      lastSeenAt: now,
+      routines: armRoutines(defaultRoutines(now), now, settings.demoSpeed),
+      posts: fillCalendar([], now, now, 7, "r-keep-drafted", false),
+      skills: seedSkills(now),
+    };
     emit();
     schedulePersist();
   },
@@ -644,8 +1074,18 @@ export const workspace = {
 /* ------------------------------------------------------------------ */
 
 export const selectMissions = (s: WorkspaceState) => s.missionOrder.map((id) => s.missions[id]).filter(Boolean);
-export const selectVisibleSignals = (s: WorkspaceState) => s.signals.filter((x) => !x.dismissed);
-export const selectUnreadHot = (s: WorkspaceState) => s.signals.filter((x) => !x.read && !x.dismissed && (x.lead?.temperature === "hot")).length;
+export const selectVisibleFeed = (s: WorkspaceState) => s.feed.filter((x) => !x.dismissed);
+/** Old name. */
+export const selectVisibleSignals = selectVisibleFeed;
+export const selectUnreadHot = (s: WorkspaceState) => s.feed.filter((x) => !x.read && !x.dismissed && x.lead?.temperature === "hot").length;
+export const selectUnreadNotices = (s: WorkspaceState) => s.notices.filter((n) => !n.read).length;
+/** The name to show for a bot: its nickname if it has one. */
+export function botName(s: WorkspaceState, id: string) {
+  return s.nicknames[id] ?? agentOrFallback(id).name;
+}
+export function postLabel(p: ScheduledPost) {
+  return channelLabel(p.channel);
+}
 
 export const selectPendingApprovals = (s: WorkspaceState) =>
   Object.values(s.approvals)

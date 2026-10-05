@@ -1,4 +1,4 @@
-import type { Agent } from "@/types";
+import type { Agent, CustomBotSpec } from "@/types";
 
 /**
  * The bot roster. One place for every name, job line, color and glyph.
@@ -236,3 +236,31 @@ export const CUSTOM_COLORS = [
   { hex: "#5FA8FF", tint: "#C7E0FF", rgb: "95 168 255" },
   { hex: "#7FD4E8", tint: "#D2F1F8", rgb: "127 212 232" },
 ];
+
+/** Turn a saved custom bot into a full roster entry. */
+export function specToAgent(spec: CustomBotSpec): Agent {
+  const accent = CUSTOM_COLORS[spec.colorIndex % CUSTOM_COLORS.length];
+  return {
+    id: spec.id,
+    slug: spec.id,
+    name: spec.name,
+    designation: "",
+    role: spec.job,
+    domain: "Your bot",
+    tagline: spec.job,
+    shortDescription: spec.job,
+    description: `${spec.name} is a bot you made. ${spec.job}`,
+    personality: ["Tireless", "Focused"],
+    capabilities: [spec.job],
+    specialties: [spec.job],
+    roles: [{ id: "custom", label: "Your bot", summary: spec.job }],
+    tools: ["web"],
+    memory: ["knowledge", "customers"],
+    collaborators: ["manager"],
+    accent,
+    visual: spec.visual,
+    availability: "available",
+    workingVerb: "is working",
+    custom: true,
+  };
+}

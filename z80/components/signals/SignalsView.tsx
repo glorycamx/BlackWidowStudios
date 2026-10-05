@@ -3,27 +3,29 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { Pause, Play, Radar } from "lucide-react";
 import { AgentGlyph } from "@/components/agents/AgentGlyph";
 import { EmptyState, PageHeader } from "@/components/app/primitives";
 import { SignalDetail } from "@/components/signals/LeadDossierView";
 import { KindChip, TEMP_COLOR } from "@/components/signals/SignalParts";
 import { Portal } from "@/components/ui/Portal";
 import { StatusDot } from "@/components/ui/StatusDot";
-import { agentOrFallback } from "@/data/bots";
+import { availableAgents } from "@/data/bots";
 import { useMediaQuery } from "@/lib/hooks/useMediaQuery";
 import { useNow } from "@/lib/hooks/useNow";
 import { selectVisibleSignals, useWorkspace, workspace } from "@/lib/store/workspace";
 import { EASE } from "@/lib/motion";
 import { cn, relativeTime } from "@/lib/utils";
-import type { Signal, Watch } from "@/types";
+import { formatAgo } from "@/lib/time";
+import { useBeats } from "@/lib/sim/heartbeats";
+import type { Agent, Signal } from "@/types";
 
 const FILTERS = [
   { id: "all", label: "All" },
   { id: "hot", label: "Hot leads" },
   { id: "website", label: "Website" },
   { id: "ai", label: "AI" },
-  { id: "news", label: "News" },
+  { id: "brief", label: "News" },
+  { id: "money", label: "Money" },
   { id: "reminder", label: "Reminders" },
   { id: "saved", label: "Saved" },
 ] as const;
@@ -37,8 +39,10 @@ function matches(s: Signal, f: FilterId) {
       return s.lead?.opportunity === "website";
     case "ai":
       return s.lead?.opportunity === "ai";
-    case "news":
-      return s.kind === "news";
+    case "brief":
+      return s.kind === "brief";
+    case "money":
+      return s.kind === "opportunity";
     case "reminder":
       return s.kind === "reminder";
     case "saved":
@@ -53,7 +57,8 @@ export function SignalsView() {
   const router = useRouter();
   const params = useSearchParams();
   const signals = useWorkspace(selectVisibleSignals);
-  const watches = useWorkspace((s) => s.watches);
+  const pausedBots = useWorkspace((s) => s.pausedAgents);
+  const customBots = useWorkspace((s) => s.customBots);
   const wide = useMediaQuery("(min-width: 1100px)", true);
   const [filter, setFilter] = useState<FilterId>("all");
   const [selected, setSelected] = useState<string | null>(params.get("id"));
@@ -71,7 +76,7 @@ export function SignalsView() {
     if (current && !current.read) workspace.markSignalRead(current.id);
   }, [current]);
 
-  const live = watches.filter((w) => w.status === "live").length;
+  const onShift = availableAgents.length + customBots.length - pausedBots.length;
   const today = signals.filter((s) => s.at > now - 24 * 3600e3);
   const hotToday = today.filter((s) => s.lead?.temperature === "hot").length;
 
@@ -85,12 +90,12 @@ export function SignalsView() {
       <PageHeader
         label={
           <span className="flex items-center gap-2.5">
-            <StatusDot color="var(--color-run)" size={5} live={live > 0} />
-            {live} watches live · always on
+            <StatusDot color="var(--color-run)" size={5} live={onShift > 0} />
+            {onShift} bots on shift
           </span>
         }
-        title="Signals"
-        sub="Your crew watches the market and taps you when something happens."
+        title="Live"
+        sub="Your bots are working right now. Here's what they found."
         actions={
           <div className="flex gap-6 text-[13px] tabular-nums text-fg-3">
             <span>
@@ -106,10 +111,10 @@ export function SignalsView() {
         }
       />
 
-      {/* Watches */}
-      <section aria-label="Watches" className="mt-10 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {watches.map((w) => (
-          <WatchCard key={w.id} watch={w} count={signals.filter((s) => s.watchId === w.id && s.at > now - 24 * 3600e3).length} now={now} />
+      {/* Right now */}
+      <section aria-label="Right now" className="mt-10 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        {availableAgents.map((a) => (
+          <BotNowCard key={a.id} agent={a} paused={pausedBots.includes(a.id)} finds={signals.filter((s) => s.botId === a.id && s.at > now - 24 * 3600e3).length} />
         ))}
       </section>
 
@@ -136,7 +141,7 @@ export function SignalsView() {
         <ol className="min-w-0 space-y-1.5" aria-live="polite" aria-label="Signal feed">
           {list.length === 0 && (
             <li>
-              <EmptyState title="Quiet for now." body="Your watches are running. New signals appear here the moment they fire." />
+              <EmptyState title="Quiet for now." body="Your bots are still checking. New finds show up here the moment they happen." />
             </li>
           )}
           <AnimatePresence initial={false}>
@@ -160,7 +165,7 @@ export function SignalsView() {
                     </div>
                     <div className={cn("mt-2 truncate text-[15px]", s.read ? "text-fg-1" : "text-white")}>{s.title}</div>
                     <div className="mt-0.5 truncate text-[13px] text-fg-3">{s.lead ? `${s.lead.location} · ${s.lead.recommended.offer}` : s.summary}</div>
-                    {s.missionId && <div className="mt-2 text-[12px] text-run">Outreach mission running</div>}
+                    {s.missionId && <div className="mt-2 text-[12px] text-run">Job running</div>}
                   </button>
                 </motion.li>
               );
@@ -210,54 +215,26 @@ export function SignalsView() {
   );
 }
 
-function WatchCard({ watch, count, now }: { watch: Watch; count: number; now: number }) {
-  const agent = agentOrFallback(watch.agentId);
-  const live = watch.status === "live";
-  const leadWatch = watch.kind === "website-opportunities" || watch.kind === "ai-opportunities";
-  const secs = Math.max(0, Math.round((watch.nextAt - now) / 1000));
+function BotNowCard({ agent, paused, finds }: { agent: Agent; paused: boolean; finds: number }) {
+  const beat = useBeats((b) => b.latest[agent.id]);
+  const checks = useBeats((b) => b.botChecks[agent.id] ?? 0);
+  const now = useNow(1000);
   return (
-    <div className={cn("panel flex flex-col p-4", !live && "opacity-60")}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <AgentGlyph agent={agent} size={32} animated={live} />
-          <div>
-            <div className="text-[14px] font-medium text-white">{watch.name}</div>
-            <div className="mt-0.5 flex items-center gap-1.5 text-[12px]" style={{ color: live ? agent.accent.tint : undefined }}>
-              <StatusDot color={live ? agent.accent.hex : "#686872"} size={4} live={live} />
-              {live ? watch.cadence : "Paused"}
-            </div>
+    <div className={cn("panel flex flex-col p-4", paused && "opacity-60")}>
+      <div className="flex items-center gap-3">
+        <AgentGlyph agent={agent} size={32} animated={!paused} />
+        <div className="min-w-0">
+          <div className="text-[14px] font-medium text-white">{agent.name}</div>
+          <div className="mt-0.5 flex items-center gap-1.5 text-[12px]" style={{ color: paused ? undefined : agent.accent.tint }}>
+            <StatusDot color={paused ? "#686872" : agent.accent.hex} size={4} live={!paused} />
+            {paused ? "Paused" : beat ? `Checked ${formatAgo(beat.at, now)}` : "On shift"}
           </div>
         </div>
-        <button
-          onClick={() => workspace.toggleWatch(watch.id)}
-          aria-label={live ? `Pause ${watch.name}` : `Resume ${watch.name}`}
-          className="flex h-8 w-8 items-center justify-center rounded-[8px] text-fg-3 hairline hover:text-white"
-        >
-          {live ? <Pause size={13} /> : <Play size={13} />}
-        </button>
       </div>
-      <div className="mt-auto flex items-center justify-between gap-2 pt-4">
-        <span className="text-[12px] tabular-nums text-fg-2">
-          {count} today{live && secs < 3600 ? <span className="text-fg-4"> · next scan {secs}s</span> : null}
-        </span>
-        <button onClick={() => workspace.scanNow(watch.id)} className="flex items-center gap-1 text-[12px] text-fg-3 hover:text-white" title="Demo control">
-          <Radar size={11} /> Scan now
-        </button>
+      <p className="mt-3 line-clamp-2 min-h-[2.6em] text-[13px] leading-snug text-fg-2">{paused ? "Paused." : beat?.text ?? "Starting up."}</p>
+      <div className="mt-auto pt-3 text-[12px] tabular-nums text-fg-4">
+        {checks.toLocaleString("en-US")} {checks === 1 ? "check" : "checks"} · {finds} found today
       </div>
-      {leadWatch && (
-        <label className="mt-3 flex cursor-pointer items-center justify-between gap-3 border-t border-white/[0.06] pt-3" title="Draft an outreach mission for every hot lead. Sending still needs your approval.">
-          <span className="text-[12px] text-fg-2">
-            Autopilot
-          </span>
-          <input
-            type="checkbox"
-            checked={watch.autopilot}
-            onChange={(e) => workspace.setAutopilot(watch.id, e.target.checked)}
-            className="h-4 w-4 accent-[#8f9cff]"
-          />
-        </label>
-      )}
     </div>
   );
 }
-

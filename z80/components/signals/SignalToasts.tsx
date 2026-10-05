@@ -17,8 +17,7 @@ import type { Signal } from "@/types";
 export function SignalToasts() {
   const router = useRouter();
   const hydrated = useWorkspace((s) => s.hydrated);
-  const latest = useWorkspace((s) => s.signals[0]);
-  const watches = useWorkspace((s) => s.watches);
+  const latest = useWorkspace((s) => s.feed[0]);
   const seen = useRef<Set<string> | null>(null);
   const [toasts, setToasts] = useState<Signal[]>([]);
 
@@ -30,7 +29,7 @@ export function SignalToasts() {
     }
     if (seen.current.has(latest.id)) return;
     seen.current.add(latest.id);
-    if (latest.kind === "news") return;
+    if (latest.kind !== "lead" && latest.kind !== "reminder" && latest.kind !== "opportunity") return;
     setToasts((t) => [latest, ...t].slice(0, 3));
     const id = latest.id;
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 7000);
@@ -44,8 +43,8 @@ export function SignalToasts() {
         {toasts.map((t) => {
           const temp = t.lead?.temperature;
           const color = temp ? TEMP_COLOR[temp] : "#8f9cff";
-          const agent = agentOrFallback(watches.find((w) => w.id === t.watchId)?.agentId ?? "lead-hunter");
-          const head = t.kind === "reminder" ? "Reminder" : temp === "hot" ? "New hot lead" : temp === "warm" ? "New warm lead" : "New lead";
+          const agent = agentOrFallback(t.botId);
+          const head = t.kind === "reminder" ? "Reminder" : t.kind === "opportunity" ? "Money found" : temp === "hot" ? "New hot lead" : temp === "warm" ? "New warm lead" : "New lead";
           return (
             <motion.div
               key={t.id}

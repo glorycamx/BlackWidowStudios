@@ -353,35 +353,96 @@ export interface WorkspaceSettings {
   sound: boolean;
   /** Global simulation speed multiplier for the demo. */
   demoSpeed: number;
+  /** How your bots reach you. Local "HH:MM". */
+  morningTextAt?: string;
+  recapAt?: string;
+  quietFrom?: string;
+  quietTo?: string;
+  /** Opted in to browser alerts (demo). */
+  browserAlerts?: boolean;
+}
+
+/** What happened while the app was closed or the tab was hidden. */
+export interface AwaySummary {
+  from: number;
+  to: number;
+  leads: number;
+  hot: number;
+  posts: number;
+  briefs: number;
+  opportunities: number;
+  checks: number;
+  /** Feed ids, newest first, worth a look. */
+  top: string[];
 }
 
 /* ------------------------------------------------------------------ */
-/* Watches & signals — the always-on side of the workforce              */
+/* Always-on bots: routines, heartbeats, the live feed                 */
 /* ------------------------------------------------------------------ */
 
-export type WatchKind = "website-opportunities" | "ai-opportunities" | "ai-news" | "reminders";
+export type BotId = string;
 
-/** A standing order that runs around the clock and produces signals. */
-export interface Watch {
+/** When a routine runs. */
+export type Trigger =
+  | { kind: "always" }
+  | { kind: "every"; minutes: number }
+  | { kind: "schedule"; days: number[]; times: string[] }
+  | { kind: "event"; event: string };
+
+/** Which simulated behaviour powers a routine (swapped for real work later). */
+export type RoutineEngine =
+  | "website-down"
+  | "changed-hands"
+  | "new-business"
+  | "review-spike"
+  | "domain-expiring"
+  | "hiring"
+  | "post-schedule"
+  | "keep-drafted"
+  | "lead-openers"
+  | "upsells"
+  | "competitors"
+  | "trends"
+  | "morning-brief"
+  | "niche-breaking"
+  | "ai-news"
+  | "morning-text"
+  | "evening-recap"
+  | "follow-ups"
+  | "chase-approvals"
+  | "custom";
+
+/** A job a bot keeps doing, around the clock or on a schedule. */
+export interface Routine {
   id: string;
-  kind: WatchKind;
-  name: string;
-  agentId: AgentId;
-  description: string;
-  /** What fires a signal. */
-  triggers: string[];
-  cadence: string;
-  status: "live" | "paused";
-  /** Draft an outreach mission automatically for every hot lead (still needs approval to send). */
-  autopilot: boolean;
+  botId: BotId;
+  title: string;
+  trigger: Trigger;
+  engine: RoutineEngine;
+  status: "on" | "paused";
+  /** Lets the routine send or post on its own. Off means it waits for a yes. */
+  doWithoutAsking: boolean;
   createdAt: number;
-  /** Simulation: when the next signal is due. */
-  nextAt: number;
+  lastRunAt?: number;
+  /** Demo clock: when it next produces something. */
+  nextRunAt: number;
+  stats: { runs: number; checks: number; finds: number; onTime: number; missed: number };
+}
+
+/** Quiet proof of work. Not a feed item. */
+export interface Heartbeat {
+  id: string;
+  botId: BotId;
+  routineId: string;
+  at: number;
+  text: string;
+  /** "What it's looking at" for the Watch it work screen. */
+  url: string;
 }
 
 export type LeadTemperature = "hot" | "warm" | "cool";
 
-/** Everything needed to act on an opportunity, in one card. */
+/** Everything needed to act on a lead, in one card. */
 export interface LeadDossier {
   opportunity: "website" | "ai";
   business: string;
@@ -405,21 +466,89 @@ export interface LeadDossier {
   nextMove: string;
 }
 
-export interface Signal {
+export type FeedKind = "lead" | "post" | "opportunity" | "brief" | "reminder" | "handoff" | "approval" | "digest";
+
+/** Something a bot found or did that is worth your attention. */
+export interface FeedItem {
   id: string;
-  watchId: string;
-  kind: "lead" | "news" | "reminder";
+  botId: BotId;
+  routineId?: string;
+  kind: FeedKind;
   at: number;
-  /** What happened in the world that fired this signal. */
+  /** What happened in the world. */
   trigger: string;
   title: string;
   summary: string;
+  /** When the real-world thing happened, and when the bot caught it. */
+  happenedAt?: number;
+  foundAt?: number;
   read: boolean;
   saved: boolean;
   dismissed: boolean;
-  /** Mission created from this signal, if any. */
+  /** Job started from this item, if any. */
   missionId?: string;
   lead?: LeadDossier;
-  news?: { source: string; whyItMatters: string };
-  reminder?: { due: string; relatedSignalId?: string };
+  post?: { postId: string };
+  opportunity?: { client?: string; whyItMatters: string; nextStep: string; value?: string };
+  brief?: { whyItMatters: string; whatToDo: string; source: string };
+  reminder?: { due: string; relatedId?: string };
+  digest?: { lines: { text: string; href?: string }[] };
+}
+
+/** Old name kept so existing components compile while they move over. */
+export type Signal = FeedItem;
+
+export type PostChannel = "instagram" | "facebook" | "linkedin" | "x" | "google-business";
+
+export interface ScheduledPost {
+  id: string;
+  channel: PostChannel;
+  scheduledFor: number;
+  status: "draft" | "needs-ok" | "scheduled" | "posted" | "missed" | "skipped";
+  postedAt?: number;
+  caption: string;
+  visualHint: string;
+  routineId?: string;
+}
+
+/** Bots talking to each other (and you) in plain sentences. */
+export interface TeamMessage {
+  id: string;
+  author: BotId | "user";
+  to?: BotId | "user";
+  at: number;
+  text: string;
+  ref?: { feedItemId?: string; jobId?: string; approvalId?: string; postId?: string };
+}
+
+/** A way of doing something the bot keeps using. */
+export interface Skill {
+  id: string;
+  botId: BotId;
+  name: string;
+  how: string;
+  learned: "taught" | "edits" | "built-in";
+  createdAt: number;
+}
+
+/** A bot the owner made. Stored with the workspace. */
+export interface CustomBotSpec {
+  id: string;
+  name: string;
+  job: string;
+  colorIndex: number;
+  visual: AgentVisual;
+  createdAt: number;
+}
+
+/** In-app notification (bell + toasts). */
+export interface Notice {
+  id: string;
+  at: number;
+  botId: BotId;
+  title: string;
+  body: string;
+  href?: string;
+  tone: "hot" | "needs-you" | "info";
+  read: boolean;
 }
