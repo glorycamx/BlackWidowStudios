@@ -144,11 +144,11 @@ export const CommandConsole = forwardRef<CommandConsoleHandle, Props>(function C
       />
       <div
         className={cn(
-          "relative overflow-hidden rounded-[26px] bg-[#0a0a10]/90 backdrop-blur-md transition-shadow duration-500",
+          "relative overflow-hidden rounded-[26px] bg-[var(--surface-raised)] backdrop-blur-md transition-shadow duration-500",
           size === "compact" && "rounded-[22px]",
         )}
         style={{
-          boxShadow: `inset 0 0 0 1px rgba(255,255,255,${charged ? 0.1 : 0.08}), inset 0 1px 0 rgba(255,255,255,0.06), 0 40px 100px -30px rgba(0,0,0,0.9)`,
+          boxShadow: `inset 0 0 0 1px ${charged ? "var(--color-line-3)" : "var(--color-line-2)"}, 0 30px 80px -30px rgb(0 0 0 / 0.45)`,
         }}
       >
         {/* Energy border: brightens with the objective */}

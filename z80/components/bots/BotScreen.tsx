@@ -28,7 +28,7 @@ export function BotScreen({ bot, paused, className, compact }: { bot: Agent; pau
   const c = bot.accent.hex;
 
   return (
-    <figure className={cn("overflow-hidden rounded-[18px] bg-[#09090d]", className)} style={{ boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.07)" }} aria-label={`What ${bot.name} is looking at`}>
+    <figure className={cn("overflow-hidden rounded-[18px] bg-[var(--surface-sunken)]", className)} style={{ boxShadow: "inset 0 0 0 1px var(--color-line-2)" }} aria-label={`What ${bot.name} is looking at`}>
       <div className="flex items-center gap-2 border-b border-white/[0.06] px-3 py-2">
         <span className="flex gap-1" aria-hidden>
           <span className="h-2 w-2 rounded-full bg-white/[0.12]" />

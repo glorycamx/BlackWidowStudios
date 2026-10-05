@@ -3,31 +3,37 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { Activity, Brain, CalendarDays, CheckCircle2, Command, MoreHorizontal, Plug, Radar, Repeat, Search, Settings, Target, Users } from "lucide-react";
+import { Activity, Brain, CalendarDays, CheckCircle2, ChevronRight, Command, MoreHorizontal, Plug, Radar, Repeat, Search, Settings, Target, Users } from "lucide-react";
 import { NoticeBell, PhoneToasts, ShiftClock } from "@/components/app/Notifications";
-import { useWorkingBots } from "@/components/bots/useBot";
-import { StatusDot } from "@/components/ui/StatusDot";
+import { ThemeSwitch } from "@/components/app/ThemeSwitch";
+import { WelcomeTour } from "@/components/app/WelcomeTour";
+import { useAppTheme } from "@/lib/theme";
+import { useEffect, useState } from "react";
 import { NAV_LABELS } from "@/lib/copy";
 import { Kbd } from "@/components/ui/Kbd";
 import { Wordmark } from "@/components/z80/Wordmark";
 import { openCommandPalette } from "@/components/z80/CommandPalette";
-import { AgentGlyph } from "@/components/agents/AgentGlyph";
-import { agents } from "@/data/bots";
 import { selectPendingApprovals, selectUnreadHot, useWorkspace } from "@/lib/store/workspace";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
+/** The four places you need every day, plus what needs you. Everything else sits under More. */
 const NAV = [
   { href: "/live", label: NAV_LABELS.live, icon: Radar },
   { href: "/chat", label: NAV_LABELS.chat, icon: Command },
   { href: "/team", label: NAV_LABELS.team, icon: Users },
   { href: "/routines", label: NAV_LABELS.routines, icon: Repeat },
+  { href: "/approvals", label: NAV_LABELS.approvals, icon: CheckCircle2 },
+];
+
+const MORE = [
   { href: "/calendar", label: NAV_LABELS.calendar, icon: CalendarDays },
   { href: "/jobs", label: NAV_LABELS.jobs, icon: Target },
   { href: "/memory", label: NAV_LABELS.memory, icon: Brain },
   { href: "/apps", label: NAV_LABELS.apps, icon: Plug },
   { href: "/activity", label: NAV_LABELS.activity, icon: Activity },
 ];
+const MORE_KEY = "z80.nav.more";
 
 const MOBILE = [
   { href: "/live", label: NAV_LABELS.live, icon: Radar },
@@ -47,15 +53,31 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pending = useWorkspace(selectPendingApprovals).length;
   const org = useWorkspace((s) => s.org);
   const hot = useWorkspace(selectUnreadHot);
-  const working = useWorkingBots();
-  const paused = useWorkspace((s) => s.pausedAgents);
+  useAppTheme();
+  const inMore = MORE.some((n) => isActive(path, n.href));
+  const [moreOpen, setMoreOpen] = useState(false);
+  useEffect(() => {
+    try {
+      setMoreOpen(inMore || localStorage.getItem(MORE_KEY) === "1");
+    } catch {
+      setMoreOpen(inMore);
+    }
+  }, [inMore]);
+  const toggleMore = (v: boolean) => {
+    setMoreOpen(v);
+    try {
+      localStorage.setItem(MORE_KEY, v ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+  };
 
   return (
-    <div className="relative min-h-dvh bg-black">
+    <div className="relative min-h-dvh bg-[var(--surface-canvas)]">
       <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 h-[40vh] bg-[radial-gradient(60%_100%_at_60%_0%,rgba(69,108,255,0.07),transparent_70%)]" />
 
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[232px] flex-col border-r border-line bg-[#020203]/80 backdrop-blur-xl lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[232px] flex-col border-r border-line bg-[var(--surface-chrome)] backdrop-blur-xl lg:flex">
         <div className="flex h-16 items-center justify-between px-5">
           <Link href="/" className="text-[19px]" aria-label="Z80.si home">
             <Wordmark />
@@ -74,53 +96,51 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <span className="flex-1 text-left">Search or command</span>
           <Kbd>⌘K</Kbd>
         </button>
-        <nav aria-label="Workspace" className="flex flex-1 flex-col px-3">
+        <nav aria-label="Workspace" className="flex flex-1 flex-col overflow-y-auto px-3">
           <ul className="space-y-0.5">
             {NAV.map((n) => (
               <li key={n.href}>
                 <NavLink
                   href={n.href}
                   label={n.label}
-                  icon={<n.icon size={15} />}
+                  icon={<n.icon size={16} />}
                   active={isActive(path, n.href)}
-                  badge={n.href === "/live" && hydrated && hot > 0 ? hot : undefined}
-                  badgeTone="hot"
+                  badge={n.href === "/live" && hydrated && hot > 0 ? hot : n.href === "/approvals" && hydrated && pending > 0 ? pending : undefined}
+                  badgeTone={n.href === "/live" ? "hot" : undefined}
                 />
               </li>
             ))}
           </ul>
-          <div className="my-4 h-px bg-line" />
-          <NavLink
-            href="/approvals"
-            label={NAV_LABELS.approvals}
-            icon={<CheckCircle2 size={15} />}
-            active={isActive(path, "/approvals")}
-            badge={hydrated && pending > 0 ? pending : undefined}
-          />
 
-          <div className="mt-8 px-2.5">
-            <div className="label mb-3">Your team</div>
-            <ul className="space-y-2">
-              {working.map((a) => (
-                <li key={a.id}>
-                  <Link href={`/team/${a.slug}`} className="group flex items-center gap-2.5 text-[12.5px] text-fg-3 transition-colors hover:text-fg-1">
-                    <AgentGlyph agent={a} size={20} animated={false} />
-                    <span className="min-w-0 flex-1 truncate">{a.name}</span>
-                    <StatusDot color={paused.includes(a.id) ? "#686872" : a.accent.hex} size={4} live={!paused.includes(a.id)} />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <button
+            onClick={() => toggleMore(!moreOpen)}
+            aria-expanded={moreOpen}
+            className="mt-5 flex h-8 items-center gap-2 px-2.5 text-[12.5px] text-fg-3 transition-colors hover:text-fg-1"
+          >
+            <ChevronRight size={13} className={cn("transition-transform duration-200", moreOpen && "rotate-90")} />
+            More
+          </button>
+          <AnimatePresence initial={false}>
+            {moreOpen && (
+              <motion.ul initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25, ease: EASE }} className="space-y-0.5 overflow-hidden">
+                {MORE.map((n) => (
+                  <li key={n.href}>
+                    <NavLink href={n.href} label={n.label} icon={<n.icon size={15} />} active={isActive(path, n.href)} quiet />
+                  </li>
+                ))}
+              </motion.ul>
+            )}
+          </AnimatePresence>
 
-          <div className="mt-auto space-y-0.5 pb-3">
-            <NavLink href="/settings" label="Settings" icon={<Settings size={15} />} active={isActive(path, "/settings")} />
-            <Link href="/settings#account" className="mt-2 flex items-center gap-3 rounded-[10px] px-2.5 py-2 transition-colors hover:bg-white/[0.03]">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[#2a2f55] to-[#121218] text-[11px] font-semibold text-white hairline">
+          <div className="mt-auto space-y-2 pb-3 pt-6">
+            <ThemeSwitch />
+            <NavLink href="/settings" label="Settings" icon={<Settings size={15} />} active={isActive(path, "/settings")} quiet />
+            <Link href="/settings#account" className="flex items-center gap-3 rounded-[10px] px-2.5 py-2 transition-colors hover:bg-white/[0.03]">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[#2a2f55] to-[#121218] text-[11px] font-semibold text-[#fff] hairline">
                 {(org?.name ?? "Z").slice(0, 1)}
               </span>
               <span className="min-w-0">
-                <span className="block truncate text-[12.5px] text-fg-1">{hydrated ? org?.name ?? "Your company" : "—"}</span>
+                <span className="block truncate text-[12.5px] text-fg-1">{hydrated ? org?.name ?? "Your company" : ""}</span>
                 <span className="block text-[11px] text-fg-3">Demo workspace</span>
               </span>
             </Link>
@@ -157,6 +177,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </main>
 
       {hydrated && <PhoneToasts />}
+      {hydrated && <WelcomeTour />}
 
       {/* Mobile tab bar */}
       <nav aria-label="Workspace" className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-black/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
@@ -187,13 +208,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-function NavLink({ href, label, icon, active, badge, badgeTone }: { href: string; label: string; icon: React.ReactNode; active: boolean; badge?: number; badgeTone?: "hot" }) {
+function NavLink({ href, label, icon, active, badge, badgeTone, quiet }: { href: string; label: string; icon: React.ReactNode; active: boolean; badge?: number; badgeTone?: "hot"; quiet?: boolean }) {
   return (
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "relative flex h-9 items-center gap-3 rounded-[10px] px-2.5 text-[13.5px] transition-colors duration-150",
+        "relative flex items-center gap-3 rounded-[10px] px-2.5 transition-colors duration-150",
+        quiet ? "h-8 text-[13px]" : "h-10 text-[14.5px]",
         active ? "bg-white/[0.06] text-white" : "text-fg-3 hover:bg-white/[0.025] hover:text-fg-1",
       )}
     >
@@ -217,7 +239,7 @@ function NavLink({ href, label, icon, active, badge, badgeTone }: { href: string
 }
 
 /** Contextual loading — never a generic spinner. */
-export function AssemblingContext({ text = "Z80 is assembling context…" }: { text?: string }) {
+export function AssemblingContext({ text = "Waking up your bots…" }: { text?: string }) {
   return (
     <div className="flex min-h-[70vh] items-center justify-center" role="status" aria-live="polite">
       <div className="flex flex-col items-center gap-5">

@@ -6,6 +6,7 @@ import { useRef, useState } from "react";
 import { availableAgents } from "@/data/bots";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
+import { tint } from "@/lib/tint";
 
 /** Positions (% of the right-hand stage) for floating capability words. */
 const WORD_SPOTS = [
@@ -49,7 +50,7 @@ export function IntelligencesSection() {
                 exit={{ opacity: 0, y: -16, filter: "blur(6px)" }}
                 transition={{ duration: 0.7, ease: EASE }}
               >
-                <div className="flex items-center gap-2 text-[15px] font-medium" style={{ color: agent.accent.tint }}>
+                <div className="flex items-center gap-2 text-[15px] font-medium" style={{ color: tint(agent.accent) }}>
                   <span className="h-1.5 w-1.5 rounded-full motion-safe:animate-breathe" style={{ background: agent.accent.hex, boxShadow: `0 0 10px ${agent.accent.hex}` }} />
                   {agent.role}
                 </div>

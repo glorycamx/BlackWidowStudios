@@ -28,7 +28,15 @@ import { agentStateLabel, getAgentLiveState } from "@/lib/services/agentService"
 import { selectMissions, useWorkspace, workspace } from "@/lib/store/workspace";
 import { useNow } from "@/lib/hooks/useNow";
 import { EASE } from "@/lib/motion";
-import { clockTime } from "@/lib/utils";
+import { clockTime, cn } from "@/lib/utils";
+import { tint } from "@/lib/tint";
+
+const TABS = [
+  { id: "overview", label: "Overview" },
+  { id: "skills", label: "Skills and knowledge" },
+  { id: "settings", label: "Apps and permissions" },
+  { id: "message", label: "Message" },
+] as const;
 
 /** A bot's page: watch it work, its routines, what it found, what it knows. */
 export function AgentWorkspace({ slug }: { slug: string }) {
@@ -47,6 +55,7 @@ export function AgentWorkspace({ slug }: { slug: string }) {
   const checks = useBeats((b) => (agent ? b.botChecks[agent.id] ?? 0 : 0));
   const [msg, setMsg] = useState("");
   const [renaming, setRenaming] = useState(false);
+  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>(params.get("message") ? "message" : "overview");
   const consoleRef = useRef<CommandConsoleHandle>(null);
   const threadRef = useRef<HTMLDivElement>(null);
   const now = useNow(20000);
@@ -112,7 +121,7 @@ export function AgentWorkspace({ slug }: { slug: string }) {
             {nickname && <div className="mt-1 text-[13px] text-fg-4">{agent.name}</div>}
             <div className="mt-3 flex flex-wrap items-center gap-4">
               <span className="text-[15px] text-fg-2">{agent.role}</span>
-              <span className="flex items-center gap-2 text-[13px]" style={{ color: isPaused ? undefined : agent.accent.tint }}>
+              <span className="flex items-center gap-2 text-[13px]" style={{ color: isPaused ? undefined : tint(agent.accent) }}>
                 <StatusDot color={color} size={5} live={!isPaused} />
                 {isPaused ? "Paused" : "On shift"}
               </span>
@@ -124,8 +133,8 @@ export function AgentWorkspace({ slug }: { slug: string }) {
             variant="secondary"
             icon={<MessageSquare size={14} />}
             onClick={() => {
-              threadRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-              setTimeout(() => consoleRef.current?.focus(), 350);
+              setTab("message");
+              setTimeout(() => consoleRef.current?.focus(), 200);
             }}
           >
             Message
@@ -144,7 +153,22 @@ export function AgentWorkspace({ slug }: { slug: string }) {
         )}
       </AnimatePresence>
 
-      <div className="mt-10 grid gap-6 lg:grid-cols-3">
+      <div role="tablist" aria-label={`${display} sections`} className="no-scrollbar -mx-5 mt-10 flex gap-1 overflow-x-auto px-5 md:mx-0 md:px-0">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            role="tab"
+            aria-selected={tab === t.id}
+            onClick={() => setTab(t.id)}
+            className={cn("h-9 shrink-0 rounded-full px-4 text-[14px] transition-colors", tab === t.id ? "bg-white text-black" : "text-fg-2 hover:bg-white/[0.05] hover:text-fg-1")}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "overview" && (
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <section className="lg:col-span-2" aria-label="Watch it work">
           <h2 className="label mb-3">Watch it work</h2>
           <BotScreen bot={agent} paused={isPaused} />
@@ -220,6 +244,11 @@ export function AgentWorkspace({ slug }: { slug: string }) {
           )}
         </Panel>
 
+      </div>
+      )}
+
+      {tab === "skills" && (
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <SkillsPanel botId={agent.id} name={display} className="lg:col-span-2" />
 
         <Panel title="Works with">
@@ -241,10 +270,6 @@ export function AgentWorkspace({ slug }: { slug: string }) {
           </ul>
         </Panel>
 
-        <Panel title="Activity" className="lg:col-span-2" action={<Link href="/activity" className="text-[12px] text-fg-3 hover:text-white">All activity →</Link>}>
-          <ActivityFeed events={events} limit={8} dense />
-        </Panel>
-
         <Panel title="What it knows">
           <ul className="space-y-3">
             {agent.memory.map((m) => {
@@ -261,7 +286,12 @@ export function AgentWorkspace({ slug }: { slug: string }) {
           </ul>
         </Panel>
 
-        <Panel title="Apps">
+      </div>
+      )}
+
+      {tab === "settings" && (
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+        <Panel title="Apps" className="lg:col-span-2">
           <ul className="space-y-2.5">
             {agent.tools.map((t) => {
               const i = getIntegration(t);
@@ -279,6 +309,10 @@ export function AgentWorkspace({ slug }: { slug: string }) {
           </ul>
         </Panel>
 
+        <Panel title="Recent activity" className="lg:col-span-1" action={<Link href="/activity" className="text-[12px] text-fg-3 hover:text-white">All activity →</Link>}>
+          <ActivityFeed events={events} limit={8} dense />
+        </Panel>
+
         <Panel title="Permissions" className="lg:col-span-3" action={<span className="text-[12px] tabular-nums text-fg-4">Applies to every bot</span>}>
           <ul className="grid gap-x-10 md:grid-cols-2">
             {permissions.map((p) => (
@@ -290,6 +324,11 @@ export function AgentWorkspace({ slug }: { slug: string }) {
           </ul>
         </Panel>
 
+      </div>
+      )}
+
+      {tab === "message" && (
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <section ref={threadRef} className="panel p-5 lg:col-span-3" aria-label={`Message ${display}`}>
           <h2 className="label">Direct line · {display}</h2>
           <div className="mt-5 space-y-4">
@@ -328,6 +367,7 @@ export function AgentWorkspace({ slug }: { slug: string }) {
           </div>
         </section>
       </div>
+      )}
     </div>
   );
 }

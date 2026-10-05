@@ -11,9 +11,10 @@ import { useBeats } from "@/lib/sim/heartbeats";
 import { useNow } from "@/lib/hooks/useNow";
 import { useWorkspace, workspace } from "@/lib/store/workspace";
 import { EASE } from "@/lib/motion";
-import { formatAgo, formatCountdown, formatLocalTime, isNight } from "@/lib/time";
+import { formatAgo, formatLocalTime, isNight } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import type { Agent } from "@/types";
+import { tint } from "@/lib/tint";
 
 function duration(ms: number) {
   const m = Math.round(ms / 60e3);
@@ -75,65 +76,65 @@ export function AwayCard() {
 }
 
 /** A greeting that knows what time it is. */
-export function Greeting({ hot, needsYou }: { hot: number; needsYou: number }) {
+export function Greeting({ hot, needsYou, posted }: { hot: number; needsYou: number; posted: number }) {
   const now = useNow(30000);
   const h = new Date(now).getHours();
   const night = isNight(now);
   const hello = night ? `It's ${formatLocalTime(now)}. Your bots are still at it.` : h < 12 ? "Good morning." : h < 18 ? "Good afternoon." : "Good evening.";
-  const bits = [hot ? `${hot} hot lead${hot === 1 ? "" : "s"} today` : "No hot leads yet today", needsYou ? `${needsYou} thing${needsYou === 1 ? "" : "s"} need${needsYou === 1 ? "s" : ""} you` : "nothing needs you"];
+  const bits = [
+    hot ? `${hot} hot lead${hot === 1 ? "" : "s"} today` : "No hot leads yet today",
+    posted ? `${posted} post${posted === 1 ? "" : "s"} went out` : "",
+    needsYou ? `${needsYou} thing${needsYou === 1 ? "" : "s"} need${needsYou === 1 ? "s" : ""} you` : "nothing needs you",
+  ].filter(Boolean);
   return (
     <div>
-      <h1 className="text-[clamp(34px,4.4vw,56px)] font-semibold leading-[1] tracking-[-0.035em] text-white">{hello}</h1>
-      <p className="mt-3 text-[clamp(16px,1.4vw,19px)] text-fg-2">
-        {bits[0]}, {bits[1]}.{night ? " Sleep. They've got it." : ""}
+      <h1 className="text-[clamp(30px,3.4vw,44px)] font-semibold leading-[1.05] tracking-[-0.03em] text-white">{hello}</h1>
+      <p className="mt-2 text-[clamp(16px,1.3vw,18px)] text-fg-2">
+        {bits.slice(0, -1).join(", ")}{bits.length > 1 ? " and " : ""}{bits[bits.length - 1]}.{night ? " Sleep. They've got it." : ""}
       </p>
     </div>
   );
 }
 
-/** One bot's live status card for the Right now strip. */
-export function BotNowCard({ agent, paused, finds }: { agent: Agent; paused: boolean; finds: number }) {
+/** One calm list: every bot, what it's doing this second. */
+export function TeamNow({ bots, paused }: { bots: Agent[]; paused: string[] }) {
+  return (
+    <section aria-label="Your team right now" className="panel overflow-hidden">
+      <div className="flex items-center justify-between px-5 pb-1 pt-4">
+        <h2 className="text-[15px] font-semibold text-white">Your team right now</h2>
+        <Link href="/team" className="text-[13px] text-fg-3 hover:text-white">
+          See all
+        </Link>
+      </div>
+      <ul className="divide-y divide-white/[0.05]">
+        {bots.map((a) => (
+          <BotNowRow key={a.id} agent={a} paused={paused.includes(a.id)} />
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function BotNowRow({ agent, paused }: { agent: Agent; paused: boolean }) {
   const beat = useBeats((b) => b.latest[agent.id]);
-  const checks = useBeats((b) => b.botChecks[agent.id] ?? 0);
   const name = useBotName(agent.id);
-  const next = useWorkspace((s) => {
-    const times = s.routines.filter((r) => r.botId === agent.id && r.status === "on" && r.nextRunAt > 0).map((r) => r.nextRunAt);
-    return times.length ? Math.min(...times) : 0;
-  });
   const now = useNow(1000);
   return (
-    <Link href={`/team/${agent.slug}`} className={cn("panel flex w-[78vw] max-w-[300px] shrink-0 snap-start flex-col p-4 transition-colors hover:bg-white/[0.03] sm:w-auto sm:max-w-none", paused && "opacity-60")}>
-      <div className="flex items-center gap-3">
-        <AgentGlyph agent={agent} size={32} animated={!paused} />
-        <div className="min-w-0">
-          <div className="truncate text-[14px] font-medium text-white">{name}</div>
-          <div className="mt-0.5 flex items-center gap-1.5 text-[12px]" style={{ color: paused ? undefined : agent.accent.tint }}>
-            <StatusDot color={paused ? "#686872" : agent.accent.hex} size={4} live={!paused} />
-            {paused ? "Paused" : beat ? `Checked ${formatAgo(beat.at, now)}` : "On shift"}
+    <li>
+      <Link href={`/team/${agent.slug}`} className={cn("flex items-center gap-4 px-5 py-3 transition-colors hover:bg-white/[0.025]", paused && "opacity-60")}>
+        <AgentGlyph agent={agent} size={34} animated={!paused} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[15px] font-medium text-white">{name}</span>
+            <StatusDot color={paused ? "#8e93a8" : tint(agent.accent)} size={4} live={!paused} />
           </div>
+          <p className="truncate text-[14px] text-fg-2" aria-live="off">
+            {paused ? "Paused." : beat?.text ?? "Starting up."}
+          </p>
         </div>
-      </div>
-      <p className="mt-3 line-clamp-2 min-h-[2.6em] text-[13px] leading-snug text-fg-2" aria-live="off">
-        {paused ? "Paused." : beat?.text ?? "Starting up."}
-      </p>
-      <div className="mt-auto flex items-center justify-between gap-2 pt-3 text-[12px] tabular-nums text-fg-4">
-        <span>
-          {checks.toLocaleString("en-US")} {checks === 1 ? "check" : "checks"} · {finds} found
-        </span>
-        {!paused && next > now && next - now < 3600e3 && <span>next {formatCountdown(next, now)}</span>}
-      </div>
-    </Link>
-  );
-}
-
-export function Counter({ label, value, color }: { label: string; value: number | string; color?: string }) {
-  return (
-    <div className="min-w-0">
-      <div className="text-[clamp(26px,2.6vw,34px)] font-medium tabular-nums leading-none tracking-[-0.02em]" style={{ color: color ?? "#fff" }}>
-        {value}
-      </div>
-      <div className="mt-1.5 text-[13px] text-fg-3">{label}</div>
-    </div>
+        <span className="hidden shrink-0 text-[12px] tabular-nums text-fg-4 sm:block">{paused ? "" : beat ? formatAgo(beat.at, now) : ""}</span>
+      </Link>
+    </li>
   );
 }
 

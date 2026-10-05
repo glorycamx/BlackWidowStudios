@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 import { agentOrFallback } from "@/data/bots";
 import { EASE } from "@/lib/motion";
+import { tint } from "@/lib/tint";
 
 /** Sample of what the bots do on their own. Illustrative, labelled as such. */
 const LINES: { agent: string; text: string }[] = [
@@ -42,7 +43,7 @@ export function LiveTicker() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.45, ease: EASE }}
           >
-            <span style={{ color: a.accent.tint }}>{a.name}</span> <span className="text-fg-1">{line.text}</span>
+            <span style={{ color: tint(a.accent) }}>{a.name}</span> <span className="text-fg-1">{line.text}</span>
           </motion.span>
         </AnimatePresence>
       </span>

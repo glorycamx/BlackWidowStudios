@@ -61,7 +61,7 @@ export function AmbientRail() {
         <ul className="mt-4 space-y-3">
           {signals.slice(0, 4).map((s) => (
             <li key={s.id}>
-              <Link href={`/live?id=${s.id}`} className="block rounded-[10px] p-2.5 transition-colors hover:bg-white/[0.03]" style={{ boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05)" }}>
+              <Link href={`/live?id=${s.id}`} className="block rounded-[10px] p-2.5 transition-colors hover:bg-white/[0.03]" style={{ boxShadow: "inset 0 0 0 1px var(--color-line-2)" }}>
                 <div className="flex items-center justify-between gap-2">
                   <KindChip signal={s} />
                   <span className="text-[12px] tabular-nums text-fg-4">{relativeTime(s.at, now)}</span>

@@ -155,7 +155,7 @@ export function CreateBotDialog({ open, onClose, initial = "" }: { open: boolean
                 <button onClick={onClose} className="h-10 rounded-full px-4 text-[14px] text-fg-3 hover:text-white">
                   Cancel
                 </button>
-                <button onClick={create} disabled={!what.trim()} className="h-10 rounded-full bg-white px-5 text-[14px] font-medium text-black hover:bg-[#e8e8ed] disabled:opacity-30">
+                <button onClick={create} disabled={!what.trim()} className="h-10 rounded-full bg-white px-5 text-[14px] font-medium text-black hover:opacity-85 disabled:opacity-30">
                   Create and start
                 </button>
               </div>

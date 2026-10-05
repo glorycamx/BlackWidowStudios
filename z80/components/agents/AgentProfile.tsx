@@ -17,6 +17,7 @@ import { getIntegration, integrationStatusLabel } from "@/data/integrations";
 import { getMemoryDomain } from "@/data/memory";
 import { EASE } from "@/lib/motion";
 import type { Agent } from "@/types";
+import { tint } from "@/lib/tint";
 
 const PROMPTS: Record<string, string> = {
   "content-creator": "Keep my Instagram posting every weekday at 8 AM",
@@ -45,7 +46,7 @@ export function AgentProfile({ agent }: { agent: Agent }) {
             <ArrowLeft size={12} /> Your bots
           </Link>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: EASE, delay: 0.2 }} className="mt-10 max-w-[640px]">
-            <div className="flex items-center gap-2 text-[15px] font-medium" style={{ color: agent.accent.tint }}>
+            <div className="flex items-center gap-2 text-[15px] font-medium" style={{ color: tint(agent.accent) }}>
               {agent.tagline}
             </div>
             <h1 className="display mt-5 text-[clamp(64px,10vw,150px)]">{agent.name}</h1>
@@ -53,7 +54,7 @@ export function AgentProfile({ agent }: { agent: Agent }) {
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
               <span className="label flex items-center gap-2 text-[10px]">
                 Status
-                <span className="flex items-center gap-2" style={{ color: available ? agent.accent.tint : undefined }}>
+                <span className="flex items-center gap-2" style={{ color: available ? tint(agent.accent) : undefined }}>
                   <StatusDot color={available ? agent.accent.hex : "#686872"} size={5} live={available} />
                   {available ? "On shift, around the clock" : "Coming soon"}
                 </span>

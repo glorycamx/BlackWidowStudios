@@ -7,6 +7,8 @@ import * as clock from "@/lib/sim/clock";
 import { runEngine } from "@/lib/sim/generators";
 import { formatClockString } from "@/lib/time";
 import { PermissionSwitch } from "@/components/app/PermissionSwitch";
+import { ThemeSwitch } from "@/components/app/ThemeSwitch";
+import { openWelcome } from "@/components/app/WelcomeTour";
 import { PageHeader, PageWrap, Panel } from "@/components/app/primitives";
 import { Button } from "@/components/ui/Button";
 import { getAuthProvider, type AuthUser } from "@/lib/auth";
@@ -87,6 +89,25 @@ export function SettingsView() {
               {saved && <span className="text-[12.5px] text-fg-2" role="status">Saved to organization memory.</span>}
             </div>
           </form>
+        </Panel>
+
+        <Panel title="Appearance">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="text-[14.5px] text-white">Light or dark</div>
+              <div className="mt-0.5 text-[13px] text-fg-3">Auto matches your device.</div>
+            </div>
+            <ThemeSwitch className="w-full sm:w-[260px]" />
+          </div>
+          <div className="mt-5 flex items-center justify-between gap-6 border-t border-line pt-5">
+            <div>
+              <div className="text-[14.5px] text-white">Welcome tour</div>
+              <div className="mt-0.5 text-[13px] text-fg-3">The four-card intro you saw on day one.</div>
+            </div>
+            <Button variant="secondary" size="sm" onClick={() => openWelcome()}>
+              Show it again
+            </Button>
+          </div>
         </Panel>
 
         <ReachPanel />
@@ -197,7 +218,7 @@ const TIMES = ["05:00", "05:30", "06:00", "06:30", "07:00", "07:30", "08:00", "0
 
 function TimeSelect({ value, onChange, label }: { value: string; onChange(v: string): void; label: string }) {
   return (
-    <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} className="h-9 rounded-[10px] bg-[#0d0d12] px-3 text-[14px] text-white hairline focus:outline-none">
+    <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} className="h-9 rounded-[10px] bg-[var(--surface-input)] px-3 text-[14px] text-white hairline focus:outline-none">
       {(TIMES.includes(value) ? TIMES : [value, ...TIMES]).map((t) => (
         <option key={t} value={t}>
           {formatClockString(t)}

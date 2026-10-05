@@ -8,6 +8,7 @@ import { routineFromTemplate, routineTemplates } from "@/data/routines";
 import { backfill } from "@/lib/sim/scheduler";
 import { formatLocalTime, isNight, startOfDay } from "@/lib/time";
 import type { FeedItem } from "@/types";
+import { tint } from "@/lib/tint";
 
 interface Night {
   live: boolean;
@@ -78,7 +79,7 @@ export function WhileYouSleptSection() {
                       <div className="flex items-center gap-2 text-[12px] tabular-nums text-fg-3">
                         <span className="text-white">{formatLocalTime(l.at)}</span>
                         <AgentGlyph agent={a} size={16} animated={false} />
-                        <span style={{ color: a.accent.tint }}>{a.name}</span>
+                        <span style={{ color: tint(a.accent) }}>{a.name}</span>
                       </div>
                       <p className="mt-1 text-[16px] leading-snug text-fg-1">{l.text}</p>
                     </div>

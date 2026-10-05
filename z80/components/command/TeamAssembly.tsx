@@ -13,6 +13,7 @@ import { useMediaQuery } from "@/lib/hooks/useMediaQuery";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import type { AgentAssignment, AgentId, Plan } from "@/types";
+import { tint } from "@/lib/tint";
 
 export type NodeStatus = "ready" | "initializing" | "connecting" | "active";
 
@@ -236,7 +237,7 @@ export function TeamAssembly({ plan: initial, onDeployed, onBack, backLabel = "E
                       <motion.path
                         d={d}
                         fill="none"
-                        stroke={agent.accent.tint}
+                        stroke={tint(agent.accent)}
                         strokeWidth={2.4}
                         strokeLinecap="round"
                         style={{ filter: `drop-shadow(0 0 6px ${agent.accent.hex})` }}
@@ -407,7 +408,7 @@ const AgentNode = forwardRef<HTMLButtonElement, { assignment: AgentAssignment; s
       <span>
         <span className="block text-[13px] font-semibold text-white">{agent.name}</span>
         <span className="mt-1 block text-[12px] text-fg-3">{role?.label}</span>
-        <span className="mt-2 flex items-center justify-center gap-1.5 text-[12px]" style={{ color: status === "ready" ? "var(--color-fg-2)" : agent.accent.tint }}>
+        <span className="mt-2 flex items-center justify-center gap-1.5 text-[12px]" style={{ color: status === "ready" ? "var(--color-fg-2)" : tint(agent.accent) }}>
           <StatusDot color={status === "ready" ? "#a3a3aa" : agent.accent.hex} size={4} live={status !== "ready"} />
           {STATUS_LABEL[status]}
         </span>
@@ -440,7 +441,7 @@ function AgentDetail({
           <div className="text-[17px] font-semibold text-white">{agent.name}</div>
           <div className="mt-1 text-[12.5px] text-fg-3">{agent.role}</div>
         </div>
-        <span className="label flex items-center gap-1.5 text-[10px]" style={{ color: status === "ready" ? undefined : agent.accent.tint }}>
+        <span className="label flex items-center gap-1.5 text-[10px]" style={{ color: status === "ready" ? undefined : tint(agent.accent) }}>
           <StatusDot color={status === "ready" ? "#a3a3aa" : agent.accent.hex} size={4} live={status !== "ready"} />
           {STATUS_LABEL[status]}
         </span>
@@ -572,7 +573,7 @@ function MobileNetwork({
                     <span className="block text-[14px] font-semibold text-white">{agent.name}</span>
                     <span className="block truncate text-[12px] text-fg-3">{agent.domain}</span>
                   </span>
-                  <span className="label flex items-center gap-1.5 text-[9.5px]" style={{ color: st === "ready" ? undefined : agent.accent.tint }}>
+                  <span className="label flex items-center gap-1.5 text-[9.5px]" style={{ color: st === "ready" ? undefined : tint(agent.accent) }}>
                     {st === "active" ? <Check size={11} /> : <StatusDot color={st === "ready" ? "#a3a3aa" : agent.accent.hex} size={4} live={st !== "ready"} />}
                     {STATUS_LABEL[st]}
                   </span>

@@ -28,7 +28,7 @@ export function RoutinesView() {
 
   return (
     <PageWrap>
-      <PageHeader label={`${plural(on, "routine")} running`} title="Routines" sub="What your bots keep doing, day and night. Add one in plain English." />
+      <PageHeader label={`${plural(on, "routine")} running`} title="Routines" sub="What your bots keep doing, day and night. Anything that sends or posts asks you first, unless you turn on Do it without asking." />
       <div className="mt-10 max-w-[720px]">
         <AddRoutine placeholder="Try: every morning at 8, find new roofers in Nashua" />
       </div>
@@ -121,7 +121,7 @@ function Lanes({ bots, routines, posts }: { bots: Agent[]; routines: Routine[]; 
                     <div key={t} className="absolute inset-y-0 w-px bg-white/[0.04]" style={{ left: pct(t) }} />
                   ))}
                   {marks.map((m, i) => (
-                    <span key={i} title={`${m.title} · ${formatLocalTime(m.at)}`} className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ left: pct(m.at), background: m.kind === "post" ? "#fff" : b.accent.hex, boxShadow: "0 0 0 3px #0b0b10" }} />
+                    <span key={i} title={`${m.title} · ${formatLocalTime(m.at)}`} className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ left: pct(m.at), background: m.kind === "post" ? "var(--color-fg)" : b.accent.hex, boxShadow: "0 0 0 3px var(--surface-canvas)" }} />
                   ))}
                 </div>
               </div>

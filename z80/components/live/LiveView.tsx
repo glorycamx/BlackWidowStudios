@@ -5,13 +5,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { EmptyState } from "@/components/app/primitives";
 import { useWorkingBots } from "@/components/bots/useBot";
-import { AwayCard, BotNowCard, BotTag, Counter, Greeting } from "@/components/live/LiveParts";
+import { AwayCard, Greeting, TeamNow } from "@/components/live/LiveParts";
+import { AgentGlyph } from "@/components/agents/AgentGlyph";
+import { agentOrFallback } from "@/data/bots";
 import { caughtLine, SignalDetail } from "@/components/signals/LeadDossierView";
-import { KindChip, TEMP_COLOR } from "@/components/signals/SignalParts";
+import { TempChip } from "@/components/signals/SignalParts";
 import { Portal } from "@/components/ui/Portal";
-import { StatusDot } from "@/components/ui/StatusDot";
 import { jobLabel } from "@/lib/copy";
-import { useBeats } from "@/lib/sim/heartbeats";
 import { useMediaQuery } from "@/lib/hooks/useMediaQuery";
 import { useNow } from "@/lib/hooks/useNow";
 import { selectPendingApprovals, selectVisibleFeed, useWorkspace, workspace } from "@/lib/store/workspace";
@@ -21,22 +21,18 @@ import { cn } from "@/lib/utils";
 import type { FeedItem } from "@/types";
 
 const FILTERS = [
-  { id: "all", label: "All" },
-  { id: "hot", label: "Hot leads" },
+  { id: "all", label: "Everything" },
   { id: "lead", label: "Leads" },
   { id: "post", label: "Posts" },
-  { id: "opportunity", label: "Money" },
-  { id: "brief", label: "News" },
-  { id: "reminder", label: "Reminders" },
+  { id: "brief", label: "News and ideas" },
   { id: "saved", label: "Saved" },
 ] as const;
 type FilterId = (typeof FILTERS)[number]["id"];
 
 function matches(s: FeedItem, f: FilterId) {
   if (f === "all") return true;
-  if (f === "hot") return s.lead?.temperature === "hot";
   if (f === "saved") return s.saved;
-  if (f === "brief") return s.kind === "brief" || s.kind === "digest";
+  if (f === "brief") return s.kind === "brief" || s.kind === "digest" || s.kind === "opportunity";
   return s.kind === f;
 }
 
@@ -63,10 +59,9 @@ export function LiveView() {
   const traveling = useWorkspace((s) => s.traveling);
   const needsYou = useWorkspace(selectPendingApprovals).length;
   const bots = useWorkingBots();
-  const totalChecks = useBeats((b) => Object.values(b.botChecks).reduce((a, n) => a + n, 0));
   const wide = useMediaQuery("(min-width: 1100px)", true);
   const [filter, setFilter] = useState<FilterId>("all");
-  const [limit, setLimit] = useState(20);
+  const [limit, setLimit] = useState(12);
   const [selected, setSelected] = useState<string | null>(params.get("id"));
   const now = useNow(15000);
 
@@ -84,10 +79,8 @@ export function LiveView() {
 
   const dayStart = new Date(now).setHours(0, 0, 0, 0);
   const today = feed.filter((s) => s.at >= dayStart);
-  const leadsToday = today.filter((s) => s.kind === "lead").length;
   const hotToday = today.filter((s) => s.lead?.temperature === "hot").length;
   const postedToday = posts.filter((p) => p.status === "posted" && (p.postedAt ?? 0) >= dayStart).length;
-  const onShift = bots.filter((b) => !pausedBots.includes(b.id)).length;
 
   const open = (id: string) => {
     setSelected(id);
@@ -96,43 +89,22 @@ export function LiveView() {
 
   return (
     <div className="mx-auto w-full max-w-[1320px] px-5 py-8 md:px-10 md:py-12">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-fg-3">
-        <span className="flex items-center gap-2.5">
-          <StatusDot color="var(--color-run)" size={5} live={onShift > 0} />
-          {onShift} bots on shift
-        </span>
-        {traveling && (
-          <button onClick={() => workspace.travel(null)} className="rounded-full bg-[#d77bff]/15 px-2.5 py-0.5 text-[12px] text-[#e6b8ff] hover:bg-[#d77bff]/25">
-            Time travel: {formatLocalTime(now)} · back to now
-          </button>
-        )}
-      </div>
-      <div className="mt-4">
-        <Greeting hot={hotToday} needsYou={needsYou} />
-      </div>
+      {traveling && (
+        <button onClick={() => workspace.travel(null)} className="mb-4 rounded-full bg-[#d77bff]/15 px-3 py-1 text-[12px] text-[#b25bdb] hover:bg-[#d77bff]/25">
+          Time travel: {formatLocalTime(now)} · back to now
+        </button>
+      )}
+      <Greeting hot={hotToday} needsYou={needsYou} posted={postedToday} />
 
       <AwayCard />
 
-      {/* Right now */}
-      <section aria-label="Right now" className="mt-10">
-        <h2 className="label mb-3">Right now</h2>
-        <div className="no-scrollbar -mx-5 flex snap-x scroll-px-5 gap-3 overflow-x-auto px-5 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 xl:grid-cols-5">
-          {bots.map((a) => (
-            <BotNowCard key={a.id} agent={a} paused={pausedBots.includes(a.id)} finds={today.filter((s) => s.botId === a.id).length} />
-          ))}
-        </div>
-      </section>
+      <div className="mt-8">
+        <TeamNow bots={bots} paused={pausedBots} />
+      </div>
 
-      {/* Today */}
-      <section aria-label="Today" className="mt-10 grid grid-cols-2 gap-6 border-y border-line py-6 sm:grid-cols-4">
-        <Counter label="Leads today" value={leadsToday} />
-        <Counter label="Hot" value={hotToday} color={TEMP_COLOR.hot} />
-        <Counter label="Posted on time" value={postedToday} />
-        <Counter label="Checks today" value={totalChecks.toLocaleString("en-US")} />
-      </section>
-
+      <h2 className="mt-12 text-[20px] font-semibold tracking-[-0.02em] text-white">What they found</h2>
       {/* Filters */}
-      <div role="tablist" aria-label="Filter what your bots found" className="no-scrollbar -mx-5 mt-8 flex gap-1 overflow-x-auto px-5 md:mx-0 md:px-0">
+      <div role="tablist" aria-label="Filter what your bots found" className="no-scrollbar -mx-5 mt-3 flex gap-1 overflow-x-auto px-5 md:mx-0 md:px-0">
         {FILTERS.map((f) => (
           <button
             key={f.id}
@@ -140,9 +112,9 @@ export function LiveView() {
             aria-selected={filter === f.id}
             onClick={() => {
               setFilter(f.id);
-              setLimit(20);
+              setLimit(12);
             }}
-            className={cn("h-8 shrink-0 rounded-[9px] px-3 text-[13px] transition-colors", filter === f.id ? "bg-white/[0.08] text-white" : "text-fg-3 hover:text-fg-1")}
+            className={cn("h-9 shrink-0 rounded-full px-4 text-[14px] transition-colors", filter === f.id ? "bg-white text-black" : "text-fg-2 hover:bg-white/[0.05] hover:text-fg-1")}
           >
             {f.label}
           </button>
@@ -168,20 +140,21 @@ export function LiveView() {
                   <button
                     onClick={() => open(s.id)}
                     aria-current={on}
-                    className={cn("relative w-full rounded-[14px] px-4 py-3.5 text-left transition-colors", on ? "bg-white/[0.06]" : "hover:bg-white/[0.025]")}
-                    style={on ? { boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.1)" } : undefined}
+                    className={cn("relative w-full rounded-[16px] px-4 py-3.5 text-left transition-colors", on ? "bg-white/[0.06]" : "hover:bg-white/[0.03]")}
+                    style={on ? { boxShadow: "inset 0 0 0 1px var(--color-line-2)" } : undefined}
                   >
-                    {!s.read && <span className="absolute left-1.5 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-white" aria-label="Unread" />}
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <KindChip signal={s} />
-                        <span className="truncate text-[12px] text-fg-3">{s.trigger}</span>
+                    {!s.read && <span className="absolute left-1.5 top-6 h-1.5 w-1.5 rounded-full bg-[#8f9cff]" aria-label="Unread" />}
+                    <div className="flex gap-3.5">
+                      <AgentGlyph agent={agentOrFallback(s.botId)} size={32} animated={false} className="mt-0.5" />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className={cn("truncate text-[15px] font-medium", s.read ? "text-fg-1" : "text-white")}>{s.title}</span>
+                          {s.lead && <TempChip temp={s.lead.temperature} className="shrink-0" />}
+                        </div>
+                        <div className="mt-0.5 truncate text-[14px] text-fg-2">{s.lead ? s.trigger : s.summary}</div>
+                        <div className={cn("mt-1.5 text-[12px] tabular-nums text-fg-3", action && "pr-28")}>{caughtLine(s, now)}</div>
                       </div>
-                      <BotTag id={s.botId} />
                     </div>
-                    <div className={cn("mt-2 truncate text-[15px]", s.read ? "text-fg-1" : "text-white")}>{s.title}</div>
-                    <div className="mt-0.5 truncate text-[13px] text-fg-3">{s.lead ? `${s.lead.location} · ${s.lead.recommended.offer}` : s.summary}</div>
-                    <div className={cn("mt-2 text-[12px] tabular-nums text-fg-4", action && "pr-28")}>{caughtLine(s, now)}</div>
                   </button>
                   {action && (
                     <button onClick={action.run} className={cn("absolute bottom-3 right-3 h-7 rounded-full px-3 text-[12px] transition-colors", s.missionId ? "text-run" : "bg-white/[0.07] text-white hover:bg-white/[0.12]")}>
@@ -194,8 +167,8 @@ export function LiveView() {
           </AnimatePresence>
           {list.length > limit && (
             <li>
-              <button onClick={() => setLimit((n) => n + 20)} className="mt-2 h-10 w-full rounded-[12px] text-[13px] text-fg-3 hairline hover:text-white">
-                Show {Math.min(20, list.length - limit)} more
+              <button onClick={() => setLimit((n) => n + 12)} className="mt-2 h-10 w-full rounded-[12px] text-[13px] text-fg-3 hairline hover:text-white">
+                Show {Math.min(12, list.length - limit)} more
               </button>
             </li>
           )}
@@ -216,7 +189,7 @@ export function LiveView() {
             <AnimatePresence>
               {current && selected && (
                 <motion.div
-                  className="fixed inset-0 z-[60] overflow-y-auto bg-black/95 px-3 pb-24 pt-4 backdrop-blur-xl"
+                  className="fixed inset-0 z-[60] overflow-y-auto bg-[var(--surface-overlay)] px-3 pb-24 pt-4 backdrop-blur-xl"
                   initial={{ opacity: 0, y: 24 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 24 }}

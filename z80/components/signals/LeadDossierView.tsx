@@ -55,9 +55,9 @@ export function SignalDetail({ signal, onClose }: { signal: Signal; onClose?: ()
   const post = useWorkspace((s) => (signal.post ? s.posts.find((p) => p.id === signal.post?.postId) : undefined));
 
   return (
-    <article className="overflow-hidden rounded-[28px] bg-[#0b0b10]" style={{ boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.06)" }} aria-label={signal.title}>
+    <article className="overflow-hidden rounded-[28px] bg-[var(--surface-raised)]" style={{ boxShadow: "inset 0 0 0 1px var(--color-line-2)" }} aria-label={signal.title}>
       {l && <div aria-hidden className="h-px" style={{ background: `linear-gradient(90deg, transparent, ${TEMP_COLOR[l.temperature]}, transparent)` }} />}
-      <header className="p-5 pb-1 md:p-6 md:pb-1">
+      <header className={cn("relative p-5 pb-1 md:p-6 md:pb-1", onClose && "pr-14")}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2.5">
             <KindChip signal={signal} />
@@ -65,7 +65,7 @@ export function SignalDetail({ signal, onClose }: { signal: Signal; onClose?: ()
             <span className="text-[12px] tabular-nums text-fg-4">{caughtLine(signal, now)} · sample</span>
           </div>
           {onClose && (
-            <button onClick={onClose} aria-label="Close" className="flex h-8 w-8 items-center justify-center rounded-[8px] text-fg-3 hover:text-white">
+            <button onClick={onClose} aria-label="Close" className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.06] text-fg-2 hover:text-white">
               <X size={16} />
             </button>
           )}

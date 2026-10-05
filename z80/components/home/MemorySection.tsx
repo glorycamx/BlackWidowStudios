@@ -8,6 +8,7 @@ import { memoryDomains } from "@/data/memory";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { useReducedMotionSafe } from "@/lib/hooks/useReducedMotionSafe";
+import { tint } from "@/lib/tint";
 
 const W = 620;
 const H = 620;
@@ -102,7 +103,7 @@ export function MemorySection() {
             {agentPts.map(({ a, x, y }) => (
               <div key={a.id} className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 text-center" style={{ left: `${((x / W) * 100).toFixed(3)}%`, top: `${((y / H) * 100).toFixed(3)}%` }}>
                 <span className="mx-auto block h-2 w-2 rounded-full" style={{ background: a.accent.hex, boxShadow: `0 0 12px ${a.accent.hex}` }} />
-                <span className="mt-2 block text-[12px]" style={{ color: a.accent.tint }}>
+                <span className="mt-2 block text-[12px]" style={{ color: tint(a.accent) }}>
                   {a.name}
                 </span>
               </div>

@@ -171,7 +171,7 @@ export function MissionView({ id }: { id: string }) {
         {mission.status === "complete" && mission.results && (
           <motion.div
             className="relative mt-6 overflow-hidden rounded-[16px] p-6 md:p-8"
-            style={{ background: "linear-gradient(120deg, rgba(69,108,255,0.08), rgba(181,66,255,0.05))", boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.1)" }}
+            style={{ background: "linear-gradient(120deg, rgba(69,108,255,0.08), rgba(181,66,255,0.05))", boxShadow: "inset 0 0 0 1px var(--color-line-2)" }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: EASE }}

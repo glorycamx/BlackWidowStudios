@@ -19,6 +19,7 @@ import { EASE } from "@/lib/motion";
 import { formatAgo } from "@/lib/time";
 import { cn, plural } from "@/lib/utils";
 import type { Agent } from "@/types";
+import { tint } from "@/lib/tint";
 
 /** Your team: every bot, what it's doing right now, plus your own. */
 export function WorkforceRoster() {
@@ -92,7 +93,7 @@ function RosterRow({ agent: a, paused }: { agent: Agent; paused: boolean }) {
         <div className="mt-1 text-[13px] text-fg-3">{a.role}</div>
       </div>
       <div className="col-span-3 min-w-0 md:col-span-1">
-        <div className="flex items-center gap-2 text-[12px]" style={{ color: soon || paused ? undefined : a.accent.tint }}>
+        <div className="flex items-center gap-2 text-[12px]" style={{ color: soon || paused ? undefined : tint(a.accent) }}>
           <StatusDot color={color} size={5} live={!soon && !paused} />
           {soon ? "Coming soon" : paused ? "Paused" : beat ? `Checked ${formatAgo(beat.at, now)}` : "On shift"}
         </div>

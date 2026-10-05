@@ -73,7 +73,7 @@ export function NoticeBell({ className }: { className?: string }) {
                 exit={{ x: 40, opacity: 0 }}
                 transition={{ duration: 0.35, ease: EASE }}
                 onClick={(e) => e.stopPropagation()}
-                className="absolute inset-y-0 right-0 flex w-full max-w-[400px] flex-col border-l border-line bg-[#07070a]"
+                className="absolute inset-y-0 right-0 flex w-full max-w-[400px] flex-col border-l border-line bg-[var(--surface-raised)]"
               >
                 <div className="flex items-center justify-between px-5 py-4">
                   <h2 className="text-[17px] font-semibold text-white">Notifications</h2>
@@ -166,7 +166,7 @@ export function PhoneToasts() {
           const bot = agentOrFallback(t.botId);
           return (
             <motion.div key={t.id} layout initial={{ opacity: 0, y: -16, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -10, scale: 0.97 }} transition={{ duration: 0.45, ease: EASE }} className="pointer-events-auto w-full max-w-[380px]">
-              <div className="relative overflow-hidden rounded-[22px] bg-[#1a1a20]/90 p-3.5 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.9)] backdrop-blur-2xl" style={{ boxShadow: `inset 0 0 0 1px rgba(255,255,255,0.08)` }}>
+              <div className="relative overflow-hidden rounded-[22px] bg-[var(--surface-toast)] p-3.5 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.9)] backdrop-blur-2xl" style={{ boxShadow: `inset 0 0 0 1px var(--color-line-2)` }}>
                 <div className="flex items-start gap-3">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-black">
                     <AgentGlyph agent={bot} size={26} animated={false} />

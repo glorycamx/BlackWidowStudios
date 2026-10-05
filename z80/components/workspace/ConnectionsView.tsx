@@ -86,7 +86,7 @@ export function ConnectionsView() {
                         {connectable ? (
                           <button
                             onClick={() => workspace.toggleConnection(i.id)}
-                            className={cn("flex h-8 items-center gap-1.5 rounded-[9px] px-3 text-[12px] transition-colors", on ? "text-fg-2 hairline hover:text-white" : "bg-white text-black hover:bg-[#e9e9ee]")}
+                            className={cn("flex h-8 items-center gap-1.5 rounded-[9px] px-3 text-[12px] transition-colors", on ? "text-fg-2 hairline hover:text-white" : "bg-white text-black hover:opacity-85")}
                           >
                             {on ? "Disconnect" : (<><Check size={12} /> Connect</>)}
                           </button>

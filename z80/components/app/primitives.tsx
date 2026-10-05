@@ -9,14 +9,15 @@ import { agentOrFallback } from "@/data/bots";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import type { Actor, MissionStatus } from "@/types";
+import { tint } from "@/lib/tint";
 
 export function PageHeader({ label, title, sub, actions, className }: { label?: ReactNode; title: ReactNode; sub?: ReactNode; actions?: ReactNode; className?: string }) {
   return (
     <header className={cn("flex flex-col gap-5 md:flex-row md:items-end md:justify-between", className)}>
       <div className="min-w-0">
         {label && <div className="label">{label}</div>}
-        <h1 className="mt-2 text-[clamp(34px,4.4vw,56px)] font-semibold leading-[1] tracking-[-0.04em] text-white">{title}</h1>
-        {sub && <p className="mt-3 max-w-[560px] text-[19px] leading-snug text-fg-2">{sub}</p>}
+        <h1 className="mt-1.5 text-[clamp(30px,3.4vw,44px)] font-semibold leading-[1.05] tracking-[-0.03em] text-white">{title}</h1>
+        {sub && <p className="mt-2 max-w-[600px] text-[17px] leading-snug text-fg-2">{sub}</p>}
       </div>
       {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
     </header>
@@ -33,7 +34,7 @@ export function ActorTag({ actor, className }: { actor: Actor; className?: strin
   if (actor === "user") return <span className={cn("text-[12px] text-fg-2", className)}>You</span>;
   const a = agentOrFallback(actor);
   return (
-    <span className={cn("inline-flex items-center gap-1.5 text-[12px]", className)} style={{ color: a.accent.tint }}>
+    <span className={cn("inline-flex items-center gap-1.5 text-[12px]", className)} style={{ color: tint(a.accent) }}>
       <span className="h-1 w-1 rounded-full" style={{ background: a.accent.hex }} />
       {a.name}
     </span>
@@ -91,11 +92,11 @@ export function EmptyState({ title, body, action }: { title: string; body: strin
       <p className="mt-3 max-w-[360px] text-[15px] text-fg-2">{body}</p>
       {action &&
         (action.href ? (
-          <Link href={action.href} className="mt-8 inline-flex h-10 items-center rounded-[11px] bg-white px-5 text-[11px] font-medium text-black hover:bg-[#e9e9ee]">
+          <Link href={action.href} className="mt-8 inline-flex h-10 items-center rounded-[11px] bg-white px-5 text-[11px] font-medium text-black hover:opacity-85">
             {action.label}
           </Link>
         ) : (
-          <button onClick={action.onClick} className="mt-8 inline-flex h-10 items-center rounded-[11px] bg-white px-5 text-[11px] font-medium text-black hover:bg-[#e9e9ee]">
+          <button onClick={action.onClick} className="mt-8 inline-flex h-10 items-center rounded-[11px] bg-white px-5 text-[11px] font-medium text-black hover:opacity-85">
             {action.label}
           </button>
         ))}

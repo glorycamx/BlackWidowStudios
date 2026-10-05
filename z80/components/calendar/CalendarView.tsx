@@ -61,7 +61,7 @@ export function CalendarView() {
           <div className="mt-1.5 text-[13px] text-fg-3">On time in a row</div>
         </div>
         <div>
-          <div className="text-[clamp(26px,2.6vw,34px)] font-medium tabular-nums" style={{ color: needOk ? "#d77bff" : "#fff" }}>
+          <div className="text-[clamp(26px,2.6vw,34px)] font-medium tabular-nums" style={{ color: needOk ? "#d77bff" : "var(--color-fg)" }}>
             {needOk}
           </div>
           <div className="mt-1.5 text-[13px] text-fg-3">Need your OK</div>
@@ -183,7 +183,7 @@ function PostCard({ post: p, now, compact }: { post: ScheduledPost; now: number;
       {!editing && (canApprove || canChange) && (
         <div className={cn("mt-3 flex flex-wrap", compact ? "gap-0.5" : "gap-1.5")}>
           {canApprove && (
-            <button onClick={() => workspace.approvePost(p.id)} className={cn("h-7 rounded-full bg-white text-[12px] font-medium text-black hover:bg-[#e8e8ed]", compact ? "px-2.5" : "px-3")}>
+            <button onClick={() => workspace.approvePost(p.id)} className={cn("h-7 rounded-full bg-white text-[12px] font-medium text-black hover:opacity-85", compact ? "px-2.5" : "px-3")}>
               {p.scheduledFor <= now ? "Post now" : compact ? "OK" : "Approve"}
             </button>
           )}

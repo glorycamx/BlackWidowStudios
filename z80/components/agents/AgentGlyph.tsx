@@ -187,6 +187,8 @@ export function AgentGlyph({ agent, size = 40, animated = true, className, muted
       className={cn("shrink-0", muted && "opacity-50 grayscale", className)}
       aria-hidden
     >
+      {/* Dark backing disc in light theme so the glyph keeps its night-sky look. */}
+      <circle cx={24} cy={24} r={23} fill="var(--glyph-bg, transparent)" />
       <circle cx={24} cy={24} r={21} fill={c} fillOpacity={0.05} />
       <circle cx={24} cy={24} r={21} fill="none" stroke={c} strokeOpacity={0.18} strokeWidth={0.6} />
       {body}

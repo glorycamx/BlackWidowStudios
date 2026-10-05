@@ -73,7 +73,14 @@ export function addQuietChecks(counts: Record<string, { botId: string; n: number
   }
   state = { ...state, checks, botChecks, day };
   emit();
-  persist(save);
+  // Save right away: these are big jumps a quick reload shouldn't lose.
+  if (save && typeof window !== "undefined") {
+    try {
+      localStorage.setItem(COUNTS_KEY, JSON.stringify({ checks, botChecks, day }));
+    } catch {
+      /* ignore */
+    }
+  }
 }
 
 export function pushBeat(b: Heartbeat, save = true) {

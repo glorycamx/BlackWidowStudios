@@ -14,6 +14,7 @@ import { workspace } from "@/lib/store/workspace";
 import { formatAgo, formatCountdown, formatDayTime } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import type { Routine } from "@/types";
+import { tint } from "@/lib/tint";
 
 /** Engines that send or post things, where "Do it without asking" matters. */
 const ACTS = new Set(["post-schedule", "keep-drafted", "lead-openers", "morning-text", "evening-recap", "chase-approvals", "custom"]);
@@ -44,13 +45,13 @@ export function RoutineRow({ routine, showBot }: { routine: Routine; showBot?: b
         <div className="min-w-0 flex-1">
           <div className="text-[15px] text-white">{routine.title}</div>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-fg-3">
-            {showBot && <span style={{ color: bot.accent.tint }}>{name}</span>}
+            {showBot && <span style={{ color: tint(bot.accent) }}>{name}</span>}
             <span className="rounded-full bg-white/[0.06] px-2 py-0.5 text-fg-2">{describeTrigger(routine.trigger)}</span>
             <span className="tabular-nums">{nextLabel(routine, now)}</span>
             {routine.lastRunAt && <span className="tabular-nums text-fg-4">Ran {formatAgo(routine.lastRunAt, now)}</span>}
           </div>
           <div className="mt-1.5 text-[12px] tabular-nums text-fg-4">
-            {(routine.stats.checks + checks).toLocaleString("en-US")} checks · {routine.stats.finds} found
+            {(routine.stats.checks + checks).toLocaleString("en-US")} {routine.stats.checks + checks === 1 ? "check" : "checks"} · {routine.stats.finds} found
             {routine.engine === "post-schedule" && ` · ${routine.stats.onTime} on time · ${routine.stats.missed} held`}
           </div>
         </div>
@@ -64,12 +65,10 @@ export function RoutineRow({ routine, showBot }: { routine: Routine; showBot?: b
         </div>
       </div>
       {ACTS.has(routine.engine) && (
-        <label className={cn("mt-3 flex items-center justify-between gap-3 rounded-[12px] bg-white/[0.025] px-3 py-2.5", showBot && "ml-[46px]")}>
-          <span className="min-w-0">
-            <span className="block text-[13px] text-fg-1">{COPY.doWithoutAsking}</span>
-            <span className="block text-[12px] text-fg-4">{COPY.doWithoutAskingHelp}</span>
-          </span>
+        <label className={cn("mt-2.5 inline-flex cursor-pointer items-center gap-2.5 text-[13px] text-fg-2", showBot && "ml-[46px]")} title={COPY.doWithoutAskingHelp}>
           <Toggle size="sm" on={routine.doWithoutAsking} onChange={(v) => workspace.setDoWithoutAsking(routine.id, v)} label={`${COPY.doWithoutAsking}: ${routine.title}`} color="#d77bff" />
+          {COPY.doWithoutAsking}
+          <span className="text-fg-4">{routine.doWithoutAsking ? "On" : "Asks you first"}</span>
         </label>
       )}
     </li>

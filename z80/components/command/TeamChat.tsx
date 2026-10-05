@@ -12,6 +12,7 @@ import { EASE } from "@/lib/motion";
 import { formatDayTime } from "@/lib/time";
 import { useNow } from "@/lib/hooks/useNow";
 import type { TeamMessage } from "@/types";
+import { tint } from "@/lib/tint";
 
 function Name({ id }: { id: string }) {
   const n = useBotName(id);
@@ -51,7 +52,7 @@ export function TeamChat() {
           workspace.sendTeamMessage(text);
           setText("");
         }}
-        className="sticky bottom-[4.5rem] mt-4 flex items-center gap-2 rounded-[16px] bg-[#0d0d12] p-1.5 pl-4 hairline lg:bottom-4"
+        className="sticky bottom-[4.5rem] mt-4 flex items-center gap-2 rounded-[16px] bg-[var(--surface-input)] p-1.5 pl-4 hairline lg:bottom-4"
       >
         <label htmlFor="team-input" className="sr-only">
           Message the team
@@ -77,7 +78,7 @@ function Row({ m, now }: { m: TeamMessage; now: number }) {
           <AgentGlyph agent={a} size={28} className="mt-0.5" />
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-1.5 text-[12px]">
-              <span className="font-medium" style={{ color: a.accent.tint }}>
+              <span className="font-medium" style={{ color: tint(a.accent) }}>
                 <Name id={m.author} />
               </span>
               {m.to && (

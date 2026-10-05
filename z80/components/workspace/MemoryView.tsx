@@ -6,6 +6,7 @@ import { PageHeader, PageWrap } from "@/components/app/primitives";
 import { availableAgents } from "@/data/bots";
 import { memoryDomains } from "@/data/memory";
 import { useWorkspace, workspace } from "@/lib/store/workspace";
+import { tint } from "@/lib/tint";
 
 /** Organization memory — the context every intelligence shares. */
 export function MemoryView() {
@@ -35,7 +36,7 @@ export function MemoryView() {
                     {availableAgents
                       .filter((a) => a.memory.includes(d.id))
                       .map((a) => (
-                        <span key={a.id} className="rounded-full bg-white/[0.05] px-2 py-0.5 text-[11px]" style={{ color: a.accent.tint }}>
+                        <span key={a.id} className="rounded-full bg-white/[0.05] px-2 py-0.5 text-[11px]" style={{ color: tint(a.accent) }}>
                           {a.name}
                         </span>
                       ))}

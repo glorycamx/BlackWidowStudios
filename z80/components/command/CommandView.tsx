@@ -3,13 +3,10 @@
 import { motion } from "motion/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AmbientRail } from "@/components/app/AmbientRail";
 import { CommandConsole, MISSION_EXAMPLES, type CommandConsoleHandle } from "@/components/command/CommandConsole";
 import { CommandThread } from "@/components/command/CommandThread";
 import { PlanDialog } from "@/components/command/PlanDialog";
-import { selectPendingApprovals, selectVisibleSignals, useWorkspace, workspace } from "@/lib/store/workspace";
-import { useNow } from "@/lib/hooks/useNow";
-import Link from "next/link";
+import { useWorkspace, workspace } from "@/lib/store/workspace";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { CreateBotDialog } from "@/components/bots/CreateBotDialog";
@@ -28,11 +25,6 @@ export function CommandView() {
   const chat = useWorkspace((s) => s.chat);
   const thinking = useWorkspace((s) => s.thinking);
   const org = useWorkspace((s) => s.org);
-  const signals = useWorkspace(selectVisibleSignals);
-  const decisions = useWorkspace(selectPendingApprovals).length;
-  const now = useNow(30000);
-  const recent = signals.filter((x) => x.at > now - 12 * 3600e3 && x.kind === "lead");
-  const overnight = { leads: recent.length, hot: recent.filter((x) => x.lead?.temperature === "hot").length, decisions };
   const [value, setValue] = useState("");
   const [review, setReview] = useState<string | null>(null);
   const [tab, setTab] = useState<"manager" | "team">(params.get("tab") === "team" ? "team" : "manager");
@@ -72,7 +64,7 @@ export function CommandView() {
   const empty = chat.length === 0;
 
   return (
-    <div className="mx-auto grid w-full max-w-[1320px] xl:grid-cols-[minmax(0,1fr)_300px]">
+    <div className="mx-auto w-full max-w-[1100px]">
       <section aria-label="Chat" className="relative flex min-h-[calc(100dvh-8.5rem)] flex-col px-5 md:px-10 lg:min-h-dvh">
         <div role="tablist" aria-label="Chat" className="mx-auto mt-6 flex w-full max-w-[760px] gap-1">
           {(
@@ -89,32 +81,18 @@ export function CommandView() {
         {tab === "team" ? (
           <TeamChat />
         ) : empty ? (
-          <div className="mx-auto flex w-full max-w-[760px] flex-1 flex-col justify-center py-12">
+          <div className="mx-auto flex w-full max-w-[720px] flex-1 flex-col justify-center py-10">
             <motion.p className="label" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               Chat with Manager{org?.name ? ` · ${org.name}` : ""}
             </motion.p>
             <motion.h1
-              className="mt-6 text-[clamp(42px,6vw,80px)] font-semibold leading-[0.95] tracking-[-0.05em] text-white"
+              className="mt-3 text-[clamp(32px,4vw,52px)] font-semibold leading-[1.02] tracking-[-0.04em] text-white"
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: EASE }}
             >
-              What should your bots
-              <br />
-              <span className="text-fg-3">keep doing?</span>
+              What should your bots keep doing?
             </motion.h1>
-            <motion.div className="mt-8 grid grid-cols-3 gap-2" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.08, ease: EASE }}>
-              {[
-                { n: overnight.leads, k: "new leads", href: "/live" },
-                { n: overnight.hot, k: "hot", href: "/live" },
-                { n: overnight.decisions, k: overnight.decisions === 1 ? "needs your yes" : "need your yes", href: "/approvals" },
-              ].map((x) => (
-                <Link key={x.k} href={x.href} className="rounded-[20px] bg-white/[0.04] px-5 py-4 transition-colors hover:bg-white/[0.07]">
-                  <div className="text-[30px] font-semibold tabular-nums tracking-[-0.03em] text-white">{x.n}</div>
-                  <div className="text-[14px] text-fg-3">{x.k}</div>
-                </Link>
-              ))}
-            </motion.div>
             <motion.div className="mt-8" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1, ease: EASE }}>
               <CommandConsole ref={consoleRef} id="command-input" value={value} onChange={setValue} onSubmit={send} examples={MISSION_EXAMPLES} />
               <p className="mt-3 px-2 text-[14px] text-fg-4">Ongoing asks become routines that run around the clock. One-offs become jobs.</p>
@@ -152,12 +130,6 @@ export function CommandView() {
           </>
         )}
       </section>
-
-      <aside aria-label="Workspace status" className="hidden border-l border-line px-7 py-10 xl:block">
-        <div className="sticky top-10">
-          <AmbientRail />
-        </div>
-      </aside>
 
       <PlanDialog planId={review} onClose={() => setReview(null)} />
       <CreateBotDialog open={creating} onClose={() => setCreating(false)} />

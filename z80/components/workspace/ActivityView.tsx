@@ -11,6 +11,7 @@ import { formatAgo } from "@/lib/time";
 import { useWorkspace } from "@/lib/store/workspace";
 import { cn } from "@/lib/utils";
 import type { ActivityEvent } from "@/types";
+import { tint } from "@/lib/tint";
 
 function dayLabel(ts: number) {
   const d = new Date(ts);
@@ -43,7 +44,7 @@ function QuietChecks() {
           {beats.slice(0, 80).map((b) => (
             <li key={b.id} className="flex items-baseline gap-3 py-1 text-[13px]">
               <span className="w-16 shrink-0 tabular-nums text-fg-4">{formatAgo(b.at, now)}</span>
-              <span className="shrink-0" style={{ color: agentOrFallback(b.botId).accent.tint }}>
+              <span className="shrink-0" style={{ color: tint(agentOrFallback(b.botId).accent) }}>
                 {agentOrFallback(b.botId).name}
               </span>
               <span className="min-w-0 truncate text-fg-2">{b.text}</span>

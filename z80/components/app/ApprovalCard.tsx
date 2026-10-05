@@ -35,7 +35,7 @@ export function ApprovalCard({ approvalId, compact, showMission = true }: { appr
       className={cn("relative overflow-hidden rounded-[14px]", compact ? "p-4" : "p-5")}
       style={{
         background: pending ? "linear-gradient(180deg, rgba(215,123,255,0.06), rgba(215,123,255,0.015))" : "rgba(255,255,255,0.015)",
-        boxShadow: pending ? "inset 0 0 0 1px rgba(215,123,255,0.28)" : "inset 0 0 0 1px rgba(255,255,255,0.06)",
+        boxShadow: pending ? "inset 0 0 0 1px rgba(215,123,255,0.28)" : "inset 0 0 0 1px var(--color-line-2)",
       }}
     >
       <div className="flex items-start gap-3.5">

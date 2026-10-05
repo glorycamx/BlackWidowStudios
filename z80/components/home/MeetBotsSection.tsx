@@ -12,6 +12,7 @@ import { useNow } from "@/lib/hooks/useNow";
 import { formatAgo } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import type { Agent } from "@/types";
+import { tint } from "@/lib/tint";
 
 /** Meet your bots: five on shift, two coming soon, and your own. */
 export function MeetBotsSection() {
@@ -67,7 +68,7 @@ function BotCard({ bot }: { bot: Agent }) {
         <AgentGlyph agent={bot} size={40} />
         <div className="min-w-0">
           <div className="text-[19px] font-semibold tracking-[-0.02em] text-white">{bot.name}</div>
-          <div className="flex items-center gap-1.5 text-[12px]" style={{ color: bot.accent.tint }}>
+          <div className="flex items-center gap-1.5 text-[12px]" style={{ color: tint(bot.accent) }}>
             <StatusDot color={bot.accent.hex} size={4} />
             {beat ? `On shift · checked ${formatAgo(beat.at, now)}` : "On shift"}
           </div>

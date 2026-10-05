@@ -65,7 +65,7 @@ export function AddRoutine({ botId, placeholder, onAdded }: { botId?: BotId; pla
                   setText("");
                   onAdded?.();
                 }}
-                className="h-8 rounded-full bg-white px-4 text-[13px] font-medium text-black hover:bg-[#e8e8ed]"
+                className="h-8 rounded-full bg-white px-4 text-[13px] font-medium text-black hover:opacity-85"
               >
                 Start it
               </button>

@@ -16,8 +16,8 @@ export function ApprovalsView() {
     <PageWrap className="max-w-[920px]">
       <PageHeader
         label={pending.length ? `${pending.length} waiting on you` : "All clear"}
-        title="Approvals"
-        sub="Decisions waiting on you."
+        title="Needs you"
+        sub="Things your bots want a yes on. Each card says what happens if you approve."
       />
       <div className="mt-12 space-y-3">
         <AnimatePresence initial={false}>
