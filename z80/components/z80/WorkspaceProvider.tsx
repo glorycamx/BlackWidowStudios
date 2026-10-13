@@ -18,7 +18,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       last = now;
       workspace.tick(dt);
     }, 200);
-    // Hidden tab: the clock pauses. Back again: the bots catch you up.
+    // Hidden tab: the clock pauses. Back again: the agents catch you up.
     const onVis = () => workspace.visibility(document.visibilityState === "hidden");
     document.addEventListener("visibilitychange", onVis);
     return () => {

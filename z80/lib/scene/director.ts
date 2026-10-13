@@ -21,9 +21,9 @@ export interface SceneTarget {
   opacity: number;
   /** 0 idle → 1 intense analysis. */
   activity: number;
-  /** Cluster centers in NDC, one per bot (5); null = default layout around `offset`. */
+  /** Cluster centers in NDC, one per agent (5); null = default layout around `offset`. */
   clusters: Vec2[] | null;
-  /** Per-cluster alpha, one per bot (5). */
+  /** Per-cluster alpha, one per agent (5). */
   groupAlpha: number[];
   /** Attraction point in NDC + strength 0..1 (DEPLOY hover). */
   attract: [number, number, number];

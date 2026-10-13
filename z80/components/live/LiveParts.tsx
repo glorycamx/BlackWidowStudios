@@ -24,7 +24,7 @@ function duration(ms: number) {
   return rm ? `${h}h ${rm}m` : `${h}h`;
 }
 
-/** What the bots did while the app was closed or the tab was hidden. */
+/** What the agents did while the app was closed or the tab was hidden. */
 export function AwayCard() {
   const away = useWorkspace((s) => s.away);
   const top = useWorkspace((s) => (s.away ? s.away.top.map((id) => s.feed.find((f) => f.id === id)).filter(Boolean) : []));
@@ -47,7 +47,7 @@ export function AwayCard() {
             While you were away · {formatLocalTime(away.from)} to {formatLocalTime(away.to)} ({duration(away.to - away.from)})
           </div>
           <h2 className="mt-2 text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[-0.02em] text-white">
-            {away.leads ? `${away.leads} new lead${away.leads === 1 ? "" : "s"}${away.hot ? `, ${away.hot} hot` : ""}.` : "No new leads."} Your bots never stopped.
+            {away.leads ? `${away.leads} new lead${away.leads === 1 ? "" : "s"}${away.hot ? `, ${away.hot} hot` : ""}.` : "No new leads."} Your agents never stopped.
           </h2>
           <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-[14px] tabular-nums text-fg-2">
             <span>{away.checks.toLocaleString("en-US")} checks</span>
@@ -80,7 +80,7 @@ export function Greeting({ hot, needsYou, posted }: { hot: number; needsYou: num
   const now = useNow(30000);
   const h = new Date(now).getHours();
   const night = isNight(now);
-  const hello = night ? `It's ${formatLocalTime(now)}. Your bots are still at it.` : h < 12 ? "Good morning." : h < 18 ? "Good afternoon." : "Good evening.";
+  const hello = night ? `It's ${formatLocalTime(now)}. Your agents are still at it.` : h < 12 ? "Good morning." : h < 18 ? "Good afternoon." : "Good evening.";
   const bits = [
     hot ? `${hot} hot lead${hot === 1 ? "" : "s"} today` : "No hot leads yet today",
     posted ? `${posted} post${posted === 1 ? "" : "s"} went out` : "",
@@ -88,16 +88,16 @@ export function Greeting({ hot, needsYou, posted }: { hot: number; needsYou: num
   ].filter(Boolean);
   return (
     <div>
-      <h1 className="text-[clamp(30px,3.4vw,44px)] font-semibold leading-[1.05] tracking-[-0.03em] text-white">{hello}</h1>
-      <p className="mt-2 text-[clamp(16px,1.3vw,18px)] text-fg-2">
+      <p className="mt-1.5 text-[16px] text-fg-2">
+        {hello}{" "}
         {bits.slice(0, -1).join(", ")}{bits.length > 1 ? " and " : ""}{bits[bits.length - 1]}.{night ? " Sleep. They've got it." : ""}
       </p>
     </div>
   );
 }
 
-/** One calm list: every bot, what it's doing this second. */
-export function TeamNow({ bots, paused }: { bots: Agent[]; paused: string[] }) {
+/** One calm list: every agent, what it's doing this second. */
+export function TeamNow({ agents, paused }: { agents: Agent[]; paused: string[] }) {
   return (
     <section aria-label="Your team right now" className="panel overflow-hidden">
       <div className="flex items-center justify-between px-5 pb-1 pt-4">
@@ -107,7 +107,7 @@ export function TeamNow({ bots, paused }: { bots: Agent[]; paused: string[] }) {
         </Link>
       </div>
       <ul className="divide-y divide-white/[0.05]">
-        {bots.map((a) => (
+        {agents.map((a) => (
           <BotNowRow key={a.id} agent={a} paused={paused.includes(a.id)} />
         ))}
       </ul>

@@ -10,7 +10,7 @@ export function Footer() {
           <Link href="/" aria-label="Z80.si home" className="text-[18px]">
             <Wordmark />
           </Link>
-          <p className="mt-2 text-[13px] text-fg-3">Your AI bots never clock out.</p>
+          <p className="mt-2 text-[13px] text-fg-3">Your AI agents never clock out.</p>
         </div>
         <nav aria-label="Footer">
           <ul className="flex flex-wrap gap-x-7 gap-y-3">

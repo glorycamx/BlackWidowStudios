@@ -36,7 +36,7 @@ export function getAgentLiveState(
   paused: AgentId[],
   now = Date.now(),
 ): AgentLiveState | null {
-  // Custom bots may not be registered on the very first render; fall back instead of failing.
+  // Custom agents may not be registered on the very first render; fall back instead of failing.
   const agent = getAgent(agentId) ?? agentOrFallback(agentId);
   const mine = missions.filter((m) => m.agents.some((a) => a.agentId === agentId));
   const activeMissions = mine.filter((m) => m.status !== "complete");

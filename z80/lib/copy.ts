@@ -17,11 +17,11 @@ export const NAV_LABELS = {
 } as const;
 
 export const COPY = {
-  oneLiner: "Your AI bots never clock out.",
+  oneLiner: "Your AI agents never clock out.",
   brandLine: "Super intelligence is here.",
   support:
-    "Chatbots wait for you to ask. Z80 bots find leads, post your content, and watch your market around the clock, then text you when something needs a yes.",
-  buildYourOwn: "Or build your own bot in a sentence.",
+    "Chatbots wait for you to ask. Z80 agents find leads, post your content, and watch your market around the clock, then text you when something needs a yes.",
+  buildYourOwn: "Or build your own agent in a sentence.",
   doWithoutAsking: "Do it without asking",
   doWithoutAskingHelp: "Lets this routine send or post on its own. Off means it waits for your yes.",
 } as const;

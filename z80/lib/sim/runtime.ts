@@ -14,7 +14,7 @@ export interface BotRuntime {
   listRoutines(): Routine[];
   /** Plain English in, a running routine out. */
   createRoutine(text: string, botId?: string): Routine;
-  /** "A bot that…" in, a bot on shift out. Returns its id. */
+  /** "An agent that…" in, an agent on shift out. Returns its id. */
   createBot(text: string): string;
   /** New feed items as they arrive. Returns an unsubscribe function. */
   subscribe(onFind: (item: FeedItem) => void): () => void;

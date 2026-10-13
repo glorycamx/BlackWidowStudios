@@ -70,7 +70,7 @@ export interface WorkspaceState {
   activity: ActivityEvent[];
   /** Oldest first. The conversation with Manager. */
   chat: ChatMessage[];
-  /** Direct threads with individual bots. */
+  /** Direct threads with individual agents. */
   threads: Record<AgentId, ChatMessage[]>;
   plans: Record<string, Plan>;
   /** planId → missionId once deployed. */
@@ -86,13 +86,13 @@ export interface WorkspaceState {
   nextMissionNumber: number;
   /** Manager is composing a reply. */
   thinking: boolean;
-  /** Jobs each bot keeps doing. */
+  /** Jobs each agent keeps doing. */
   routines: Routine[];
-  /** What the bots found or did. Newest first. */
+  /** What the agents found or did. Newest first. */
   feed: FeedItem[];
   /** The content calendar, oldest first. */
   posts: ScheduledPost[];
-  /** Bots talking to each other. Oldest first. */
+  /** Agents talking to each other. Oldest first. */
   teamChat: TeamMessage[];
   skills: Skill[];
   customBots: CustomBotSpec[];
@@ -101,7 +101,7 @@ export interface WorkspaceState {
   notices: Notice[];
   /** Last moment the app was open and visible. */
   lastSeenAt: number;
-  /** Set when the bots did things while you were away. */
+  /** Set when the agents did things while you were away. */
   away: AwaySummary | null;
   /** Non-null while time traveling (nothing is saved in that mode). */
   traveling: string | null;
@@ -405,7 +405,7 @@ function seedState(now = clock.now()): WorkspaceState {
   base.activity.sort((a, b) => b.at - a.at);
   base.connections = { web: true };
 
-  // The bots have been on shift all night: replay from midnight (at least 9 hours).
+  // The agents have been on shift all night: replay from midnight (at least 9 hours).
   base.routines = defaultRoutines(now);
   const from = Math.min(startOfDay(now), now - 9 * 3600e3);
   const cc = base.routines.find((r) => r.engine === "keep-drafted")!;
@@ -510,7 +510,7 @@ function beatGap(botId: string, n: number, speed: number) {
   return (2600 + r() * 4200) / Math.max(1, speed);
 }
 
-/** Every bot on shift checks something every few seconds. */
+/** Every agent on shift checks something every few seconds. */
 function runHeartbeats(s: WorkspaceState, now: number) {
   const onShift = new Map<string, Routine[]>();
   for (const r of s.routines) {
@@ -580,13 +580,13 @@ function toYou(t: string) {
   return s.charAt(0).toLowerCase() + s.slice(1);
 }
 
-/** Manager's reply for routines and new bots, or null to fall through to planning. */
+/** Manager's reply for routines and new agents, or null to fall through to planning. */
 function managerQuickReply(t: string): Omit<ChatMessage, "id" | "at"> | null {
-  if (/^(please )?(create|make|build|add|set up|i want|i need)( me)? (a |an |my own )?(new )?bot\b/i.test(t)) {
+  if (/^(please )?(create|make|build|add|set up|i want|i need)( me)? (a |an |my own )?(new )?(bot|agent)\b/i.test(t)) {
     const b = parseBotSpec(t);
     return {
       author: "manager",
-      text: `Here's the bot I'd make.\n\n${b.name}: ${b.job.charAt(0).toLowerCase()}${b.job.slice(1)}. ${describeTrigger(b.trigger)}.\n\nIt goes on shift the moment you say so. Anything it sends waits for your yes.`,
+      text: "Here's the new agent I'll create. Deploy it and it starts right away.",
       actions: [{ kind: "confirm-bot", ...b }],
     };
   }
@@ -595,7 +595,7 @@ function managerQuickReply(t: string): Omit<ChatMessage, "id" | "at"> | null {
     const who = botName(state, r.botId);
     return {
       author: "manager",
-      text: `That's ongoing, so I'll make it a routine.\n\n${who} will: ${toYou(r.title)}. ${describeTrigger(r.trigger)}.\n\nStart it?`,
+      text: `${who} can handle that, around the clock. Deploy it and it starts right away.`,
       actions: [{ kind: "confirm-routine", ...r }],
     };
   }
@@ -653,7 +653,7 @@ export const workspace = {
     } else setState((s) => ({ routines: armRoutines(s.routines, now, s.settings.demoSpeed).map((r, i) => (s.routines[i].nextRunAt > now ? s.routines[i] : r)), lastSeenAt: now }));
   },
 
-  /** Advance running jobs and the bots' routines. Called every 200ms. */
+  /** Advance running jobs and the agents' routines. Called every 200ms. */
   tick(dt: number) {
     if (!state.hydrated || clock.tabHidden()) return;
     const s = state;
@@ -704,7 +704,7 @@ export const workspace = {
     const t = text.trim();
     if (!t) return;
     setState((s) => ({ chat: [...s.chat, chatMessage({ author: "user", text: t })], thinking: true }));
-    // Ongoing asks become routines; "a bot that…" becomes a new bot. Both wait for a tap to start.
+    // Ongoing asks become routines; "an agent that…" becomes a new agent. Both wait for a tap to start.
     const quick = managerQuickReply(t);
     if (quick) {
       await new Promise((r) => setTimeout(r, 900));
@@ -772,7 +772,7 @@ export const workspace = {
         ...s.chat,
         chatMessage({
           author: "manager",
-          text: `Your bots are on it. ${jobLabel(number)} is running with ${names === 1 ? "one bot" : `${names} bots`}. They work on their own from here. I'll only interrupt you for a yes.`,
+          text: `Your agents are on it. ${jobLabel(number)} is running with ${names === 1 ? "one agent" : `${names} agents`}. They work on their own from here. I'll only interrupt you for a yes.`,
           missionId: mission.id,
           actions: [{ kind: "open-mission", missionId: mission.id }],
         }),
@@ -931,7 +931,7 @@ export const workspace = {
     return missionId;
   },
 
-  /** Tap "Start it" on a routine or bot Manager proposed in Chat. */
+  /** Tap "Start it" on a routine or agent Manager proposed in Chat. */
   confirmChatAction(messageId: string) {
     const m = state.chat.find((x) => x.id === messageId);
     const a = m?.actions?.find((x) => x.kind === "confirm-routine" || x.kind === "confirm-bot");
@@ -942,7 +942,7 @@ export const workspace = {
     setState((s) => ({ chat: s.chat.map((x) => (x.id === messageId ? { ...x, actions: x.actions?.map((y) => (y === a ? { ...a, done } : y)) } : x)) }));
   },
 
-  /** Say something in Team chat. Manager passes it to the right bot. */
+  /** Say something in Team chat. Manager passes it to the right agent. */
   sendTeamMessage(text: string) {
     const t = text.trim();
     if (!t) return;
@@ -1083,9 +1083,9 @@ export const workspace = {
     setState((s) => ({ notices: s.notices.map((n) => (n.read ? n : { ...n, read: true })) }));
   },
 
-  /* Bots -------------------------------------------------------------- */
+  /* Agents -------------------------------------------------------------- */
 
-  /** Give a bot a nickname. Empty clears it. */
+  /** Give an agent a nickname. Empty clears it. */
   renameBot(botId: string, nickname: string) {
     const t = nickname.trim().slice(0, 24);
     setState((s) => {
@@ -1096,7 +1096,7 @@ export const workspace = {
     });
   },
 
-  /** Teach a bot a way of doing something. */
+  /** Teach an agent a way of doing something. */
   teachSkill(botId: string, name: string, how: string) {
     const n = name.trim();
     if (!n) return;
@@ -1107,11 +1107,11 @@ export const workspace = {
     }));
   },
 
-  /** Build your own bot. It goes on shift right away with its first routine. */
+  /** Build your own agent. It goes on shift right away with its first routine. */
   createBot(input: { name: string; job: string; keepDoing: string; trigger?: Trigger; colorIndex?: number; visual?: AgentVisual }): string {
     const now = clock.now();
-    const name = input.name.trim() || "New bot";
-    const base = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "bot";
+    const name = input.name.trim() || "New agent";
+    const base = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "agent";
     const taken = new Set([...state.customBots.map((b) => b.id), "manager", "lead-hunter", "content-creator", "researcher", "reporter", "receptionist", "bookkeeper"]);
     let id = base;
     for (let i = 2; taken.has(id); i++) id = `${base}-${i}`;
@@ -1158,7 +1158,7 @@ export const workspace = {
     schedulePersist();
   },
 
-  /** Empty workspace: shows the product's empty states. The bots stay on shift. */
+  /** Empty workspace: shows the product's empty states. The agents stay on shift. */
   clearWorkspace() {
     const settings = state.settings;
     const now = clock.now();
@@ -1191,7 +1191,7 @@ export const selectVisibleFeed = (s: WorkspaceState) => s.feed.filter((x) => !x.
 export const selectVisibleSignals = selectVisibleFeed;
 export const selectUnreadHot = (s: WorkspaceState) => s.feed.filter((x) => !x.read && !x.dismissed && x.lead?.temperature === "hot").length;
 export const selectUnreadNotices = (s: WorkspaceState) => s.notices.filter((n) => !n.read).length;
-/** The name to show for a bot: its nickname if it has one. */
+/** The name to show for an agent: its nickname if it has one. */
 export function botName(s: WorkspaceState, id: string) {
   return s.nicknames[id] ?? agentOrFallback(id).name;
 }

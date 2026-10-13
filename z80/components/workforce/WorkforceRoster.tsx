@@ -21,7 +21,7 @@ import { cn, plural } from "@/lib/utils";
 import type { Agent } from "@/types";
 import { tint } from "@/lib/tint";
 
-/** Your team: every bot, what it's doing right now, plus your own. */
+/** Your team: every agent, what it's doing right now, plus your own. */
 export function WorkforceRoster() {
   const roster = useRoster();
   const paused = useWorkspace((s) => s.pausedAgents);
@@ -39,14 +39,14 @@ export function WorkforceRoster() {
         label={
           <span className="flex items-center gap-2.5">
             <StatusDot color="var(--color-run)" size={5} live={onShift > 0} />
-            {plural(onShift, "bot")} on shift
+            {plural(onShift, "agent")} on shift
           </span>
         }
         title="Your team"
-        sub="They work around the clock. Or build your own bot in a sentence."
+        sub="They work around the clock. Or build your own agent in a sentence."
         actions={
           <Button variant="solid" icon={<Plus size={14} />} onClick={() => setCreating(true)}>
-            Create your own bot
+            Create your own agent
           </Button>
         }
       />
@@ -62,7 +62,7 @@ export function WorkforceRoster() {
               <Plus size={18} />
             </span>
             <span>
-              <span className="block text-[17px] font-semibold text-white">Create your own bot</span>
+              <span className="block text-[17px] font-semibold text-white">Create your own agent</span>
               <span className="mt-1 block text-[13px] text-fg-3">{COPY.buildYourOwn} It starts working right away.</span>
             </span>
             <ChevronRight size={16} className="hidden text-fg-4 md:block" />

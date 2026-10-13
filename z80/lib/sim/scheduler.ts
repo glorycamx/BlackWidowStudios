@@ -127,7 +127,7 @@ function runOne(r: Routine, at: number, cur: { feed: FeedItem[]; posts: Schedule
       notices.push(notice({ at, botId: r.botId, title: "Waiting on you", body: `${cur.pendingApprovals} thing${cur.pendingApprovals === 1 ? "" : "s"} need${cur.pendingApprovals === 1 ? "s" : ""} your yes.`, href: "/approvals", tone: "needs-you" }));
     }
   } else {
-    // A new custom bot always turns something up on its first run, so you see it working.
+    // A new custom agent always turns something up on its first run, so you see it working.
     const chance = !live || (r.engine === "custom" && r.stats.runs === 0) ? 1 : ENGINE_META[r.engine].findChance;
     const roll = rngFor(r.id, seq, "chance")();
     if (roll < chance) {

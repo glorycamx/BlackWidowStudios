@@ -21,7 +21,7 @@ export function openWelcome() {
 }
 
 const STEPS = [
-  { title: "Meet your team.", body: "Five bots, each with one job. They work for you around the clock." },
+  { title: "Meet your team.", body: "Five agents, each with one job. They work for you around the clock." },
   { title: "They never clock out.", body: "Every few seconds they check something. When they find something worth your time, it shows up in Live." },
   { title: "You stay the boss.", body: "Nothing gets sent, posted or spent without your yes. Anything waiting on you shows up in Needs you." },
   { title: "Pick a look.", body: "Light, dark, or match your device. You can change it anytime." },
@@ -63,7 +63,7 @@ export function WelcomeTour() {
     <Portal>
       <AnimatePresence>
         {open && (
-          <motion.div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 p-3 backdrop-blur-md sm:items-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div className="fixed inset-0 z-[100] flex items-end justify-center bg-[rgb(0_0_0/0.45)] p-3 backdrop-blur-md sm:items-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <motion.div
               role="dialog"
               aria-modal="true"

@@ -29,7 +29,7 @@ export const pricing: { currency: string; note: string; tiers: PricingTier[] } =
       priceMonthly: null,
       priceNote: "per month",
       limits: [
-        { label: "Bots", value: "5" },
+        { label: "Agents", value: "5" },
         { label: "Routines", value: null },
         { label: "Seats", value: "1" },
       ],
@@ -39,11 +39,11 @@ export const pricing: { currency: string; note: string; tiers: PricingTier[] } =
     {
       id: "growth",
       name: "Growth",
-      audience: "For teams running bots across the business.",
+      audience: "For teams running agents across the business.",
       priceMonthly: null,
       priceNote: "per month",
       limits: [
-        { label: "Bots", value: "All available" },
+        { label: "Agents", value: "All available" },
         { label: "Routines", value: null },
         { label: "Seats", value: null },
       ],
@@ -58,11 +58,11 @@ export const pricing: { currency: string; note: string; tiers: PricingTier[] } =
       priceMonthly: null,
       priceNote: "custom",
       limits: [
-        { label: "Bots", value: "All + build your own" },
+        { label: "Agents", value: "All + build your own" },
         { label: "Routines", value: "Custom" },
         { label: "Seats", value: "Custom" },
       ],
-      features: ["Everything in Growth", "Build your own bots", "Workspace isolation controls", "Dedicated onboarding"],
+      features: ["Everything in Growth", "Build your own agents", "Workspace isolation controls", "Dedicated onboarding"],
       cta: "Talk to us",
     },
   ],

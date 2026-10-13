@@ -556,7 +556,7 @@ export function createPlan(objective: string, org?: Organization | null): Plan {
     id: uid("plan"),
     objective: objective.trim(),
     title: makeTitle(e, kind, objective),
-    analysis: `${agents.length === 1 ? "1 bot" : `${agents.length} bots`} recommended${orgLine}.`,
+    analysis: `${agents.length === 1 ? "1 agent" : `${agents.length} bots`} recommended${orgLine}.`,
     reasoningSummary: `The plan: ${lead.slice(0, -1).join(", ")}${lead.length > 1 ? ", then " : ""}${lead[lead.length - 1] ?? "organize the work"}.${
       tasks.some((t) => t.approval?.kind === "review") ? " Nothing leaves the company until you approve it." : ""
     }`,
@@ -594,7 +594,7 @@ export function retargetPlan(plan: Plan, agentIds: AgentId[], roles: Record<Agen
     ...plan,
     tasks,
     agents: assignments,
-    analysis: `${keep.length === 1 ? "1 bot" : `${keep.length} bots`} assigned.`,
+    analysis: `${keep.length === 1 ? "1 agent" : `${keep.length} bots`} assigned.`,
   };
 }
 
@@ -662,7 +662,7 @@ export function createLeadPlan(signalId: string, lead: LeadDossier): Plan {
     id: uid("plan"),
     objective: `Reach out to ${lead.owner} at ${lead.business}. ${lead.demoAngle}`,
     title: `Outreach: ${lead.business}`,
-    analysis: "3 bots assigned.",
+    analysis: "3 agents assigned.",
     reasoningSummary: `The plan: verify ${lead.business}, finalize the opener for ${first}, then send after you approve.`,
     entities,
     agents: (["manager", "lead-hunter", "content-creator"] as AgentId[]).map((id) => ({
@@ -681,5 +681,5 @@ export function createLeadPlan(signalId: string, lead: LeadDossier): Plan {
   };
 }
 
-/* Routines and custom bots: plain-English parsing lives in lib/sim/parse. */
+/* Routines and custom agents: plain-English parsing lives in lib/sim/parse. */
 export { isRoutineRequest, parseBotSpec, parseRoutine } from "@/lib/sim/parse";

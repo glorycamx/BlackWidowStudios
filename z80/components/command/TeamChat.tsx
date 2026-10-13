@@ -19,7 +19,7 @@ function Name({ id }: { id: string }) {
   return <>{id === "user" ? "You" : n}</>;
 }
 
-/** Your bots talking to each other: handoffs, heads-ups and replies. */
+/** Your agents talking to each other: handoffs, heads-ups and replies. */
 export function TeamChat() {
   const messages = useWorkspace((s) => s.teamChat);
   const [text, setText] = useState("");
@@ -34,7 +34,7 @@ export function TeamChat() {
 
   return (
     <div className="mx-auto w-full max-w-[760px] pb-6 pt-8">
-      <p className="text-[14px] text-fg-3">Your bots hand work to each other here. You can jump in any time.</p>
+      <p className="text-[14px] text-fg-3">Your agents hand work to each other here. You can jump in any time.</p>
       {messages.length > limit && (
         <button onClick={() => setLimit((n) => n + 40)} className="mt-6 text-[13px] text-fg-3 hover:text-white">
           Show earlier

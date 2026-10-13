@@ -142,7 +142,7 @@ export function routineFromTemplate(t: RoutineTemplate, now: number): Routine {
   };
 }
 
-/** Old v3 bot ids, mapped on migration. */
+/** Old v3 agent ids, mapped on migration. */
 export const LEGACY_BOT_IDS: Record<string, string> = {
   helm: "manager",
   lookout: "lead-hunter",

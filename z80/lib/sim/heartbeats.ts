@@ -17,9 +17,9 @@ const COUNTS_KEY = "z80.beats.v1";
 interface BeatState {
   /** Newest first. */
   beats: Heartbeat[];
-  /** Latest beat per bot. */
+  /** Latest beat per agent. */
   latest: Record<string, Heartbeat>;
-  /** Checks run today, per routine and per bot. */
+  /** Checks run today, per routine and per agent. */
   checks: Record<string, number>;
   botChecks: Record<string, number>;
   day: string;

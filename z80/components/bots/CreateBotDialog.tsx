@@ -28,7 +28,7 @@ const IDEAS = [
   "Checks my clients' Google reviews every morning",
 ];
 
-/** Build your own bot: say what it should keep doing, give it a name, it goes on shift. */
+/** Build your own agent: say what it should keep doing, give it a name, it goes on shift. */
 export function CreateBotDialog({ open, onClose, initial = "" }: { open: boolean; onClose(): void; initial?: string }) {
   const router = useRouter();
   const [what, setWhat] = useState(initial);
@@ -48,7 +48,7 @@ export function CreateBotDialog({ open, onClose, initial = "" }: { open: boolean
     return () => window.removeEventListener("keydown", onKey);
   }, [open, initial, onClose]);
 
-  const parsed = parseBotSpec(what || "a bot");
+  const parsed = parseBotSpec(what || "an agent");
   const shownName = nameTouched ? name : what.trim() ? parsed.name : "";
   const preview = { id: `preview-${visual}`, visual, accent: CUSTOM_COLORS[color] };
 
@@ -63,7 +63,7 @@ export function CreateBotDialog({ open, onClose, initial = "" }: { open: boolean
     <Portal>
       <AnimatePresence>
         {open && (
-          <motion.div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/70 p-3 backdrop-blur-md sm:items-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
+          <motion.div className="fixed inset-0 z-[90] flex items-end justify-center bg-[rgb(0_0_0/0.45)] p-3 backdrop-blur-md sm:items-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
             <motion.div
               role="dialog"
               aria-modal="true"
@@ -78,7 +78,7 @@ export function CreateBotDialog({ open, onClose, initial = "" }: { open: boolean
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 id="create-bot-title" className="text-[26px] font-semibold tracking-[-0.02em] text-white">
-                    Create your own bot
+                    Create your own agent
                   </h2>
                   <p className="mt-1.5 text-[14px] text-fg-2">Say what it should keep doing. It starts working the moment you hit create.</p>
                 </div>
@@ -121,7 +121,7 @@ export function CreateBotDialog({ open, onClose, initial = "" }: { open: boolean
                       setName(e.target.value.slice(0, 24));
                       setNameTouched(true);
                     }}
-                    placeholder="Name your bot"
+                    placeholder="Name your agent"
                     className="mt-2 w-full rounded-[12px] bg-white/[0.04] px-4 py-2.5 text-[15px] text-white placeholder:text-fg-4 hairline focus:outline-none"
                   />
                   <div className="mt-5 text-[13px] font-medium text-fg-2">Color</div>
@@ -141,7 +141,7 @@ export function CreateBotDialog({ open, onClose, initial = "" }: { open: boolean
                 </div>
                 <div className="flex flex-col items-center justify-center gap-3 rounded-[18px] bg-white/[0.02] px-6 py-5">
                   <AgentGlyph agent={preview} size={84} />
-                  <div className="max-w-[140px] truncate text-center text-[14px] font-medium text-white">{shownName || "Your bot"}</div>
+                  <div className="max-w-[140px] truncate text-center text-[14px] font-medium text-white">{shownName || "Your agent"}</div>
                 </div>
               </div>
 

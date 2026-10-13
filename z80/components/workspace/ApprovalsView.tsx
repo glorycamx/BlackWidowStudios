@@ -17,7 +17,7 @@ export function ApprovalsView() {
       <PageHeader
         label={pending.length ? `${pending.length} waiting on you` : "All clear"}
         title="Needs you"
-        sub="Things your bots want a yes on. Each card says what happens if you approve."
+        sub="Things your agents want a yes on. Each card says what happens if you approve."
       />
       <div className="mt-12 space-y-3">
         <AnimatePresence initial={false}>
@@ -27,7 +27,7 @@ export function ApprovalsView() {
             </motion.div>
           ))}
         </AnimatePresence>
-        {pending.length === 0 && <EmptyState title="Nothing needs you." body="Your bots bring you anything that needs a yes. Each card says exactly what happens if you approve." action={{ label: "Open command", href: "/chat" }} />}
+        {pending.length === 0 && <EmptyState title="Nothing needs you." body="Your agents bring you anything that needs a yes. Each card says exactly what happens if you approve." action={{ label: "Open command", href: "/chat" }} />}
       </div>
       {resolved.length > 0 && (
         <section className="mt-16">

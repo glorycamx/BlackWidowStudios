@@ -30,7 +30,7 @@ export function AmbientRail() {
   return (
     <div className="space-y-10">
       <section>
-        <h2 className="label">Bots on shift</h2>
+        <h2 className="label">Agents on shift</h2>
         <ul className="mt-5 space-y-5">
           {availableAgents.map((a) => {
             const st = getAgentLiveState(a.id, missions, allApprovals, activity, paused, now);

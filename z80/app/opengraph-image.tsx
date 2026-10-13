@@ -24,7 +24,7 @@ export default function OpengraphImage() {
             <span style={{ color: "#f1f2f6" }}>Z80</span>
             <span style={{ backgroundImage: "linear-gradient(100deg, #3f7bff, #8754ff, #c847f0)", backgroundClip: "text", color: "transparent" }}>.si</span>
           </div>
-          <div style={{ marginTop: 28, fontSize: 52, color: "#ffffff", letterSpacing: -1.5 }}>Your AI bots never clock out.</div>
+          <div style={{ marginTop: 28, fontSize: 52, color: "#ffffff", letterSpacing: -1.5 }}>Your AI agents never clock out.</div>
           <div style={{ marginTop: 16, fontSize: 24, color: "#686872" }}>Super intelligence is here.</div>
         </div>
       </div>

@@ -486,7 +486,7 @@ function glowTexture(): THREE.Texture {
   return tex;
 }
 
-/** One cluster per bot, in roster order: Manager, Lead Hunter, Content Creator, Researcher, Reporter. */
+/** One cluster per agent, in roster order: Manager, Lead Hunter, Content Creator, Researcher, Reporter. */
 const GROUPS = 5;
 const GROUP_COLORS = [new THREE.Color("#C9CEE8"), new THREE.Color("#7A6BFF"), new THREE.Color("#C252F2"), new THREE.Color("#6E9BFF"), new THREE.Color("#5FC8E8")];
 

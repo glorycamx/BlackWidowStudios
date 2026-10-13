@@ -4,8 +4,9 @@ import { AnimatePresence, motion } from "motion/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { EmptyState } from "@/components/app/primitives";
-import { useWorkingBots } from "@/components/bots/useBot";
-import { AwayCard, Greeting, TeamNow } from "@/components/live/LiveParts";
+import Link from "next/link";
+import { ApprovalCard } from "@/components/app/ApprovalCard";
+import { AwayCard, Greeting } from "@/components/live/LiveParts";
 import { AgentGlyph } from "@/components/agents/AgentGlyph";
 import { agentOrFallback } from "@/data/bots";
 import { caughtLine, SignalDetail } from "@/components/signals/LeadDossierView";
@@ -48,7 +49,7 @@ function primaryAction(f: FeedItem, router: ReturnType<typeof useRouter>, jobNum
   return null;
 }
 
-/** Live: your bots at work right now, and everything they found. */
+/** Live: your agents at work right now, and everything they found. */
 export function LiveView() {
   const router = useRouter();
   const params = useSearchParams();
@@ -57,8 +58,8 @@ export function LiveView() {
   const pausedBots = useWorkspace((s) => s.pausedAgents);
   const posts = useWorkspace((s) => s.posts);
   const traveling = useWorkspace((s) => s.traveling);
-  const needsYou = useWorkspace(selectPendingApprovals).length;
-  const bots = useWorkingBots();
+  const approvals = useWorkspace(selectPendingApprovals);
+  const needsYou = approvals.length;
   const wide = useMediaQuery("(min-width: 1100px)", true);
   const [filter, setFilter] = useState<FilterId>("all");
   const [limit, setLimit] = useState(12);
@@ -88,23 +89,36 @@ export function LiveView() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-[1320px] px-5 py-8 md:px-10 md:py-12">
+    <div className="mx-auto w-full max-w-[1180px] px-5 py-8 md:px-10 md:py-10">
       {traveling && (
         <button onClick={() => workspace.travel(null)} className="mb-4 rounded-full bg-[#d77bff]/15 px-3 py-1 text-[12px] text-[#b25bdb] hover:bg-[#d77bff]/25">
           Time travel: {formatLocalTime(now)} · back to now
         </button>
       )}
+      <h1 className="text-[clamp(26px,3vw,32px)] font-semibold tracking-[-0.025em] text-white">Inbox</h1>
       <Greeting hot={hotToday} needsYou={needsYou} posted={postedToday} />
 
       <AwayCard />
 
-      <div className="mt-8">
-        <TeamNow bots={bots} paused={pausedBots} />
-      </div>
+      {approvals.length > 0 && (
+        <section aria-label="Needs your yes" className="mt-10">
+          <h2 className="text-[17px] font-semibold tracking-[-0.01em] text-white">Needs your yes</h2>
+          <div className="mt-3 space-y-3">
+            {approvals.slice(0, 3).map((a) => (
+              <ApprovalCard key={a.id} approvalId={a.id} compact />
+            ))}
+            {approvals.length > 3 && (
+              <Link href="/approvals" className="inline-block text-[14px] text-fg-2 hover:text-white">
+                See all {approvals.length}
+              </Link>
+            )}
+          </div>
+        </section>
+      )}
 
-      <h2 className="mt-12 text-[20px] font-semibold tracking-[-0.02em] text-white">What they found</h2>
+      <h2 className="mt-10 text-[17px] font-semibold tracking-[-0.01em] text-white">What your agents found</h2>
       {/* Filters */}
-      <div role="tablist" aria-label="Filter what your bots found" className="no-scrollbar -mx-5 mt-3 flex gap-1 overflow-x-auto px-5 md:mx-0 md:px-0">
+      <div role="tablist" aria-label="Filter what your agents found" className="no-scrollbar -mx-5 mt-3 flex gap-1 overflow-x-auto px-5 md:mx-0 md:px-0">
         {FILTERS.map((f) => (
           <button
             key={f.id}
@@ -125,10 +139,10 @@ export function LiveView() {
       </div>
 
       <div className={cn("mt-5 grid gap-6", wide ? "grid-cols-[minmax(0,440px)_minmax(0,1fr)]" : "grid-cols-1")}>
-        <ol className="min-w-0 space-y-1.5" aria-live="polite" aria-label="What your bots found">
+        <ol className="min-w-0 space-y-1.5" aria-live="polite" aria-label="What your agents found">
           {list.length === 0 && (
             <li>
-              <EmptyState title="Quiet for now." body="Your bots are still checking. New finds show up here the moment they happen." />
+              <EmptyState title="Quiet for now." body="Your agents are still checking. New finds show up here the moment they happen." />
             </li>
           )}
           <AnimatePresence initial={false}>

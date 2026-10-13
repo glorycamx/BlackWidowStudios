@@ -18,9 +18,9 @@ export const bots: Agent[] = [
     role: "Runs your team and keeps you in the loop",
     domain: "Team and updates",
     tagline: "Runs your team. Day and night.",
-    shortDescription: "Hands each request to the right bot, sends your morning text and evening recap, and chases anything waiting on you.",
+    shortDescription: "Hands each request to the right agent, sends your morning text and evening recap, and chases anything waiting on you.",
     description:
-      "Manager runs the team. It hands your requests to the right bot, keeps the work moving between them, sends you a morning text and an evening recap, reminds you about follow-ups, and only interrupts you when something needs a yes.",
+      "Manager runs the team. It hands your requests to the right agent, keeps the work moving between them, sends you a morning text and an evening recap, reminds you about follow-ups, and only interrupts you when something needs a yes.",
     personality: ["Calm", "Organized", "On time", "Clear"],
     capabilities: ["Morning text", "Evening recap", "Follow-ups", "Reminders", "Approvals", "Team chat"],
     specialties: ["Routing requests", "Morning text and evening recap", "Follow-up reminders", "Chasing approvals", "Keeping the team in sync"],
@@ -192,12 +192,12 @@ export const bots: Agent[] = [
 ];
 
 /* ------------------------------------------------------------------ */
-/* Custom bots: created by the user, registered at runtime              */
+/* Custom agents: created by the user, registered at runtime              */
 /* ------------------------------------------------------------------ */
 
 let custom: Agent[] = [];
 
-/** Replace the runtime list of user-made bots (called by the store). */
+/** Replace the runtime list of user-made agents (called by the store). */
 export function registerCustomBots(list: Agent[]) {
   custom = list;
 }
@@ -228,7 +228,7 @@ export function agentOrFallback(id: string): Agent {
   return getAgent(id) ?? { ...bots[0], id, name: id, slug: id };
 }
 
-/** Colors offered when someone builds their own bot (brand range only). */
+/** Colors offered when someone builds their own agent (brand range only). */
 export const CUSTOM_COLORS = [
   { hex: "#9AA5FF", tint: "#D9DEFF", rgb: "154 165 255" },
   { hex: "#8B7CFF", tint: "#D6D0FF", rgb: "139 124 255" },
@@ -237,7 +237,7 @@ export const CUSTOM_COLORS = [
   { hex: "#7FD4E8", tint: "#D2F1F8", rgb: "127 212 232" },
 ];
 
-/** Turn a saved custom bot into a full roster entry. */
+/** Turn a saved custom agent into a full roster entry. */
 export function specToAgent(spec: CustomBotSpec): Agent {
   const accent = CUSTOM_COLORS[spec.colorIndex % CUSTOM_COLORS.length];
   return {
@@ -246,14 +246,14 @@ export function specToAgent(spec: CustomBotSpec): Agent {
     name: spec.name,
     designation: "",
     role: spec.job,
-    domain: "Your bot",
+    domain: "Your agent",
     tagline: spec.job,
     shortDescription: spec.job,
-    description: `${spec.name} is a bot you made. ${spec.job}`,
+    description: `${spec.name} is an agent you made. ${spec.job}`,
     personality: ["Tireless", "Focused"],
     capabilities: [spec.job],
     specialties: [spec.job],
-    roles: [{ id: "custom", label: "Your bot", summary: spec.job }],
+    roles: [{ id: "custom", label: "Your agent", summary: spec.job }],
     tools: ["web"],
     memory: ["knowledge", "customers"],
     collaborators: ["manager"],

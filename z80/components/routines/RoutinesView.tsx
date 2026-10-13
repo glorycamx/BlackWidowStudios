@@ -28,7 +28,7 @@ export function RoutinesView() {
 
   return (
     <PageWrap>
-      <PageHeader label={`${plural(on, "routine")} running`} title="Routines" sub="What your bots keep doing, day and night. Anything that sends or posts asks you first, unless you turn on Do it without asking." />
+      <PageHeader label={`${plural(on, "routine")} running`} title="Routines" sub="What your agents keep doing, day and night. Anything that sends or posts asks you first, unless you turn on Do it without asking." />
       <div className="mt-10 max-w-[720px]">
         <AddRoutine placeholder="Try: every morning at 8, find new roofers in Nashua" />
       </div>
@@ -76,7 +76,7 @@ function BotGroup({ bot, routines }: { bot: Agent; routines: Routine[] }) {
 
 const SPAN = 24 * 3600e3;
 
-/** One lane per bot across the next 24 hours: always-on bands and scheduled runs. */
+/** One lane per agent across the next 24 hours: always-on bands and scheduled runs. */
 function Lanes({ bots, routines, posts }: { bots: Agent[]; routines: Routine[]; posts: ScheduledPost[] }) {
   const now = useNow(60000);
   const end = now + SPAN;

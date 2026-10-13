@@ -229,10 +229,26 @@
   --surface-chrome: rgb(2 2 3 / 0.8);
   --surface-overlay: rgb(0 0 0 / 0.95);
   --surface-toast: rgb(26 26 32 / 0.9);
+  --surface-sidebar: #08080b;
   --btn-primary: #0d0d14;
   --btn-primary-hover: #13131d;
   --tint-a: 100%;
   --glyph-bg: transparent;
+}
+
+/* App dark: charcoal, not pitch black, so the chat reads calmly. */
+html[data-theme="dark"] {
+  --surface-canvas: #141416;
+  --surface-sidebar: #0d0d0f;
+  --surface-raised: #1c1c20;
+  --surface-sunken: #18181b;
+  --surface-input: #202024;
+  --surface-chrome: rgb(13 13 15 / 0.9);
+  --surface-overlay: rgb(20 20 22 / 0.97);
+  --surface-toast: rgb(32 32 36 / 0.94);
+  --color-line: rgb(255 255 255 / 0.08);
+  --color-line-2: rgb(255 255 255 / 0.11);
+  --color-line-3: rgb(255 255 255 / 0.2);
 }
 
 html[data-theme="light"] {
@@ -250,12 +266,13 @@ html[data-theme="light"] {
   --color-line-2: rgb(12 12 24 / 0.14);
   --color-line-3: rgb(12 12 24 / 0.22);
   --color-done: #1c1c24;
-  --surface-canvas: #f5f5f7;
+  --surface-canvas: #ffffff;
+  --surface-sidebar: #f7f7f8;
   --surface-raised: #ffffff;
-  --surface-sunken: #eeeef2;
+  --surface-sunken: #f3f3f5;
   --surface-input: #ffffff;
   --surface-chrome: rgb(250 250 252 / 0.86);
-  --surface-overlay: rgb(245 245 247 / 0.97);
+  --surface-overlay: rgb(255 255 255 / 0.97);
   --surface-toast: rgb(255 255 255 / 0.94);
   --btn-primary: #0b0b12;
   --btn-primary-hover: #24242e;

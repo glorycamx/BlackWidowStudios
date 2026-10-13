@@ -27,7 +27,7 @@ const PROMPTS: Record<string, string> = {
   reporter: "Check AI news every 10 minutes and flag what matters",
 };
 
-/** Public profile of one bot. */
+/** Public profile of one agent. */
 export function AgentProfile({ agent }: { agent: Agent }) {
   const router = useRouter();
   const [value, setValue] = useState("");
@@ -42,8 +42,8 @@ export function AgentProfile({ agent }: { agent: Agent }) {
         </div>
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent md:via-black/20" />
         <div className="relative mx-auto flex min-h-[100svh] max-w-[1440px] flex-col justify-end px-5 pb-16 pt-28 md:justify-center md:px-10 md:pb-10">
-          <Link href="/#bots" className="label inline-flex items-center gap-2 text-fg-3 hover:text-white">
-            <ArrowLeft size={12} /> Your bots
+          <Link href="/#agents" className="label inline-flex items-center gap-2 text-fg-3 hover:text-white">
+            <ArrowLeft size={12} /> All agents
           </Link>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: EASE, delay: 0.2 }} className="mt-10 max-w-[640px]">
             <div className="flex items-center gap-2 text-[15px] font-medium" style={{ color: tint(agent.accent) }}>

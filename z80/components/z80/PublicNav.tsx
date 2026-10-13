@@ -33,7 +33,7 @@ export function PublicNav() {
       <header
         className={cn(
           "fixed inset-x-0 top-0 z-50 transition-[background,box-shadow,backdrop-filter] duration-500 ease-[var(--ease-z)]",
-          scrolled && !open ? "bg-black/55 shadow-[inset_0_-1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl" : "bg-transparent",
+          scrolled && !open ? "bg-black/70 shadow-[inset_0_-1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl" : "bg-transparent",
         )}
       >
         <nav aria-label="Primary" className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-5 md:h-[72px] md:px-10">
@@ -53,8 +53,8 @@ export function PublicNav() {
             <Button variant="ghost" size="sm" href="/login">
               Sign in
             </Button>
-            <Button variant="solid" size="sm" href="/signup">
-              Get started
+            <Button variant="solid" size="sm" href="/chat">
+              Open app
             </Button>
           </div>
           <button
@@ -95,8 +95,8 @@ export function PublicNav() {
               ))}
             </ul>
             <motion.div className="mt-auto" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
-              <Button variant="primary" size="lg" href="/signup" className="w-full" magnetic={false} onClick={() => setOpen(false)}>
-                Get started
+              <Button variant="solid" size="lg" href="/chat" className="w-full" magnetic={false} onClick={() => setOpen(false)}>
+                Open app
               </Button>
             </motion.div>
           </motion.div>

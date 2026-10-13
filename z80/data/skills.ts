@@ -1,6 +1,6 @@
 import type { Skill } from "@/types";
 
-/** What each bot already knows how to do on day one. Owners add more with "Teach it". */
+/** What each agent already knows how to do on day one. Owners add more with "Teach it". */
 const BUILT_IN: [string, string, string][] = [
   ["manager", "Morning text", "Three lines, most important first. Never more than one screen."],
   ["manager", "Quiet hours", "Holds anything that isn't hot between 10 PM and 6 AM."],

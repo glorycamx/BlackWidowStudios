@@ -17,14 +17,14 @@ import type { Notice } from "@/types";
 
 const TONE: Record<Notice["tone"], string> = { hot: "#ff6f91", "needs-you": "#d77bff", info: "#8f9cff" };
 
-/** "5 bots on shift · 8:14:22 PM" */
+/** "5 agents on shift · 8:14:22 PM" */
 export function ShiftClock({ className }: { className?: string }) {
   const now = useNow(1000);
   const bots = useWorkingBots();
   const paused = useWorkspace((s) => s.pausedAgents);
   const on = bots.filter((b) => !paused.includes(b.id)).length;
   return (
-    <div className={cn("flex items-center gap-2 text-[12px] tabular-nums text-fg-3", className)} aria-label={`${on} bots on shift`}>
+    <div className={cn("flex items-center gap-2 text-[12px] tabular-nums text-fg-3", className)} aria-label={`${on} agents on shift`}>
       <span className="relative flex h-1.5 w-1.5">
         <span className="absolute inset-0 rounded-full bg-run motion-safe:animate-breathe" />
       </span>
@@ -63,7 +63,7 @@ export function NoticeBell({ className }: { className?: string }) {
       <Portal>
         <AnimatePresence>
           {open && (
-            <motion.div className="fixed inset-0 z-[95] bg-black/50 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpen(false)}>
+            <motion.div className="fixed inset-0 z-[95] bg-[rgb(0_0_0/0.45)] backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpen(false)}>
               <motion.aside
                 role="dialog"
                 aria-label="Notifications"
@@ -89,7 +89,7 @@ export function NoticeBell({ className }: { className?: string }) {
                   </div>
                 </div>
                 <ul className="flex-1 space-y-1 overflow-y-auto px-3 pb-6">
-                  {notices.length === 0 && <li className="px-2 py-10 text-center text-[14px] text-fg-3">Nothing yet. Your bots will tap you when something needs you.</li>}
+                  {notices.length === 0 && <li className="px-2 py-10 text-center text-[14px] text-fg-3">Nothing yet. Your agents will tap you when something needs you.</li>}
                   {notices.map((n) => (
                     <li key={n.id}>
                       <button

@@ -228,7 +228,7 @@ function TimeSelect({ value, onChange, label }: { value: string; onChange(v: str
   );
 }
 
-/** How your bots reach you: morning text, recap, quiet hours, browser alerts. */
+/** How your agents reach you: morning text, recap, quiet hours, browser alerts. */
 function ReachPanel() {
   const settings = useWorkspace((s) => s.settings);
   const feed = useWorkspace((s) => s.feed);
@@ -243,7 +243,7 @@ function ReachPanel() {
   }, [routine, feed, posts, pending]);
 
   return (
-    <Panel title="How your bots reach you">
+    <Panel title="How your agents reach you">
       <div className="grid gap-5">
         <Row title="Morning text" sub="What happened overnight, in a few lines.">
           <TimeSelect label="Morning text time" value={settings.morningTextAt ?? "06:00"} onChange={(v) => workspace.setReachTimes({ morningTextAt: v })} />
@@ -271,7 +271,7 @@ function ReachPanel() {
             }}
           />
         </Row>
-        <Row title="Text, WhatsApp, Slack, email, phone call" sub="Your bots will reach you where you are.">
+        <Row title="Text, WhatsApp, Slack, email, phone call" sub="Your agents will reach you where you are.">
           <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[12px] text-fg-3">Coming soon</span>
         </Row>
         {preview?.digest && (
@@ -310,12 +310,12 @@ const TRAVEL = [
   ["23:30", "11:30 PM"],
 ] as const;
 
-/** Demo: see what the bots look like at another time of day. */
+/** Demo: see what the agents look like at another time of day. */
 function TimeTravelPanel() {
   const traveling = useWorkspace((s) => s.traveling);
   return (
     <Panel title="Time travel">
-      <p className="text-[13.5px] text-fg-2">See your bots at another time of day. It opens a fresh demo at that time and doesn&apos;t touch your saved workspace.</p>
+      <p className="text-[13.5px] text-fg-2">See your agents at another time of day. It opens a fresh demo at that time and doesn&apos;t touch your saved workspace.</p>
       <div className="mt-4 flex flex-wrap gap-2">
         {TRAVEL.map(([v, label]) => (
           <button key={v} onClick={() => workspace.travel(v)} className={cn("h-8 rounded-full px-3 text-[13px] transition-colors", traveling === v ? "bg-white text-black" : "bg-white/[0.06] text-fg-1 hover:bg-white/[0.1]")}>

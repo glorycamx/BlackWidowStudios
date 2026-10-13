@@ -214,7 +214,7 @@ export function SignalDetail({ signal, onClose }: { signal: Signal; onClose?: ()
         >
           Dismiss
         </Button>
-        {mission && <span className="ml-auto text-[12px] text-fg-3">{mission.status === "complete" ? "Outreach done" : "Your bots are on it"}</span>}
+        {mission && <span className="ml-auto text-[12px] text-fg-3">{mission.status === "complete" ? "Outreach done" : "Your agents are on it"}</span>}
       </footer>
     </article>
   );

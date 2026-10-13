@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
-const STAGES = ["Reading your request", "Picking the right bots", "Putting the team together", "Planning the steps"];
+const STAGES = ["Reading your request", "Picking the right agents", "Putting the team together", "Planning the steps"];
 
 interface Props {
   objective: string;

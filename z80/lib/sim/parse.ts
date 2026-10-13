@@ -1,5 +1,5 @@
 /**
- * Plain English in, routine or bot out. A keyword parser so the demo works
+ * Plain English in, routine or agent out. A keyword parser so the demo works
  * offline; a real model can replace it behind the same functions.
  */
 import type { BotId, RoutineEngine, Trigger } from "@/types";
@@ -87,7 +87,7 @@ export interface ParsedRoutine {
 export function parseRoutine(text: string, opts: { botId?: BotId } = {}): ParsedRoutine {
   const botId = opts.botId ?? BOT_HINTS.find(([re]) => re.test(text))?.[1] ?? "manager";
   const hinted = ENGINE_HINTS.find(([re]) => re.test(text))?.[1];
-  // Only use a built-in engine if it belongs to the bot doing the work.
+  // Only use a built-in engine if it belongs to the agent doing the work.
   const owner: Partial<Record<RoutineEngine, BotId>> = {
     "website-down": "lead-hunter", "changed-hands": "lead-hunter", "new-business": "lead-hunter", "review-spike": "lead-hunter", "domain-expiring": "lead-hunter", hiring: "lead-hunter",
     upsells: "researcher", competitors: "researcher", trends: "researcher", "ai-news": "reporter", "niche-breaking": "reporter", "follow-ups": "manager",
@@ -116,12 +116,12 @@ export interface ParsedBot {
   trigger: Trigger;
 }
 
-/** "Create a bot that watches Reddit for people asking for a web designer" → "Reddit Watcher". */
+/** "Create an agent that watches Reddit for people asking for a web designer" → "Reddit Watcher". */
 export function parseBotSpec(text: string): ParsedBot {
   const what = text
     .trim()
     .replace(/[.!?]+$/, "")
-    .replace(/^(please )?(create|make|build|add|set up|i want|i need)( me)? (a |an |my own )?(new )?bot( that| to| which| who)?\s*/i, "");
+    .replace(/^(please )?(create|make|build|add|set up|i want|i need)( me)? (a |an |my own )?(new )?(bot|agent)( that| to| which| who)?\s*/i, "");
   const firstWord = what.split(/\s+/)[0] ?? "";
   const role = ROLE_FOR_VERB.find(([re]) => re.test(firstWord))?.[1] ?? "Helper";
   const rest = what.split(/\s+/).slice(1);

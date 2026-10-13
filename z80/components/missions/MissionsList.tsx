@@ -39,7 +39,7 @@ export function MissionsList() {
   if (!missions.length) {
     return (
       <PageWrap>
-        <EmptyState title="Nothing running." body="Jobs are one-off work your bots do for you. Ask Manager in Chat." action={{ label: "Start a job", href: "/chat?focus=1" }} />
+        <EmptyState title="Nothing running." body="Jobs are one-off work your agents do for you. Ask Manager in Chat." action={{ label: "Start a job", href: "/chat?focus=1" }} />
       </PageWrap>
     );
   }
@@ -49,7 +49,7 @@ export function MissionsList() {
       <PageHeader
         label={`${missions.length} jobs`}
         title="Jobs"
-        sub="One-off work your bots are doing or finished."
+        sub="One-off work your agents are doing or finished."
         actions={
           <Button variant="solid" icon={<Plus size={14} />} href="/chat?focus=1">
             New job

@@ -11,6 +11,7 @@ import { ActorTag } from "@/components/app/primitives";
 import { Button } from "@/components/ui/Button";
 import { agentOrFallback } from "@/data/bots";
 import { useWorkspace, workspace } from "@/lib/store/workspace";
+import { describeTrigger } from "@/data/routines";
 import { EASE } from "@/lib/motion";
 import { clockTime, missionCode } from "@/lib/utils";
 import type { ChatAction, ChatMessage } from "@/types";
@@ -22,10 +23,10 @@ interface Props {
   onNewMission(): void;
 }
 
-/** One chat. Multiple intelligences. */
+/** The conversation with Manager. */
 export function CommandThread({ messages, thinking, onReviewPlan, onNewMission }: Props) {
   return (
-    <ol className="space-y-7" aria-label="Command conversation" aria-live="polite">
+    <ol className="space-y-8" aria-label="Conversation" aria-live="polite">
       <AnimatePresence initial={false}>
         {messages.map((m) => (
           <motion.li key={m.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE }}>
@@ -40,13 +41,13 @@ export function CommandThread({ messages, thinking, onReviewPlan, onNewMission }
         ))}
         {thinking && (
           <motion.li key="thinking" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-3" role="status">
-            <span className="label text-fg-1">Z80</span>
+            <AgentGlyph agent={agentOrFallback("manager")} size={26} />
             <span className="flex gap-1">
               {[0, 1, 2].map((i) => (
                 <motion.span key={i} className="h-1 w-1 rounded-full bg-[#8f9cff]" animate={{ opacity: [0.2, 1, 0.2] }} transition={{ duration: 1, repeat: Infinity, delay: i * 0.18 }} />
               ))}
             </span>
-            <span className="text-[13px] text-fg-3">Z80 is assembling context…</span>
+            <span className="text-[14px] text-fg-3">Setting it up…</span>
           </motion.li>
         )}
       </AnimatePresence>
@@ -58,8 +59,7 @@ function UserMessage({ m }: { m: ChatMessage }) {
   return (
     <div className="flex justify-end">
       <div className="max-w-[85%] md:max-w-[75%]">
-        <div className="rounded-[16px] rounded-br-[6px] bg-white/[0.07] px-4 py-3 text-[15px] leading-relaxed text-white">{m.text}</div>
-        <div className="mt-1.5 text-right text-[12px] tabular-nums text-fg-4">{clockTime(m.at)}</div>
+        <div className="rounded-[22px] bg-white/[0.07] px-4 py-2.5 text-[16px] leading-relaxed text-white">{m.text}</div>
       </div>
     </div>
   );
@@ -67,13 +67,10 @@ function UserMessage({ m }: { m: ChatMessage }) {
 
 function Z80Message({ m, onReviewPlan, onNewMission }: { m: ChatMessage; onReviewPlan(id: string): void; onNewMission(): void }) {
   return (
-    <div className="max-w-[92%] md:max-w-[85%]">
-      <div className="flex items-center gap-2.5">
-        <AgentGlyph agent={agentOrFallback("manager")} size={22} />
-        <span className="text-[13px] font-medium text-fg-1">Manager</span>
-        <span className="text-[12px] tabular-nums text-fg-4">{clockTime(m.at)}</span>
-      </div>
-      <div className="mt-3 whitespace-pre-line text-[15px] leading-[1.65] text-fg-1">{m.text}</div>
+    <div className="flex gap-3.5">
+      <AgentGlyph agent={agentOrFallback("manager")} size={28} className="mt-0.5" />
+      <div className="min-w-0 flex-1">
+      <div className="whitespace-pre-line text-[16px] leading-[1.65] text-fg-1">{m.text}</div>
       {m.team && m.team.length > 0 && (
         <ul className="mt-5 space-y-3 border-l border-line pl-4">
           {m.team.map((id) => {
@@ -91,6 +88,7 @@ function Z80Message({ m, onReviewPlan, onNewMission }: { m: ChatMessage; onRevie
         </ul>
       )}
       <Actions messageId={m.id} actions={m.actions} onReviewPlan={onReviewPlan} onNewMission={onNewMission} />
+      </div>
     </div>
   );
 }
@@ -136,20 +134,35 @@ function Actions({ messageId, actions, onReviewPlan, onNewMission }: { messageId
   }
 
   if (confirm && (confirm.kind === "confirm-routine" || confirm.kind === "confirm-bot")) {
-    if (confirm.done) {
-      const href = confirm.kind === "confirm-bot" ? `/team/${confirm.done}` : "/routines";
-      return (
-        <Link href={href} className="mt-5 inline-flex items-center gap-2 text-[13px] text-fg-2 hover:text-white">
-          <span className="h-1.5 w-1.5 rounded-full bg-run" />
-          {confirm.kind === "confirm-bot" ? `${confirm.name} is on shift` : "Running now"} <ArrowUpRight size={12} />
-        </Link>
-      );
-    }
+    const agent = confirm.kind === "confirm-routine" ? agentOrFallback(confirm.botId) : null;
+    const name = confirm.kind === "confirm-bot" ? confirm.name : agent!.name;
+    const what = confirm.kind === "confirm-bot" ? confirm.job : confirm.title;
+    const href = confirm.done ? (confirm.kind === "confirm-bot" ? `/team/${confirm.done}` : `/team/${agent!.slug}`) : null;
     return (
-      <div className="mt-5 flex flex-wrap gap-2">
-        <Button variant="primary" size="sm" onClick={() => workspace.confirmChatAction(messageId)}>
-          {confirm.kind === "confirm-bot" ? "Create and start" : "Start it"}
-        </Button>
+      <div className="mt-4 rounded-[20px] bg-[var(--surface-raised)] p-4 ring-1 ring-[var(--color-line-2)]">
+        <div className="flex items-start gap-3">
+          {agent ? <AgentGlyph agent={agent} size={36} /> : <span className="flex h-9 w-9 items-center justify-center rounded-full border border-dashed border-[var(--color-line-3)] text-fg-2">+</span>}
+          <div className="min-w-0 flex-1">
+            <div className="text-[15px] font-semibold text-white">{confirm.kind === "confirm-bot" ? `New agent: ${name}` : name}</div>
+            <div className="mt-0.5 text-[15px] leading-snug text-fg-1">{what}</div>
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-[12.5px] text-fg-3">
+              <span className="rounded-full bg-white/[0.06] px-2.5 py-0.5 text-fg-2">{describeTrigger(confirm.trigger)}</span>
+              <span>Asks you before sending anything</span>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 flex items-center gap-2">
+          {href ? (
+            <Link href={href} className="inline-flex h-9 items-center gap-2 rounded-full bg-white/[0.07] px-4 text-[14px] text-white hover:bg-white/[0.1]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#5fd39a]" />
+              Deployed. Open {name} <ArrowUpRight size={13} />
+            </Link>
+          ) : (
+            <button onClick={() => workspace.confirmChatAction(messageId)} className="inline-flex h-9 items-center rounded-full bg-white px-5 text-[14px] font-medium text-black hover:opacity-85">
+              Deploy
+            </button>
+          )}
+        </div>
       </div>
     );
   }
@@ -179,7 +192,7 @@ function Actions({ messageId, actions, onReviewPlan, onNewMission }: { messageId
           case "deploy-plan":
             return (
               <Button key={i} variant="primary" size="sm" data-deploy onClick={() => workspace.deploy(a.planId)}>
-                Put them to work
+                Deploy
               </Button>
             );
           case "open-mission":

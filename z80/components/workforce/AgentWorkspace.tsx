@@ -38,7 +38,7 @@ const TABS = [
   { id: "message", label: "Message" },
 ] as const;
 
-/** A bot's page: watch it work, its routines, what it found, what it knows. */
+/** An agent's page: watch it work, its routines, what it found, what it knows. */
 export function AgentWorkspace({ slug }: { slug: string }) {
   const { bot: agent, ready } = useBot(slug);
   const params = useSearchParams();
@@ -71,7 +71,7 @@ export function AgentWorkspace({ slug }: { slug: string }) {
 
   if (!agent || agent.availability !== "available") {
     if (!ready) return <div className="min-h-[60vh]" />;
-    return <EmptyState title={agent ? `${agent.name} is coming soon` : "No bot by that name"} body={agent ? agent.shortDescription : "It may have been removed."} action={{ label: "Your team", href: "/team" }} />;
+    return <EmptyState title={agent ? `${agent.name} is coming soon` : "No agent by that name"} body={agent ? agent.shortDescription : "It may have been removed."} action={{ label: "Your team", href: "/team" }} />;
   }
 
   const st = getAgentLiveState(agent.id, missions, Object.values(approvals), activity, paused, now)!;
@@ -84,17 +84,10 @@ export function AgentWorkspace({ slug }: { slug: string }) {
   const today = finds.filter((f) => f.at > now - 24 * 3600e3).length;
 
   return (
-    <div className="mx-auto w-full max-w-[1320px] px-5 py-8 md:px-10 md:py-10">
-      <Link href="/team" className="label inline-flex items-center gap-2 text-fg-3 hover:text-white">
-        <ArrowLeft size={12} /> Your team
-      </Link>
-
-      <header className="mt-8 flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-        <div className="flex items-center gap-6">
-          <div className="relative">
-            <div aria-hidden className="absolute -inset-6 rounded-full blur-2xl" style={{ background: `radial-gradient(circle, rgba(${agent.accent.rgb} / 0.35), transparent 70%)` }} />
-            <AgentGlyph agent={agent} size={96} className="relative" muted={isPaused} />
-          </div>
+    <div className="mx-auto w-full max-w-[1180px] px-5 py-8 md:px-10 md:py-10">
+      <header className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-4">
+          <AgentGlyph agent={agent} size={56} muted={isPaused} />
           <div className="min-w-0">
             {renaming ? (
               <form
@@ -111,7 +104,7 @@ export function AgentWorkspace({ slug }: { slug: string }) {
                 <button type="button" onClick={() => setRenaming(false)} className="h-9 px-2 text-[13px] text-fg-3">Cancel</button>
               </form>
             ) : (
-              <h1 className="flex items-center gap-3 text-[clamp(40px,5vw,64px)] font-semibold leading-[0.95] tracking-[-0.03em] text-white">
+              <h1 className="flex items-center gap-2 text-[clamp(24px,2.6vw,30px)] font-semibold leading-tight tracking-[-0.025em] text-white">
                 {display}
                 <button onClick={() => setRenaming(true)} aria-label={`Rename ${display}`} className="flex h-8 w-8 items-center justify-center rounded-full text-fg-4 hover:bg-white/[0.06] hover:text-white">
                   <Pencil size={14} />
@@ -119,7 +112,7 @@ export function AgentWorkspace({ slug }: { slug: string }) {
               </h1>
             )}
             {nickname && <div className="mt-1 text-[13px] text-fg-4">{agent.name}</div>}
-            <div className="mt-3 flex flex-wrap items-center gap-4">
+            <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
               <span className="text-[15px] text-fg-2">{agent.role}</span>
               <span className="flex items-center gap-2 text-[13px]" style={{ color: isPaused ? undefined : tint(agent.accent) }}>
                 <StatusDot color={color} size={5} live={!isPaused} />
@@ -131,6 +124,7 @@ export function AgentWorkspace({ slug }: { slug: string }) {
         <div className="flex gap-2">
           <Button
             variant="secondary"
+            size="sm"
             icon={<MessageSquare size={14} />}
             onClick={() => {
               setTab("message");
@@ -139,7 +133,7 @@ export function AgentWorkspace({ slug }: { slug: string }) {
           >
             Message
           </Button>
-          <Button variant={isPaused ? "solid" : "secondary"} magnetic={false} icon={isPaused ? <Play size={14} /> : <Pause size={14} />} onClick={() => workspace.togglePauseAgent(agent.id)}>
+          <Button variant={isPaused ? "solid" : "secondary"} size="sm" magnetic={false} icon={isPaused ? <Play size={14} /> : <Pause size={14} />} onClick={() => workspace.togglePauseAgent(agent.id)}>
             {isPaused ? "Back on shift" : "Pause"}
           </Button>
         </div>
@@ -313,7 +307,7 @@ export function AgentWorkspace({ slug }: { slug: string }) {
           <ActivityFeed events={events} limit={8} dense />
         </Panel>
 
-        <Panel title="Permissions" className="lg:col-span-3" action={<span className="text-[12px] tabular-nums text-fg-4">Applies to every bot</span>}>
+        <Panel title="Permissions" className="lg:col-span-3" action={<span className="text-[12px] tabular-nums text-fg-4">Applies to every agent</span>}>
           <ul className="grid gap-x-10 md:grid-cols-2">
             {permissions.map((p) => (
               <li key={p.id} className="flex items-center justify-between gap-4 border-b border-white/[0.04] py-3">

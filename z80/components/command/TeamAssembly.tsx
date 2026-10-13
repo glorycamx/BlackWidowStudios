@@ -178,7 +178,7 @@ export function TeamAssembly({ plan: initial, onDeployed, onBack, backLabel = "E
         <div className="min-w-0">
           <motion.div className="label flex items-center gap-2 text-fg-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
             <StatusDot color="var(--color-indigo)" size={5} />
-            {count === 1 ? "1 bot recommended" : `${count} bots recommended`}
+            {count === 1 ? "1 agent recommended" : `${count} agents recommended`}
           </motion.div>
           <motion.h2
             className="mt-3 max-w-[28ch] text-[26px] font-semibold leading-[1.08] tracking-[-0.035em] text-white md:text-[34px]"
@@ -328,7 +328,7 @@ export function TeamAssembly({ plan: initial, onDeployed, onBack, backLabel = "E
                 exit={{ opacity: 0, y: 6 }}
                 transition={{ duration: 0.2 }}
               >
-                {available.length === 0 && <li className="px-3 py-3 text-[13px] text-fg-3">Every bot is on this team.</li>}
+                {available.length === 0 && <li className="px-3 py-3 text-[13px] text-fg-3">Every agent is on this team.</li>}
                 {available.map((a) => {
                   const soon = a.availability !== "available";
                   return (
@@ -631,7 +631,7 @@ function DeployButton({ count, deploying, onClick, compact }: { count: number; d
         </span>
       }
     >
-      {deploying ? "Starting…" : `Put ${count === 1 ? "1 bot" : `${count} bots`} to work`}
+      {deploying ? "Starting…" : `Put ${count === 1 ? "1 agent" : `${count} bots`} to work`}
     </Button>
   );
 }

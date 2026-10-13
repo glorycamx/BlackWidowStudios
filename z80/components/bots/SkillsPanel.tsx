@@ -7,7 +7,7 @@ import { useWorkspace, workspace } from "@/lib/store/workspace";
 
 const LEARNED = { "built-in": "Built in", taught: "You taught it", edits: "Learned from your edits" } as const;
 
-/** What a bot knows how to do, plus "Teach it". */
+/** What an agent knows how to do, plus "Teach it". */
 export function SkillsPanel({ botId, name, className }: { botId: string; name: string; className?: string }) {
   const skills = useWorkspace((s) => s.skills.filter((k) => k.botId === botId));
   const [open, setOpen] = useState(false);

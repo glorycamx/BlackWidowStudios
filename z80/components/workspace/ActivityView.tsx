@@ -23,7 +23,7 @@ function dayLabel(ts: number) {
   return d.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
 }
 
-/** Heartbeats, folded away: proof your bots kept checking, without the noise. */
+/** Heartbeats, folded away: proof your agents kept checking, without the noise. */
 function QuietChecks() {
   const [open, setOpen] = useState(false);
   const beats = useBeats((b) => b.beats);
@@ -56,7 +56,7 @@ function QuietChecks() {
   );
 }
 
-/** The audit trail. Every step your bots take is here. */
+/** The audit trail. Every step your agents take is here. */
 export function ActivityView() {
   const activity = useWorkspace((s) => s.activity);
   const [filter, setFilter] = useState<string>("all");
@@ -84,7 +84,7 @@ export function ActivityView() {
 
   return (
     <PageWrap className="max-w-[1000px]">
-      <PageHeader title="Activity" sub="Every step your bots took, as it happened." />
+      <PageHeader title="Activity" sub="Every step your agents took, as it happened." />
       <div role="tablist" aria-label="Filter activity" className="no-scrollbar -mx-5 mt-10 flex gap-1 overflow-x-auto px-5 md:mx-0 md:px-0">
         {filters.map((f) => (
           <button
@@ -100,7 +100,7 @@ export function ActivityView() {
       </div>
       <QuietChecks />
       {groups.length === 0 ? (
-        <EmptyState title="Nothing yet." body="Every step your bots take shows up here." action={{ label: "Open Chat", href: "/chat?focus=1" }} />
+        <EmptyState title="Nothing yet." body="Every step your agents take shows up here." action={{ label: "Open Chat", href: "/chat?focus=1" }} />
       ) : (
         <div className="mt-8 space-y-10">
           {groups.map((g) => (

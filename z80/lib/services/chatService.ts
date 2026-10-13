@@ -37,11 +37,11 @@ export function teamSentence(plan: Plan): string {
 
 export function respond(text: string, ctx: ChatContext): ChatReply {
   const t = text.trim();
-  if (GREET.test(t)) return { text: "Hi. Tell me what your bots should keep doing, or give them a one-off job." };
+  if (GREET.test(t)) return { text: "Hi. Tell me what your agents should keep doing, or give them a one-off job." };
   if (THANKS.test(t)) return { text: "Anytime. The team keeps working. I'll text you when something needs a yes." };
   if (HELP.test(t)) {
     return {
-      text: "Tell me what you want in plain English. If it's ongoing, like \"every morning\" or \"keep an eye on\", I set it up as a routine and a bot runs it around the clock. If it's one-off, I put the right bots on a job. Anything that leaves your company, like emails, posts or spend, waits for your yes unless you say otherwise.",
+      text: "Tell me what you want in plain English. If it's ongoing, like \"every morning\" or \"keep an eye on\", I set it up as a routine and an agent runs it around the clock. If it's one-off, I put the right agents on a job. Anything that leaves your company, like emails, posts or spend, waits for your yes unless you say otherwise.",
     };
   }
   if (APPROVALS.test(t) && t.length < 60) {
@@ -55,7 +55,7 @@ export function respond(text: string, ctx: ChatContext): ChatReply {
   }
   if (STATUS.test(t) && t.length < 80) {
     const running = ctx.missions.filter((m) => m.status === "running" || m.status === "awaiting-approval");
-    if (!running.length) return { text: "No jobs running. Your routines are still on. What else should your bots do?" };
+    if (!running.length) return { text: "No jobs running. Your routines are still on. What else should your agents do?" };
     return {
       text: running
         .map((m) => `Job ${m.number}, ${m.title}: ${Math.round(m.progress * 100)}%${m.status === "awaiting-approval" ? ", waiting on your approval" : ""}.`)
@@ -71,11 +71,11 @@ export function respond(text: string, ctx: ChatContext): ChatReply {
     plan,
     text: `Got it. ${plan.reasoningSummary}
 
-I'll put ${count === 1 ? "one bot" : `${count} bots`} on this job. They work on it without stopping and only come to you for a yes. Put them to work?`,
+I'll put ${count === 1 ? "one agent" : `${count} agents`} on this job. They work on it without stopping and only come to you for a yes. Put them to work?`,
   };
 }
 
-/** A direct reply from one bot (its direct line). MOCK. */
+/** A direct reply from one agent (its direct line). MOCK. */
 export function agentReply(agentId: string, text: string, ctx: ChatContext): string {
   const agent = agentOrFallback(agentId);
   const active = ctx.missions.filter((m) => m.status !== "complete" && m.agents.some((a) => a.agentId === agentId));
@@ -84,7 +84,7 @@ export function agentReply(agentId: string, text: string, ctx: ChatContext): str
   switch (agent.id) {
     case "manager":
       return asksForWork
-        ? `Noted. ${focus} I'll fold this into the plan and hand it to the right bot. You'll see it in Activity.`
+        ? `Noted. ${focus} I'll fold this into the plan and hand it to the right agent. You'll see it in Activity.`
         : `${focus} Everything is on schedule.`;
     case "lead-hunter":
       return asksForWork

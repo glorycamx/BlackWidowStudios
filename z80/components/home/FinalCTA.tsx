@@ -1,24 +1,19 @@
-import { Button } from "@/components/ui/Button";
-import { Display, Reveal } from "@/components/home/Section";
+import { HomeComposer } from "@/components/home/HomeComposer";
+import { Reveal } from "@/components/home/Section";
 
-/** The ending: put them to work. */
+/** The ending: the same box as the top of the page. */
 export function FinalCTA() {
   return (
-    <section id="final" aria-label="Put your bots to work" className="relative z-10 flex min-h-[100svh] flex-col items-center justify-center px-5 pb-[24vh] pt-[20vh] text-center">
-      <Display lines={["Put your bots", "to work tonight."]} className="text-[clamp(48px,8.4vw,148px)]" />
-      <Reveal delay={0.15}>
-        <p className="mx-auto mt-6 max-w-[520px] text-[clamp(18px,1.6vw,22px)] leading-[1.4] text-fg-2">Set it once. They never stop. Or build your own bot in a sentence.</p>
-      </Reveal>
-      <Reveal delay={0.25}>
-        <div className="mt-10 flex flex-wrap justify-center gap-3">
-          <Button variant="primary" size="lg" href="/live">
-            Open the demo
-          </Button>
-          <Button variant="secondary" size="lg" href="/team?create=1">
-            Build your own bot
-          </Button>
-        </div>
-      </Reveal>
+    <section id="final" aria-label="Deploy your first agent" className="relative z-10 px-5 pb-32 pt-24 md:pb-40">
+      <div className="mx-auto max-w-[680px] text-center">
+        <Reveal>
+          <h2 className="text-[clamp(32px,4vw,52px)] font-semibold leading-[1.08] tracking-[-0.03em] text-white">Deploy your first agent tonight.</h2>
+          <p className="mt-3 text-[17px] text-fg-2">Type what you need. It starts working in seconds.</p>
+        </Reveal>
+        <Reveal delay={0.1} className="mt-8 text-left">
+          <HomeComposer id="final-composer" starters={false} />
+        </Reveal>
+      </div>
     </section>
   );
 }

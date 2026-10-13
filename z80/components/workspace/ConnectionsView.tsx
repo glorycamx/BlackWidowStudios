@@ -30,23 +30,23 @@ export function ConnectionsView() {
       <PageHeader
         label={`${connected.length} connected`}
         title="Apps"
-        sub="The apps your bots can use, and how they reach you."
+        sub="The apps your agents can use, and how they reach you."
       />
       {connected.length === 0 && (
         <div className="mt-6 panel">
-          <EmptyState title="Your bots need apps." body="Connect the software your business already uses." />
+          <EmptyState title="Your agents need apps." body="Connect the software your business already uses." />
         </div>
       )}
       <div className="mt-12 space-y-12">
-        <section aria-label="How your bots reach you">
-          <h2 className="label">How your bots reach you</h2>
+        <section aria-label="How your agents reach you">
+          <h2 className="label">How your agents reach you</h2>
           <ul className="mt-4 border-t border-line">
             {[
               ["In the app", "Notifications and the bell, right here.", "On"],
               ["Desktop alerts", "Browser notifications when the tab is in the background. Turn on in Settings.", "Demo"],
               ["Text message", "Your morning text, as an actual text.", "Coming soon"],
               ["WhatsApp", "Updates and approvals in WhatsApp.", "Coming soon"],
-              ["Slack", "Your bots post in a channel you pick.", "Coming soon"],
+              ["Slack", "Your agents post in a channel you pick.", "Coming soon"],
               ["Email", "Morning text and recap by email.", "Coming soon"],
               ["Phone call", "A call when something is really urgent.", "Coming soon"],
             ].map(([name, desc, status]) => (

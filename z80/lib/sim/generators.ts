@@ -25,7 +25,7 @@ export function rngFor(routineId: string, seq: number, salt = "") {
   return prng(hashString(`${routineId}:${seq}:${salt}`));
 }
 
-/** How long before the bot caught it that the thing actually happened. */
+/** How long before the agent caught it that the thing actually happened. */
 function lag(r: () => number) {
   return Math.round((60 + r() * 300) * 1000);
 }
@@ -199,7 +199,7 @@ function followUpFind(routine: Routine, ctx: GenContext): FeedItem | null {
 }
 
 /* ------------------------------------------------------------------ */
-/* Custom bots                                                          */
+/* Custom agents                                                          */
 /* ------------------------------------------------------------------ */
 
 function customFind(routine: Routine, ctx: GenContext): FeedItem {
